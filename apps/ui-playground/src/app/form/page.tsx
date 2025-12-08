@@ -1,15 +1,16 @@
 "use client";
 import { useForm } from "react-hook-form";
-import { MedinttInputText, MedinttButton } from "@medintt/ui";
+import { MedinttInputText, MedinttButton, MedinttPassword } from "@medintt/ui";
 
 type FormInputs = {
   username: string;
   email: string;
+  password: string;
 };
 
 export default function Page() {
   const { control, handleSubmit } = useForm<FormInputs>({
-    defaultValues: { username: undefined, email: "" },
+    defaultValues: { username: undefined, email: "", password: undefined },
   });
 
   const onSubmit = (data: FormInputs) => console.log(data);
@@ -36,11 +37,22 @@ export default function Page() {
         placeholder="example@example.com.ar"
         rules={{
           required: "El email es obligatorio",
-          // pattern: {
-          //   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-          //   message: "El formato del email no es válido",
-          // },
+          pattern: {
+            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+            message: "El formato del email no es válido",
+          },
         }}
+      />
+
+      <MedinttPassword
+        name="password"
+        control={control}
+        label="Contraseña"
+        rules={{
+          required: "Contraseña obligatoria",
+          minLength: { value: 6, message: "Mínimo 6 caracteres" },
+        }}
+        placeholder="Contraseña"
       />
 
       <MedinttButton label="Guardar" type="submit" />

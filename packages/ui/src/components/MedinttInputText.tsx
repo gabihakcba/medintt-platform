@@ -42,6 +42,7 @@ export const MedinttInputText = <T extends FieldValues>({
               className="text-text-main font-medium text-sm"
             >
               {label}
+              {rules?.required && <span className="text-red-500 ml-1">*</span>}
             </label>
           )}
 

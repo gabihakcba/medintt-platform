@@ -1,16 +1,27 @@
 "use client";
 import { useForm } from "react-hook-form";
-import { MedinttInputText, MedinttButton, MedinttPassword } from "@medintt/ui";
+import {
+  MedinttInputText,
+  MedinttButton,
+  MedinttPassword,
+  MedinttCheckbox,
+} from "@medintt/ui";
 
 type FormInputs = {
   username: string;
   email: string;
   password: string;
+  seleccionar: boolean;
 };
 
 export default function Page() {
   const { control, handleSubmit } = useForm<FormInputs>({
-    defaultValues: { username: undefined, email: "", password: undefined },
+    defaultValues: {
+      username: undefined,
+      email: "",
+      password: undefined,
+      seleccionar: undefined,
+    },
   });
 
   const onSubmit = (data: FormInputs) => console.log(data);
@@ -53,6 +64,13 @@ export default function Page() {
           minLength: { value: 6, message: "Mínimo 6 caracteres" },
         }}
         placeholder="Contraseña"
+      />
+
+      <MedinttCheckbox
+        name="seleccionar"
+        control={control}
+        label="Selecciona"
+        rules={{ required: { value: true, message: "Campo boligatorio" } }}
       />
 
       <MedinttButton label="Guardar" type="submit" />

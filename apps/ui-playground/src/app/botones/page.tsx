@@ -1,3 +1,4 @@
+'use client'
 import { MedinttButton } from "@medintt/ui";
 import { ReactElement } from "react";
 
@@ -44,6 +45,12 @@ export default function Page(): ReactElement {
                 icon="pi pi-pen-to-square"
                 severity="help"
               />
+
+              <MedinttButton
+                label="Boton con tooltip"
+                icon="pi pi-comment"
+                tooltip="Comentario"
+              />
             </div>
           </div>
 
@@ -62,6 +69,7 @@ export default function Page(): ReactElement {
               icon="pi pi-check"
               severity="info"
               className="w-full mt-2"
+              onClick={() => console.log('hola')}
             />
           </div>
         </section>

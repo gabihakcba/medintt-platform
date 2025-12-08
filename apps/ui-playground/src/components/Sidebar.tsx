@@ -4,10 +4,6 @@ import { MedinttSidebar } from "@medintt/ui";
 
 const items = [
   { label: "Inicio", icon: "pi pi-home", url: '/' },
-  { label: "Pacientes", icon: "pi pi-users" },
-  { label: "Turnos", icon: "pi pi-calendar" },
-  { label: "Reportes", icon: "pi pi-chart-bar" },
-  { label: "Configuración", icon: "pi pi-cog" },
   { label: "Botones", icon: "pi pi-stop", url: "botones" },
 ];
 

@@ -1,27 +1,33 @@
-import { Button, ButtonProps } from 'primereact/button';
-import { twMerge } from 'tailwind-merge';
+"use client";
+
+import { Button, ButtonProps } from "primereact/button";
+import { twMerge } from "tailwind-merge";
 
 export interface MedinttButtonProps extends ButtonProps {
-  // Aquí podrías agregar propiedades extra si quisieras, 
-  // pero por ahora ButtonProps es suficiente.
+  tooltip?: string;
 }
 
-export const MedinttButton = ({ 
-  size = 'small',
+export const MedinttButton = ({
+  size = "small",
   outlined = true,
-  iconPos = 'right',
-  className, 
-  ...props 
+  iconPos = "right",
+  tooltip,
+  className,
+  ...props
 }: MedinttButtonProps) => {
-
   const finalClass = twMerge(className);
 
   return (
-    <Button 
+    <Button
       size={size}
       outlined={outlined}
       iconPos={iconPos}
-      className={finalClass} 
+      className={finalClass}
+      tooltip={tooltip}
+      tooltipOptions={{
+        appendTo: typeof document !== "undefined" ? document?.body : undefined,
+        position: "top",
+      }}
       {...props}
     />
   );

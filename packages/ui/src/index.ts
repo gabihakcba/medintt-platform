@@ -5,3 +5,4 @@ export * from './components/MedinttInputText';
 export * from './components/MedinttPassword';
 export * from './components/MedinttCheckbox';
 export * from './components/MedinttDropdown';
+export * from './components/MedinttInputNumber';

@@ -6,6 +6,7 @@ import {
   MedinttPassword,
   MedinttCheckbox,
   MedinttDropdown,
+  MedinttInputNumber,
 } from "@medintt/ui";
 
 type FormInputs = {
@@ -13,6 +14,7 @@ type FormInputs = {
   email: string;
   password: string;
   seleccionar: boolean;
+  peso: number;
   opciones: Array<{ label: string; value: number }>;
 };
 
@@ -23,6 +25,7 @@ export default function Page() {
       email: "",
       password: undefined,
       seleccionar: undefined,
+      peso: undefined,
     },
   });
 
@@ -91,6 +94,15 @@ export default function Page() {
         ]}
         optionLabel={(row) => `${row.name} ${row.lastName}`}
         optionValue="id"
+      />
+
+      <MedinttInputNumber
+        control={control}
+        name="peso"
+        label="Peso (kg)"
+        placeholder="0.000"
+        mode="decimal"
+        rules={{ required: "El peso es obligatorio" }}
       />
 
       <MedinttButton label="Guardar" type="submit" />

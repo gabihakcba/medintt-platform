@@ -45,36 +45,57 @@ export const MedinttSidebar = ({
         onHide={() => setVisible(false)}
         header={title}
       >
-        <PanelMenu model={items} className="w-full md:w-20rem" />
-        <div className="flex flex-col border-2 border-green-500">
-          <div className="w-full border-2 border-black">Hola</div>
-          <div className="w-full border-2 border-amber-500">Mundo</div>
-        </div>
-        {/* {logout && (
-          // IMPORTANTE: Cambié el <span> por un <div> y añadí clases de espaciado
-          <div className="flex flex-col border-t-2 pt-4 mt-2 gap-2">
-            <div className="flex flex-col text-sm text-gray-600 mb-2">
-              <span className="font-bold">{user?.name}</span>
-              <span className="italic">{user?.role}</span>
-            </div>
-
-            <MedinttButton
-              label={logout?.label}
-              icon={logout?.icon}
-              severity="danger"
-              className="w-full" // Para que el botón ocupe todo el ancho
-              onClick={() => {
-                logout?.command && logout?.command();
-                logout?.url && router.push(logout.url);
-              }}
-            />
-            <span className="text-xs text-center text-gray-400 mt-1">
-              {version}
-            </span>
+        {/* 1. CONTENEDOR FLEX PRINCIPAL (Ocupa toda la altura) */}
+        <div className="flex flex-col h-full">
+          {/* 2. ZONA DEL MENÚ (Flexible y Scrollable) */}
+          {/* flex-grow: empuja el footer hacia abajo */}
+          {/* overflow-y-auto: permite scroll solo en esta sección si el menú es muy largo */}
+          <div className="grow overflow-y-auto">
+            <PanelMenu model={items} className="w-full" />
           </div>
-        )} */}
+
+          {/* 3. ZONA INFERIOR (Fija) */}
+          {/* flex-shrink-0: evita que se aplaste si hay poco espacio */}
+          {logout && (
+            <div className="shrink-0 flex flex-col border-t gap-2">
+              {user && (
+                <div className="px-3 py-2 bg-surface-overlay rounded-lg">
+                  <p className="text-xs text-text-secondary mb-1">
+                    Conectado como:
+                  </p>
+                  <p className="text-text-main font-semibold text-sm truncate">
+                    {user?.name}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    <span
+                      key={user?.role}
+                      className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded"
+                    >
+                      {user?.role}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <MedinttButton
+                label={logout?.label}
+                icon={logout?.icon}
+                severity="danger"
+                className="w-full"
+                onClick={() => {
+                  logout?.command && logout?.command();
+                  logout?.url && router.push(logout.url);
+                }}
+              />
+              <span className="text-xs text-center text-gray-400 mt-1">
+                {version}
+              </span>
+            </div>
+          )}
+        </div>
       </Sidebar>
       <MedinttButton
+        className="m-2"
         icon="pi pi-bars"
         severity="secondary"
         onClick={() => setVisible(true)}

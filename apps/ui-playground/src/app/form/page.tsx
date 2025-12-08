@@ -5,6 +5,7 @@ import {
   MedinttButton,
   MedinttPassword,
   MedinttCheckbox,
+  MedinttDropdown,
 } from "@medintt/ui";
 
 type FormInputs = {
@@ -12,6 +13,7 @@ type FormInputs = {
   email: string;
   password: string;
   seleccionar: boolean;
+  opciones: Array<{ label: string; value: number }>;
 };
 
 export default function Page() {
@@ -36,9 +38,11 @@ export default function Page() {
         control={control}
         label="Nombre de Usuario"
         placeholder="Ingresa tu usuario"
-        rules={{
-          required: "El usuario es obligatorio",
-        }}
+        rules={
+          {
+            // required: "El usuario es obligatorio",
+          }
+        }
       />
 
       <MedinttInputText
@@ -46,23 +50,27 @@ export default function Page() {
         control={control}
         label="Correo Electrónico"
         placeholder="example@example.com.ar"
-        rules={{
-          required: "El email es obligatorio",
-          pattern: {
-            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-            message: "El formato del email no es válido",
-          },
-        }}
+        rules={
+          {
+            // required: "El email es obligatorio",
+            // pattern: {
+            //   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+            //   message: "El formato del email no es válido",
+            // },
+          }
+        }
       />
 
       <MedinttPassword
         name="password"
         control={control}
         label="Contraseña"
-        rules={{
-          required: "Contraseña obligatoria",
-          minLength: { value: 6, message: "Mínimo 6 caracteres" },
-        }}
+        rules={
+          {
+            // required: "Contraseña obligatoria",
+            // minLength: { value: 6, message: "Mínimo 6 caracteres" },
+          }
+        }
         placeholder="Contraseña"
       />
 
@@ -70,7 +78,19 @@ export default function Page() {
         name="seleccionar"
         control={control}
         label="Selecciona"
-        rules={{ required: { value: true, message: "Campo boligatorio" } }}
+        // rules={{ required: { value: true, message: "Campo boligatorio" } }}
+      />
+
+      <MedinttDropdown
+        name="opciones"
+        control={control}
+        label="Opciones"
+        options={[
+          { name: "Gabi", lastName: "Hak", id: 1 },
+          { name: "Ivan", lastName: "Hakson", id: 2 },
+        ]}
+        optionLabel={(row) => `${row.name} ${row.lastName}`}
+        optionValue="id"
       />
 
       <MedinttButton label="Guardar" type="submit" />

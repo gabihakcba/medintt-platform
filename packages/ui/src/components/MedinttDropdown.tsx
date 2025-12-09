@@ -52,6 +52,7 @@ export const MedinttDropdown = <T extends FieldValues>({
   optionValue = "value",
   filter,
   filterBy,
+  virtualScrollerOptions,
   ...props
 }: MedinttDropdownProps<T>) => {
   const processedOptions = useMemo(() => {
@@ -76,6 +77,11 @@ export const MedinttDropdown = <T extends FieldValues>({
       })
       .join(",");
   }, [filterBy]);
+
+  const defaultVirtualScrollerOptions = {
+    itemSize: 50,
+    ...virtualScrollerOptions,
+  };
 
   return (
     <Controller
@@ -110,6 +116,7 @@ export const MedinttDropdown = <T extends FieldValues>({
             resetFilterOnHide
             loading={loading}
             placeholder={placeholder}
+            virtualScrollerOptions={defaultVirtualScrollerOptions}
             className={twMerge(
               "w-full",
               fieldState.invalid &&

@@ -19,6 +19,11 @@ type FormInputs = {
   peso: number;
   fecha: string;
   opciones: Array<{ label: string; value: number }>;
+  testVirtual: Array<{
+    id: number,
+    name: string,
+    code: string,
+  }>;
 };
 
 export default function Page() {
@@ -34,6 +39,12 @@ export default function Page() {
   });
 
   const onSubmit = (data: FormInputs) => console.log(data);
+
+  const milItems = Array.from({ length: 10000 }).map((_, i) => ({
+    id: i,
+    name: `Item ${i}`,
+    code: `COD-${i}`,
+  }));
 
   return (
     <form
@@ -93,13 +104,33 @@ export default function Page() {
         control={control}
         label="Opciones"
         options={[
-          { name: "Gabi", lastName: "Hak", id: 1, Permisos: {nombre: 'dev', rango: 7} },
-          { name: "Ivan", lastName: "Hakson", id: 2, Permisos: {nombre: 'admin', rango: 9} },
+          {
+            name: "Gabi",
+            lastName: "Hak",
+            id: 1,
+            Permisos: { nombre: "dev", rango: 7 },
+          },
+          {
+            name: "Ivan",
+            lastName: "Hakson",
+            id: 2,
+            Permisos: { nombre: "admin", rango: 9 },
+          },
         ]}
         optionLabel={(row) => `${row.name} ${row.lastName}`}
         optionValue="id"
         filter
         filterBy="id,lastName,name,Permisos.nombre,Permisos.rango"
+      />
+
+      <MedinttDropdown
+        control={control}
+        name="testVirtual"
+        label="Prueba de Rendimiento (10k items)"
+        options={milItems}
+        optionLabel="name"
+        optionValue="id"
+        filter
       />
 
       <MedinttInputNumber

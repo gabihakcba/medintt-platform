@@ -11,12 +11,21 @@ import {
 } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 
-import { resolveItemData } from "../utils/resolve"; 
+import { resolveItemData } from "../utils/resolve";
 
 type OptionSelector = string | ((item: any) => any);
 
 interface MedinttDropdownProps<T extends FieldValues>
-  extends Omit<DropdownProps, "name" | "value" | "onChange" | "loading" | "optionLabel" | "optionValue"> {
+  extends Omit<
+    DropdownProps,
+    | "name"
+    | "value"
+    | "onChange"
+    | "loading"
+    | "optionLabel"
+    | "optionValue"
+    | "filterBy"
+  > {
   name: Path<T>;
   control: Control<T>;
   label?: string;
@@ -25,6 +34,9 @@ interface MedinttDropdownProps<T extends FieldValues>
 
   optionLabel?: OptionSelector;
   optionValue?: OptionSelector;
+
+  filter?: boolean;
+  filterBy?: string; // Ej: "name", "User.name", "name,lastname"
 }
 
 export const MedinttDropdown = <T extends FieldValues>({
@@ -36,8 +48,10 @@ export const MedinttDropdown = <T extends FieldValues>({
   className,
   options,
   placeholder,
-  optionLabel = "label", // Default estándar
-  optionValue = "value", // Default estándar
+  optionLabel = "label",
+  optionValue = "value",
+  filter,
+  filterBy,
   ...props
 }: MedinttDropdownProps<T>) => {
   const processedOptions = useMemo(() => {
@@ -49,6 +63,19 @@ export const MedinttDropdown = <T extends FieldValues>({
       original: item,
     }));
   }, [options, optionLabel, optionValue]);
+
+  const resolvedFilterBy = useMemo(() => {
+    if (!filterBy) return "label";
+
+    return filterBy
+      .split(",")
+      .map((field) => {
+        const f = field.trim();
+        if (f === "label" || f === "value") return f;
+        return `original.${f}`;
+      })
+      .join(",");
+  }, [filterBy]);
 
   return (
     <Controller
@@ -76,9 +103,11 @@ export const MedinttDropdown = <T extends FieldValues>({
             onChange={(e) => field.onChange(e.value)}
             onBlur={field.onBlur}
             options={processedOptions}
-            optionLabel="label" 
+            optionLabel="label"
             optionValue="value"
-            
+            filter={filter}
+            filterBy={resolvedFilterBy}
+            resetFilterOnHide
             loading={loading}
             placeholder={placeholder}
             className={twMerge(

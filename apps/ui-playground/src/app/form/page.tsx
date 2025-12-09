@@ -93,11 +93,13 @@ export default function Page() {
         control={control}
         label="Opciones"
         options={[
-          { name: "Gabi", lastName: "Hak", id: 1 },
-          { name: "Ivan", lastName: "Hakson", id: 2 },
+          { name: "Gabi", lastName: "Hak", id: 1, Permisos: {nombre: 'dev', rango: 7} },
+          { name: "Ivan", lastName: "Hakson", id: 2, Permisos: {nombre: 'admin', rango: 9} },
         ]}
         optionLabel={(row) => `${row.name} ${row.lastName}`}
         optionValue="id"
+        filter
+        filterBy="id,lastName,name,Permisos.nombre,Permisos.rango"
       />
 
       <MedinttInputNumber

@@ -29,7 +29,7 @@ export default function Page() {
       password: undefined,
       seleccionar: undefined,
       peso: undefined,
-      fecha: parseLocalDateToISO("12-01-25"),
+      fecha: parseLocalDateToISO("12-01-25") ?? undefined,
     },
   });
 

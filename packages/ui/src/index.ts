@@ -6,3 +6,4 @@ export * from './components/MedinttPassword';
 export * from './components/MedinttCheckbox';
 export * from './components/MedinttDropdown';
 export * from './components/MedinttInputNumber';
+export * from './components/MedinttCalendar';

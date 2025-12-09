@@ -3,6 +3,7 @@
   "description": "",
   "version": "0.0.0",
   "dependencies": {
+    "@medintt/utils": "workspace:*",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "primeicons": "7.0.0",
@@ -28,7 +29,9 @@
   "peerDependencies": {
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "react-hook-form": "7.68.0"
+    "react-hook-form": "7.68.0",
+    "primeicons": "7.0.0",
+    "primereact": "10.8.0"
   },
   "scripts": {
     "lint": "eslint .",

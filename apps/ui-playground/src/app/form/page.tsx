@@ -7,7 +7,9 @@ import {
   MedinttCheckbox,
   MedinttDropdown,
   MedinttInputNumber,
+  MedinttCalendar,
 } from "@medintt/ui";
+import { parseLocalDateToISO } from "@medintt/utils";
 
 type FormInputs = {
   username: string;
@@ -15,6 +17,7 @@ type FormInputs = {
   password: string;
   seleccionar: boolean;
   peso: number;
+  fecha: string;
   opciones: Array<{ label: string; value: number }>;
 };
 
@@ -26,6 +29,7 @@ export default function Page() {
       password: undefined,
       seleccionar: undefined,
       peso: undefined,
+      fecha: parseLocalDateToISO("12-01-25"),
     },
   });
 
@@ -102,7 +106,14 @@ export default function Page() {
         label="Peso (kg)"
         placeholder="0.000"
         mode="decimal"
-        rules={{ required: "El peso es obligatorio" }}
+        // rules={{ required: "El peso es obligatorio" }}
+      />
+
+      <MedinttCalendar
+        name="fecha"
+        control={control}
+        label="Fecha"
+        viewMode="date"
       />
 
       <MedinttButton label="Guardar" type="submit" />

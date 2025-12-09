@@ -16,6 +16,8 @@
     "check-types": "turbo run check-types",
     "dev": "turbo run dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "lint:deps": "syncpack list-mismatches",
+    "fix:deps": "syncpack fix-mismatches"
   }
 }

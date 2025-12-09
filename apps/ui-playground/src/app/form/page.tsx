@@ -8,6 +8,7 @@ import {
   MedinttDropdown,
   MedinttInputNumber,
   MedinttCalendar,
+  MedinttMultiSelect,
 } from "@medintt/ui";
 import { parseLocalDateToISO } from "@medintt/utils";
 
@@ -20,10 +21,11 @@ type FormInputs = {
   fecha: string;
   opciones: Array<{ label: string; value: number }>;
   testVirtual: Array<{
-    id: number,
-    name: string,
-    code: string,
+    id: number;
+    name: string;
+    code: string;
   }>;
+  roles: Array<{ Role: { id: number; name: string; code: string } }>;
 };
 
 export default function Page() {
@@ -147,6 +149,24 @@ export default function Page() {
         control={control}
         label="Fecha"
         viewMode="date"
+      />
+
+      <MedinttMultiSelect
+        control={control}
+        name="roles"
+        label="Asignar Roles"
+        placeholder="Seleccione roles..."
+        options={[
+          { Role: { id: 1, name: "Admin", code: "ADM" } },
+          { Role: { id: 2, name: "User", code: "USR" } },
+          { Role: { id: 3, name: "Dev", code: "DEV" } },
+          { Role: { id: 4, name: "Sec", code: "SEC" } },
+        ]}
+        optionLabel="Role.name"
+        optionValue="Role.id"
+        filter
+        filterBy="Role.name,Role.code"
+        display="chip"
       />
 
       <MedinttButton label="Guardar" type="submit" />

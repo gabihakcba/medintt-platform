@@ -1,22 +1,9 @@
 "use client";
 
 import { Checkbox, CheckboxProps } from "primereact/checkbox";
-import {
-  Control,
-  Controller,
-  FieldValues,
-  Path,
-  RegisterOptions,
-} from "react-hook-form";
+import { Controller, FieldValues } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-
-interface MedinttCheckboxProps<T extends FieldValues>
-  extends Omit<CheckboxProps, "name" | "checked" | "value"> {
-  name: Path<T>;
-  control: Control<T>;
-  label?: string;
-  rules?: RegisterOptions<T, Path<T>>;
-}
+import { MedinttCheckboxProps } from "../types/form";
 
 export const MedinttCheckbox = <T extends FieldValues>({
   name,
@@ -41,22 +28,22 @@ export const MedinttCheckbox = <T extends FieldValues>({
               checked={field.value || false}
               onBlur={field.onBlur}
               disabled={disabled}
-              className={twMerge(
-                fieldState.invalid && "p-invalid"
-              )}
+              className={twMerge(fieldState.invalid && "p-invalid")}
               {...props}
             />
-            
+
             {label && (
               <label
                 htmlFor={field.name}
                 className={twMerge(
-                  "text-sm cursor-pointer select-none", // select-none mejora UX al hacer clic
+                  "text-sm cursor-pointer select-none",
                   fieldState.invalid ? "text-red-500" : "text-text-main"
                 )}
               >
                 {label}
-                {rules?.required && <span className="text-red-500 ml-1">*</span>}
+                {rules?.required && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
               </label>
             )}
           </div>

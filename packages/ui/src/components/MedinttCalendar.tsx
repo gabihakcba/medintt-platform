@@ -1,27 +1,14 @@
 "use client";
 
-import { Calendar, CalendarProps } from "primereact/calendar";
+import { Calendar } from "primereact/calendar";
 import {
-  Control,
   Controller,
-  FieldValues,
-  Path,
-  RegisterOptions,
+  FieldValues
 } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 
 import { parseToJsDate, toIsoString } from "@medintt/utils/date"; 
-
-type CalendarViewMode = "date" | "month" | "year";
-
-interface MedinttCalendarProps<T extends FieldValues>
-  extends Omit<CalendarProps, "name" | "value" | "onChange" | "view"> {
-  name: Path<T>;
-  control: Control<T>;
-  label?: string;
-  rules?: RegisterOptions<T, Path<T>>;
-  viewMode?: CalendarViewMode;
-}
+import { MedinttCalendarProps } from "../types/form";
 
 export const MedinttCalendar = <T extends FieldValues>({
   name,
@@ -35,7 +22,6 @@ export const MedinttCalendar = <T extends FieldValues>({
   ...props
 }: MedinttCalendarProps<T>) => {
 
-  // PrimeReact usa una sintaxis propia para dateFormat (no es 100% igual a moment)
   // date: dd/mm/yy
   // month: mm/yy
   // year: yy

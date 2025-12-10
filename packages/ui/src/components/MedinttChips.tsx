@@ -1,23 +1,9 @@
 "use client";
 
-import React from "react";
-import { Chips, ChipsProps } from "primereact/chips";
-import {
-  Control,
-  Controller,
-  FieldValues,
-  Path,
-  RegisterOptions,
-} from "react-hook-form";
+import { Chips } from "primereact/chips";
+import { Controller, FieldValues } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-
-interface MedinttChipsProps<T extends FieldValues>
-  extends Omit<ChipsProps, "name" | "value" | "onChange"> {
-  name: Path<T>;
-  control: Control<T>;
-  label?: string;
-  rules?: RegisterOptions<T, Path<T>>;
-}
+import { MedinttChipsProps } from "../types/form";
 
 export const MedinttChips = <T extends FieldValues>({
   name,
@@ -25,8 +11,8 @@ export const MedinttChips = <T extends FieldValues>({
   label,
   rules,
   className,
-  separator = ",", // Por defecto permitimos separar con coma
-  max, // Opcional: limitar cantidad de chips
+  separator = ",",
+  max,
   placeholder,
   ...props
 }: MedinttChipsProps<T>) => {
@@ -52,31 +38,25 @@ export const MedinttChips = <T extends FieldValues>({
 
           <Chips
             id={field.name}
-            value={field.value || []} // Asegura array vacío si es null
+            value={field.value || []}
             onChange={(e) => field.onChange(e.value)}
             onBlur={field.onBlur}
-            
             separator={separator}
             max={max}
             placeholder={placeholder}
-            
-            className={twMerge(
-              "w-full",
-              fieldState.invalid && "p-invalid"
-            )}
-            // Pt es para personalizar clases internas de PrimeReact si fuera necesario
+            className={twMerge("w-full", fieldState.invalid && "p-invalid")}
             pt={{
               container: {
                 className: twMerge(
                   "w-full",
-                  fieldState.invalid && "border-red-500 ring-1 ring-red-500 focus:ring-red-500"
-                )
+                  fieldState.invalid &&
+                    "border-red-500 ring-1 ring-red-500 focus:ring-red-500"
+                ),
               },
               inputToken: {
-                className: "p-0" // Ajuste fino para alineación
-              }
+                className: "p-0",
+              },
             }}
-            
             {...props}
           />
 

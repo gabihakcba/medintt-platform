@@ -1,22 +1,9 @@
 "use client";
 
-import { Password, PasswordProps } from "primereact/password";
-import {
-  Control,
-  Controller,
-  FieldValues,
-  Path,
-  RegisterOptions,
-} from "react-hook-form";
+import { Password } from "primereact/password";
+import { Controller, FieldValues } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-
-interface MedinttPasswordProps<T extends FieldValues>
-  extends Omit<PasswordProps, "name"> {
-  name: Path<T>;
-  control: Control<T>;
-  label?: string;
-  rules?: RegisterOptions<T, Path<T>>;
-}
+import { MedinttPasswordProps } from "../types/form";
 
 export const MedinttPassword = <T extends FieldValues>({
   name,
@@ -24,8 +11,8 @@ export const MedinttPassword = <T extends FieldValues>({
   label,
   rules,
   className,
-  feedback = false, // Por defecto ocultamos la barra de fortaleza (mejor para Login)
-  toggleMask = true, // Por defecto mostramos el ojito
+  feedback = false,
+  toggleMask = true,
   ...props
 }: MedinttPasswordProps<T>) => {
   return (

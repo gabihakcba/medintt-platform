@@ -1,211 +1,88 @@
 "use client";
-import { useForm } from "react-hook-form";
-import {
-  MedinttInputText,
-  MedinttButton,
-  MedinttPassword,
-  MedinttCheckbox,
-  MedinttDropdown,
-  MedinttInputNumber,
-  MedinttCalendar,
-  MedinttMultiSelect,
-  MedinttChips,
-  MedinttInputTextArea,
-  MedinttRadioButton,
-} from "@medintt/ui";
-import { parseLocalDateToISO } from "@medintt/utils";
 
-type FormInputs = {
-  username: string;
-  email: string;
-  password: string;
-  seleccionar: boolean;
-  peso: number;
-  fecha: string;
-  opciones: Array<{ label: string; value: number }>;
-  testVirtual: Array<{
-    id: number;
-    name: string;
-    code: string;
-  }>;
-  roles: Array<{ Role: { id: number; name: string; code: string } }>;
-  tags: string[];
-  observaciones: string;
-  genero: { label: "Masculino" | "Femenino" | "Otro"; value: "M" | "F" | "X" };
-};
+import { useForm } from "react-hook-form";
+import { MedinttForm, MedinttButton } from "@medintt/ui";
 
 export default function Page() {
-  const { control, handleSubmit } = useForm<FormInputs>({
+  const { control, handleSubmit } = useForm({
     defaultValues: {
-      username: undefined,
+      nombre: "",
+      apellido: "",
+      edad: null,
       email: "",
-      password: undefined,
-      seleccionar: undefined,
-      peso: undefined,
-      fecha: parseLocalDateToISO("12-01-25") ?? undefined,
+      direccion: "",
+      roles: [],
     },
   });
 
-  const onSubmit = (data: FormInputs) => console.log(data);
-
-  const milItems = Array.from({ length: 10000 }).map((_, i) => ({
-    id: i,
-    name: `Item ${i}`,
-    code: `COD-${i}`,
-  }));
+  const onSubmit = (data) => console.log(data);
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="p-4 flex flex-col gap-4 max-w-md"
-    >
-      <MedinttInputText
-        name="username"
+    <div className="min-w-screen flex justify-center items-center">
+      <MedinttForm
+        className="max-w-200 px-4"
         control={control}
-        label="Nombre de Usuario"
-        placeholder="Ingresa tu usuario"
-        rules={
+        handleSubmit={handleSubmit}
+        onSubmit={onSubmit}
+        sections={[
           {
-            // required: "El usuario es obligatorio",
-          }
-        }
-      />
-
-      <MedinttInputText
-        name="email"
-        control={control}
-        label="Correo Electrónico"
-        placeholder="example@example.com.ar"
-        rules={
-          {
-            // required: "El email es obligatorio",
-            // pattern: {
-            //   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-            //   message: "El formato del email no es válido",
-            // },
-          }
-        }
-      />
-
-      <MedinttPassword
-        name="password"
-        control={control}
-        label="Contraseña"
-        rules={
-          {
-            // required: "Contraseña obligatoria",
-            // minLength: { value: 6, message: "Mínimo 6 caracteres" },
-          }
-        }
-        placeholder="Contraseña"
-      />
-
-      <MedinttCheckbox
-        name="seleccionar"
-        control={control}
-        label="Selecciona"
-        // rules={{ required: { value: true, message: "Campo boligatorio" } }}
-      />
-
-      <MedinttDropdown
-        name="opciones"
-        control={control}
-        label="Opciones"
-        options={[
-          {
-            name: "Gabi",
-            lastName: "Hak",
-            id: 1,
-            Permisos: { nombre: "dev", rango: 7 },
+            group: "Información Personal",
+            fields: [
+              {
+                type: "text",
+                colSpan: 4,
+                props: {
+                  name: "nombre",
+                  label: "Nombre",
+                  rules: { required: "Obligatorio" },
+                },
+              },
+              {
+                type: "text",
+                colSpan: 4,
+                props: {
+                  name: "apellido",
+                  label: "Apellido",
+                  rules: { required: "Obligatorio" },
+                },
+              },
+              {
+                type: "number",
+                colSpan: 4,
+                props: { name: "edad", label: "Edad" },
+              },
+            ],
           },
           {
-            name: "Ivan",
-            lastName: "Hakson",
-            id: 2,
-            Permisos: { nombre: "admin", rango: 9 },
+            group: "Cuenta y Contacto",
+            fields: [
+              {
+                type: "text",
+                colSpan: 12,
+                props: { name: "email", label: "Email" },
+              },
+              {
+                type: "multiselect",
+                colSpan: 12,
+                props: {
+                  name: "roles",
+                  label: "Roles",
+                  options: [
+                    { label: "Admin", value: 1 },
+                    { label: "User", value: 2 },
+                  ],
+                },
+              },
+            ],
           },
         ]}
-        optionLabel={(row) => `${row.name} ${row.lastName}`}
-        optionValue="id"
-        filter
-        filterBy="id,lastName,name,Permisos.nombre,Permisos.rango"
+        footer={
+          <>
+            <MedinttButton label="Cancelar" severity="secondary" text />
+            <MedinttButton label="Guardar Usuario" type="submit" />
+          </>
+        }
       />
-
-      <MedinttDropdown
-        control={control}
-        name="testVirtual"
-        label="Prueba de Rendimiento (10k items)"
-        options={milItems}
-        optionLabel="name"
-        optionValue="id"
-        filter
-      />
-
-      <MedinttInputNumber
-        control={control}
-        name="peso"
-        label="Peso (kg)"
-        placeholder="0.000"
-        mode="decimal"
-        // rules={{ required: "El peso es obligatorio" }}
-      />
-
-      <MedinttCalendar
-        name="fecha"
-        control={control}
-        label="Fecha"
-        viewMode="date"
-      />
-
-      <MedinttMultiSelect
-        control={control}
-        name="roles"
-        label="Asignar Roles"
-        placeholder="Seleccione roles..."
-        options={[
-          { Role: { id: 1, name: "Admin", code: "ADM" } },
-          { Role: { id: 2, name: "User", code: "USR" } },
-          { Role: { id: 3, name: "Dev", code: "DEV" } },
-          { Role: { id: 4, name: "Sec", code: "SEC" } },
-        ]}
-        optionLabel="Role.name"
-        optionValue="Role.id"
-        filter
-        filterBy="Role.name,Role.code"
-        display="chip"
-      />
-
-      <MedinttChips
-        control={control}
-        name="tags"
-        label="Etiquetas"
-        placeholder="Escribe y presiona Enter..."
-        separator=","
-        max={5}
-      />
-
-      <MedinttInputTextArea
-        control={control}
-        name="observaciones"
-        label="Observaciones Clínicas"
-        placeholder="Ingrese detalles del paciente..."
-        rows={3}
-        autoResize
-      />
-
-      <MedinttRadioButton
-        control={control}
-        name="genero"
-        label="Género"
-        options={[
-          { label: "Masculino", value: "M" },
-          { label: "Femenino", value: "F" },
-          { label: "Otro", value: "X" },
-        ]}
-        layout="horizontal"
-      />
-
-      <MedinttButton label="Guardar" type="submit" />
-    </form>
+    </div>
   );
 }

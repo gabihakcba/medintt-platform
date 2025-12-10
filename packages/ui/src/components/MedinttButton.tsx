@@ -1,11 +1,8 @@
 "use client";
 
-import { Button, ButtonProps } from "primereact/button";
+import { Button } from "primereact/button";
 import { twMerge } from "tailwind-merge";
-
-export interface MedinttButtonProps extends ButtonProps {
-  tooltip?: string;
-}
+import { MedinttButtonProps } from "../types/form";
 
 export const MedinttButton = ({
   size = "small",

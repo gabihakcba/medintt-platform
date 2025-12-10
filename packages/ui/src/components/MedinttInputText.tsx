@@ -1,24 +1,9 @@
 "use client";
 
-import { InputText, InputTextProps } from "primereact/inputtext";
-import {
-  Control,
-  Controller,
-  FieldValues,
-  Path,
-  RegisterOptions,
-} from "react-hook-form";
+import { InputText } from "primereact/inputtext";
+import { Controller, FieldValues } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-
-interface MedinttInputProps<T extends FieldValues>
-  extends Omit<InputTextProps, "name"> {
-  name: Path<T>;
-  control: Control<T>;
-  autoComplete?: "on" | "off";
-  label?: string;
-  rules?: RegisterOptions<T, Path<T>>;
-  className?: string;
-}
+import { MedinttInputTextProps } from "../types/form";
 
 export const MedinttInputText = <T extends FieldValues>({
   name,
@@ -28,7 +13,7 @@ export const MedinttInputText = <T extends FieldValues>({
   className,
   autoComplete = "off",
   ...props
-}: MedinttInputProps<T>) => {
+}: MedinttInputTextProps<T>) => {
   return (
     <Controller
       name={name}

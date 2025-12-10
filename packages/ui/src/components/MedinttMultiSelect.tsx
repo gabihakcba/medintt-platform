@@ -1,43 +1,12 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { MultiSelect, MultiSelectProps } from "primereact/multiselect";
-import {
-  Control,
-  Controller,
-  FieldValues,
-  Path,
-  RegisterOptions,
-} from "react-hook-form";
+import { useMemo } from "react";
+import { MultiSelect } from "primereact/multiselect";
+import { Controller, FieldValues } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 
 import { resolveItemData } from "../utils/resolve";
-
-type OptionSelector = string | ((item: any) => any);
-
-interface MedinttMultiSelectProps<T extends FieldValues>
-  extends Omit<
-    MultiSelectProps,
-    | "name"
-    | "value"
-    | "onChange"
-    | "loading"
-    | "optionLabel"
-    | "optionValue"
-    | "filterBy"
-  > {
-  name: Path<T>;
-  control: Control<T>;
-  label?: string;
-  rules?: RegisterOptions<T, Path<T>>;
-  loading?: boolean;
-
-  optionLabel?: OptionSelector;
-  optionValue?: OptionSelector;
-
-  filter?: boolean;
-  filterBy?: string; // Ej: "name", "User.name", "name,lastname"
-}
+import { MedinttMultiSelectProps } from "../types/form";
 
 export const MedinttMultiSelect = <T extends FieldValues>({
   name,
@@ -53,23 +22,20 @@ export const MedinttMultiSelect = <T extends FieldValues>({
   filter,
   filterBy,
   virtualScrollerOptions,
-  maxSelectedLabels = 3, // Default de UX: mostrar hasta 3, luego "N items seleccionados"
-  selectedItemsLabel = "{0} seleccionados", // Texto cuando se supera el máximo
+  maxSelectedLabels = 3,
+  selectedItemsLabel = "{0} seleccionados",
   ...props
 }: MedinttMultiSelectProps<T>) => {
-  
-  // 1. Normalización de opciones (Igual que en Dropdown)
   const processedOptions = useMemo(() => {
     if (!options || !Array.isArray(options)) return [];
 
     return options.map((item) => ({
       label: resolveItemData(item, optionLabel),
       value: resolveItemData(item, optionValue),
-      original: item, // Guardamos la data original para filtros profundos
+      original: item,
     }));
   }, [options, optionLabel, optionValue]);
 
-  // 2. Filtro inteligente (Redirige la búsqueda a 'original.')
   const resolvedFilterBy = useMemo(() => {
     if (!filterBy) return "label";
 
@@ -83,9 +49,8 @@ export const MedinttMultiSelect = <T extends FieldValues>({
       .join(",");
   }, [filterBy]);
 
-  // 3. Virtual Scroll por defecto
   const defaultVirtualScrollerOptions = {
-    itemSize: 50, // Altura estándar de item
+    itemSize: 50,
     ...virtualScrollerOptions,
   };
 
@@ -111,25 +76,19 @@ export const MedinttMultiSelect = <T extends FieldValues>({
 
           <MultiSelect
             id={field.name}
-            value={field.value || []} // Aseguramos array vacío si es null/undefined
+            value={field.value || []}
             onChange={(e) => field.onChange(e.value)}
             onBlur={field.onBlur}
-            
             options={processedOptions}
             optionLabel="label"
             optionValue="value"
-            
             filter={filter}
             filterBy={resolvedFilterBy}
             resetFilterOnHide
-            
             virtualScrollerOptions={defaultVirtualScrollerOptions}
-            
-            // Configuración visual extra para MultiSelect
             maxSelectedLabels={maxSelectedLabels}
             selectedItemsLabel={selectedItemsLabel}
-            display="chip" // O "comma". "chip" suele verse más moderno en dashboards
-            
+            display="chip"
             loading={loading}
             placeholder={placeholder}
             className={twMerge(

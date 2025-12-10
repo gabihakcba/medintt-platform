@@ -1,32 +1,11 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { RadioButton, RadioButtonProps } from "primereact/radiobutton";
-import {
-  Control,
-  Controller,
-  FieldValues,
-  Path,
-  RegisterOptions,
-} from "react-hook-form";
+import { useMemo } from "react";
+import { RadioButton } from "primereact/radiobutton";
+import { Controller, FieldValues } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 import { resolveItemData } from "../utils/resolve";
-
-type OptionSelector = string | ((item: any) => any);
-
-interface MedinttRadioButtonProps<T extends FieldValues>
-  extends Omit<RadioButtonProps, "name" | "value" | "onChange" | "checked"> {
-  name: Path<T>;
-  control: Control<T>;
-  label?: string;
-  rules?: RegisterOptions<T, Path<T>>;
-
-  options: any[];
-  optionLabel?: OptionSelector;
-  optionValue?: OptionSelector;
-
-  layout?: "horizontal" | "vertical";
-}
+import { MedinttRadioButtonProps } from "../types/form";
 
 export const MedinttRadioButton = <T extends FieldValues>({
   name,

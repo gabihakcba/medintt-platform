@@ -1,43 +1,16 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { Dropdown, DropdownProps } from "primereact/dropdown";
+import { useMemo } from "react";
+import { Dropdown } from "primereact/dropdown";
 import {
-  Control,
   Controller,
-  FieldValues,
-  Path,
-  RegisterOptions,
+  FieldValues
 } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 
 import { resolveItemData } from "../utils/resolve";
+import { MedinttDropdownProps } from "../types/form";
 
-type OptionSelector = string | ((item: any) => any);
-
-interface MedinttDropdownProps<T extends FieldValues>
-  extends Omit<
-    DropdownProps,
-    | "name"
-    | "value"
-    | "onChange"
-    | "loading"
-    | "optionLabel"
-    | "optionValue"
-    | "filterBy"
-  > {
-  name: Path<T>;
-  control: Control<T>;
-  label?: string;
-  rules?: RegisterOptions<T, Path<T>>;
-  loading?: boolean;
-
-  optionLabel?: OptionSelector;
-  optionValue?: OptionSelector;
-
-  filter?: boolean;
-  filterBy?: string; // Ej: "name", "User.name", "name,lastname"
-}
 
 export const MedinttDropdown = <T extends FieldValues>({
   name,

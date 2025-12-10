@@ -1,22 +1,9 @@
 "use client";
 
-import { InputNumber, InputNumberProps } from "primereact/inputnumber";
-import {
-  Control,
-  Controller,
-  FieldValues,
-  Path,
-  RegisterOptions,
-} from "react-hook-form";
+import { InputNumber } from "primereact/inputnumber";
+import { Controller, FieldValues } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-
-interface MedinttInputNumberProps<T extends FieldValues>
-  extends Omit<InputNumberProps, "name" | "value" | "onChange"> {
-  name: Path<T>;
-  control: Control<T>;
-  label?: string;
-  rules?: RegisterOptions<T, Path<T>>;
-}
+import { MedinttInputNumberProps } from "../types/form";
 
 export const MedinttInputNumber = <T extends FieldValues>({
   name,

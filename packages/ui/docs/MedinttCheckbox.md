@@ -73,7 +73,7 @@ const { control } = useForm({
 />;
 ```
 
-## sComportamiento Visual
+## Comportamiento Visual
 
 - **Alineación:** El componente renderiza un contenedor flex (`flex items-center`) para asegurar que la cajita del checkbox y el texto del `label` estén perfectamente alineados verticalmente.
 

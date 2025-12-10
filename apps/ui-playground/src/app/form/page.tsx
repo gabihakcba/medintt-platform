@@ -11,6 +11,7 @@ import {
   MedinttMultiSelect,
   MedinttChips,
   MedinttInputTextArea,
+  MedinttRadioButton,
 } from "@medintt/ui";
 import { parseLocalDateToISO } from "@medintt/utils";
 
@@ -30,6 +31,7 @@ type FormInputs = {
   roles: Array<{ Role: { id: number; name: string; code: string } }>;
   tags: string[];
   observaciones: string;
+  genero: { label: "Masculino" | "Femenino" | "Otro"; value: "M" | "F" | "X" };
 };
 
 export default function Page() {
@@ -189,6 +191,18 @@ export default function Page() {
         placeholder="Ingrese detalles del paciente..."
         rows={3}
         autoResize
+      />
+
+      <MedinttRadioButton
+        control={control}
+        name="genero"
+        label="Género"
+        options={[
+          { label: "Masculino", value: "M" },
+          { label: "Femenino", value: "F" },
+          { label: "Otro", value: "X" },
+        ]}
+        layout="horizontal"
       />
 
       <MedinttButton label="Guardar" type="submit" />

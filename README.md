@@ -1,135 +1,208 @@
-# Turborepo starter
+# MEDINTT - Monorepo
 
-This Turborepo starter is maintained by the Turborepo core team.
+Bienvenido al repositorio central de MEDINTT. Este proyecto utiliza una arquitectura de **Monorepo** para gestionar múltiples aplicaciones y paquetes compartidos en un solo lugar.
 
-## Using this example
+## ¿Qué es esto y por qué lo usamos?
 
-Run the following command:
+Un monorepo nos permite tener:
 
-```sh
-npx create-turbo@latest
+1. **Código Compartido:** Definir una interfaz de TypeScript (`User`) en un solo lugar y usarla tanto en el Backend (NestJS) como en el Frontend (Next.js). Si cambia, ambos se enteran.
+
+2. **UI Consistente:** Tener una librería de componentes (`ui`) que asegura que todos los paneles de administración se vean igual.
+
+3. **Atomic Commits:** Hacer cambios en el backend y el frontend en un solo commit/PR.
+
+## Estructura del Proyecto
+
+```plaintext
+.
+├── apps/                  # Aplicaciones ejecutables
+│   ├── web-admin/         # Panel Admin (Next.js)
+│   ├── web-landing/       # Sitio público (Next.js)
+│   └── api-core/          # Backend principal (NestJS)
+│
+├── packages/              # Librerías compartidas (No se ejecutan solas)
+│   ├── ui/                # Componentes React (PrimeReact wrappers)
+│   ├── types/             # Interfaces y Tipos TS compartidos (DTOs, Enums)
+│   ├── config/            # Configs de ESLint, TSConfig, Tailwind
+│   └── utils/             # Funciones helpers puras (formateo fechas, math)
+│
+├── package.json           # Root package.json (Workspaces config)
+├── turbo.json             # Pipeline de compilación
+└── pnpm-workspace.yaml    # Definición de workspaces
 ```
 
-## What's inside?
+## Guía de Desarrollo "How-To"
 
-This Turborepo includes the following packages/apps:
+### 1. Crear una Nueva Aplicación en `apps/`
 
-### Apps and Packages
+Si necesitas crear un nuevo dashboard o servicio.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+#### A. Nuevo Frontend (Next.js)
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+1. Ve a la carpeta de apps: `cd apps`
 
-### Utilities
+2. Ejecuta el creador: `npx create-next-app@latest mi-nueva-app --typescript`
 
-This Turborepo has some additional tools already setup for you:
+3. **Importante:** Entra al package.json de la nueva app y agrega las dependencias compartidas:
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```json
+"dependencies": {
+  "@medintt/ui": "workspace:*",
+  "@medintt/types": "workspace:*",
+  ...
+}
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+4. Ejecuta `pnpm install` en la raíz del monorepo.
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+5. **Configuración Next.js** (`next.config.js`): Para que Next.js pueda leer los archivos `.tsx` de la carpeta packages/ui (que están fuera de su carpeta), debes transpilarlos:
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```javascript
+const nextConfig = {
+  transpilePackages: ["@medintt/ui"],
+};
+module.exports = nextConfig;
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+#### B. Nuevo Backend (NestJS)
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+1. Ve a la carpeta de apps: `cd apps`
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+2. Ejecuta: `nest new microservicio-pagos`
 
-### Remote Caching
+3. Selecciona `pnpm` como gestor de paquetes.
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+4. Entra al `package.json` y vincula los tipos compartidos:
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+```json
+"dependencies": {
+  "@medintt/types": "workspace:*"
+}
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+5. Ejecuta `pnpm install` en la raíz.
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+---
 
+### 2. Crear un Nuevo Paquete en `packages/`
+
+Digamos que quieres crear un paquete para lógica de validaciones compartida (`@medintt/validations`).
+
+1. Crea la carpeta: `mkdir packages/validations`
+
+2. Inicializa: `cd packages/validations && pnpm init`
+
+3. Configura el `package.json`:
+
+- **Name:** Debe tener el scope de la empresa: `"name": "@medintt/validations"`
+
+- **Main/Types:** Indica dónde está el código fuente.
+
+```json
+{
+  "name": "@medintt/validations",
+  "version": "0.0.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint ."
+  }
+}
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+4. Crea tu código en `src/index.ts`.
+
+---
+
+### 3. Vincular y Exportar Código
+
+Esta es la parte más importante. **¿Cómo hago visible un archivo nuevo?**
+
+#### El patrón "Barrel File" (index.ts)
+
+Cada paquete en `packages/` debe tener un `index.ts` en su raíz (o en `src/`) que actúa como la puerta pública.
+
+**Ejemplo:** Creaste un componente `MedinttInputText.tsx` en `packages/ui/src/components/`.
+
+1. El archivo existe, pero nadie lo ve aún.
+2. Ve a `packages/ui/src/index.ts` y expórtalo:
+
+```ts
+// packages/ui/src/index.ts
+export * from "./components/MedinttInputText";
+export * from "./components/MedinttButton";
 ```
 
-## Useful Links
+3. Ahora, desde la **App**, puedes importarlo así:
 
-Learn more about the power of Turborepo:
+```tsx
+import { MedinttInputText } from "@medintt/ui";
+```
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+#### ¿Cómo refrescar los cambios?
+
+Al usar `workspaces`, simplemente guardando el archivo en `packages/ui`, la aplicación de Next.js (si está corriendo) debería detectar el cambio gracias al Hot Module Replacement (HMR), ya que `transpilePackages` le dice que observe esa carpeta.
+
+---
+
+### 4. Compilación y TypeScript (La duda del millón)
+
+> "Si el archivo es .ts, ¿cómo le digo al proyecto que primero lo compile?"
+
+En este monorepo usamos dos estrategias dependiendo de qué estemos consumiendo:
+
+#### A. Estrategia "Internal Packages" (Recomendada para UI y Types)
+
+No compilamos los paquetes a `.js` antes de usarlos en desarrollo.
+
+- **Next.js:** Usa `transpilePackages`. Next.js toma el código TypeScript crudo de `packages/ui` y lo compila "al vuelo" como si fuera parte de su propia carpeta `src`.
+
+- **NestJS:** Si importas interfaces de `@medintt/types` (que son solo TypeScript), `ts-node` o el compilador de Nest lo resuelven automáticamente porque el `package.json` del paquete apunta a `"main": "./src/index.ts"`.
+
+#### B. El flujo de Build (Producción)
+
+Cuando haces deploy, usamos **TurboRepo** para orquestar el orden. En el archivo `turbo.json` definimos la dependencia de tareas:
+
+```json
+{
+  "pipeline": {
+    "build": {
+      // "Asegúrate de haber construido las dependencias (^) antes de construir la app"
+      "dependsOn": ["^build"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
+
+Esto asegura que si algún paquete necesita un paso de compilación previo, se ejecute antes de que la App intente construirse.
+
+---
+
+### 5. Comandos Útiles (Cheatsheet)
+
+---
+
+### Resolución de Problemas Comunes
+
+#### 1. "Module not found: Can't resolve '@medintt/ui'"
+
+- ¿Agregaste la dependencia en el `package.json` de la app?
+
+- ¿Hiciste `pnpm install` en la raíz?
+
+- ¿Está el nombre correcto en el `package.json` dentro de la carpeta `packages/ui`?
+
+#### 2. "SyntaxError: Unexpected token..." en Next.js al importar UI
+
+- Te falta agregar el paquete en `transpilePackages` dentro de `next.config.js`. Next.js por defecto no compila cosas dentro de `node_modules` (donde viven los symlinks de workspaces), hay que forzarlo.
+
+3. **VS Code no autocompleta los tipos**
+
+- Abre la "Command Palette" (`Ctrl+Shift+P`) y ejecuta `TypeScript: Restart TS Server`.
+
+- Asegúrate de que el archivo nuevo esté exportado en el `index.ts` del paquete.

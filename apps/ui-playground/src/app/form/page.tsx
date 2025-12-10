@@ -3,8 +3,17 @@
 import { useForm } from "react-hook-form";
 import { MedinttForm, MedinttButton } from "@medintt/ui";
 
+type FormValues = {
+  nombre: string;
+  apellido: string;
+  edad: number | null;
+  email: string;
+  direccion: string;
+  roles: number[]; // O un tipo más específico si lo tienes, ej: number[]
+};
+
 export default function Page() {
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit } = useForm<FormValues>({
     defaultValues: {
       nombre: "",
       apellido: "",
@@ -15,7 +24,7 @@ export default function Page() {
     },
   });
 
-  const onSubmit = (data) => console.log(data);
+  const onSubmit = (data: FormValues) => console.log(data);
 
   return (
     <div className="min-w-screen flex justify-center items-center">

@@ -3,9 +3,10 @@
 import { MedinttSidebar } from "@medintt/ui";
 
 const items = [
-  { label: "Inicio", icon: "pi pi-home", url: '/' },
-  { label: "Botones", icon: "pi pi-stop", url: "botones" },
-  { label: "Form", icon: "pi pi-list", url: "form" },
+  { label: "Inicio", icon: "pi pi-home", url: "/" },
+  { label: "Botones", icon: "pi pi-stop", url: "/botones" },
+  { label: "Form", icon: "pi pi-list", url: "/form" },
+  { label: "Tabla", icon: "pi pi-table", url: "/tabla" },
 ];
 
 export default function Sidebar() {

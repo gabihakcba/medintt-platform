@@ -14,7 +14,7 @@ interface MedinttCheckboxProps<T extends FieldValues>
   extends Omit<CheckboxProps, "name" | "checked" | "value"> {
   name: Path<T>;
   control: Control<T>;
-  label?: string; // El texto que va al lado del checkbox
+  label?: string;
   rules?: RegisterOptions<T, Path<T>>;
 }
 
@@ -34,16 +34,15 @@ export const MedinttCheckbox = <T extends FieldValues>({
       rules={rules}
       render={({ field, fieldState }) => (
         <div className={twMerge("flex flex-col gap-1", className)}>
-          {/* Contenedor Fila: Checkbox + Label */}
           <div className="flex items-center gap-2">
             <Checkbox
-              inputId={field.name} // Importante para vincular con el label
-              onChange={(e) => field.onChange(e.checked)} // Mapeamos e.checked
-              checked={field.value || false} // Mapeamos value a checked (default false)
+              inputId={field.name}
+              onChange={(e) => field.onChange(e.checked)}
+              checked={field.value || false}
               onBlur={field.onBlur}
               disabled={disabled}
               className={twMerge(
-                fieldState.invalid && "p-invalid" // Clase de error nativa
+                fieldState.invalid && "p-invalid"
               )}
               {...props}
             />
@@ -61,8 +60,6 @@ export const MedinttCheckbox = <T extends FieldValues>({
               </label>
             )}
           </div>
-
-          {/* Mensaje de error debajo */}
           {fieldState.error && (
             <small className="text-red-500 text-xs ml-1">
               {fieldState.error.message}

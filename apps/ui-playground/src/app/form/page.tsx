@@ -10,6 +10,7 @@ import {
   MedinttCalendar,
   MedinttMultiSelect,
   MedinttChips,
+  MedinttInputTextArea,
 } from "@medintt/ui";
 import { parseLocalDateToISO } from "@medintt/utils";
 
@@ -27,7 +28,8 @@ type FormInputs = {
     code: string;
   }>;
   roles: Array<{ Role: { id: number; name: string; code: string } }>;
-  tags: string[]
+  tags: string[];
+  observaciones: string;
 };
 
 export default function Page() {
@@ -176,8 +178,17 @@ export default function Page() {
         name="tags"
         label="Etiquetas"
         placeholder="Escribe y presiona Enter..."
-        separator="," // Permite crear tags con coma
-        max={5} // Máximo 5 etiquetas
+        separator=","
+        max={5}
+      />
+
+      <MedinttInputTextArea
+        control={control}
+        name="observaciones"
+        label="Observaciones Clínicas"
+        placeholder="Ingrese detalles del paciente..."
+        rows={3}
+        autoResize
       />
 
       <MedinttButton label="Guardar" type="submit" />

@@ -1,6 +1,7 @@
 "use client";
 
-import { Calendar, CalendarProps } from "primereact/calendar";
+import React from "react";
+import { InputTextarea, InputTextareaProps } from "primereact/inputtextarea";
 import {
   Control,
   Controller,
@@ -10,48 +11,25 @@ import {
 } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 
-import { parseToJsDate, toIsoString } from "@medintt/utils/date"; 
-
-type CalendarViewMode = "date" | "month" | "year";
-
-interface MedinttCalendarProps<T extends FieldValues>
-  extends Omit<CalendarProps, "name" | "value" | "onChange" | "view"> {
+interface MedinttInputTextAreaProps<T extends FieldValues>
+  extends Omit<InputTextareaProps, "name" | "value" | "onChange"> {
   name: Path<T>;
   control: Control<T>;
   label?: string;
   rules?: RegisterOptions<T, Path<T>>;
-  viewMode?: CalendarViewMode;
 }
 
-export const MedinttCalendar = <T extends FieldValues>({
+export const MedinttInputTextArea = <T extends FieldValues>({
   name,
   control,
   label,
   rules,
   className,
-  viewMode = "date",
-  dateFormat, 
+  rows = 5,
+  autoResize = false,
   placeholder,
   ...props
-}: MedinttCalendarProps<T>) => {
-
-  // PrimeReact usa una sintaxis propia para dateFormat (no es 100% igual a moment)
-  // date: dd/mm/yy
-  // month: mm/yy
-  // year: yy
-  const getDateFormat = () => {
-    if (dateFormat) return dateFormat;
-    
-    switch (viewMode) {
-      case "month":
-        return "mm/yy";
-      case "year":
-        return "yy";
-      default:
-        return "dd/mm/yy"; 
-    }
-  };
-
+}: MedinttInputTextAreaProps<T>) => {
   return (
     <Controller
       name={name}
@@ -72,27 +50,22 @@ export const MedinttCalendar = <T extends FieldValues>({
             </label>
           )}
 
-          <Calendar
+          <InputTextarea
             id={field.name}
-            
-            value={parseToJsDate(field.value)}
-            
-            onChange={(e) => field.onChange(toIsoString(e.value as Date))}
-            
+            value={field.value || ""}
+            onChange={(e) => field.onChange(e.target.value)}
             onBlur={field.onBlur}
-            view={viewMode}
-            dateFormat={getDateFormat()}
-            showIcon
+            
+            rows={rows}
+            autoResize={autoResize}
             placeholder={placeholder}
+            
             className={twMerge(
               "w-full",
-              fieldState.invalid && "p-invalid"
-            )}
-            inputClassName={twMerge(
-              "w-full",
               fieldState.invalid && 
-              "border-red-500 ring-1 ring-red-500 focus:ring-red-500 focus:border-red-500"
+              "p-invalid border-red-500 ring-1 ring-red-500 focus:ring-red-500 focus:border-red-500"
             )}
+            
             {...props}
           />
 

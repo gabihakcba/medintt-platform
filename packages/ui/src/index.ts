@@ -9,3 +9,4 @@ export * from './components/MedinttInputNumber';
 export * from './components/MedinttCalendar';
 export * from './components/MedinttMultiSelect';
 export * from './components/MedinttChips';
+export * from './components/MedinttInputTextArea';

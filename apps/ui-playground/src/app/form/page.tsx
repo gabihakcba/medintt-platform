@@ -9,6 +9,7 @@ import {
   MedinttInputNumber,
   MedinttCalendar,
   MedinttMultiSelect,
+  MedinttChips,
 } from "@medintt/ui";
 import { parseLocalDateToISO } from "@medintt/utils";
 
@@ -26,6 +27,7 @@ type FormInputs = {
     code: string;
   }>;
   roles: Array<{ Role: { id: number; name: string; code: string } }>;
+  tags: string[]
 };
 
 export default function Page() {
@@ -167,6 +169,15 @@ export default function Page() {
         filter
         filterBy="Role.name,Role.code"
         display="chip"
+      />
+
+      <MedinttChips
+        control={control}
+        name="tags"
+        label="Etiquetas"
+        placeholder="Escribe y presiona Enter..."
+        separator="," // Permite crear tags con coma
+        max={5} // Máximo 5 etiquetas
       />
 
       <MedinttButton label="Guardar" type="submit" />

@@ -68,3 +68,9 @@ import { MedinttButton } from "@medintt/ui";
   className="border-none hover:bg-red-50" // Clases Tailwind extra
 />
 ```
+
+## Dependencias
+
+- `primereact`
+
+- `tailwindcss`

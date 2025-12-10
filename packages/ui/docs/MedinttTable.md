@@ -60,3 +60,11 @@ Wrapper avanzado de `DataTable` de PrimeReact que incluye:
   showGridlines
 />
 ```
+
+## Dependencias
+
+- `primereact`
+
+- `primeicons`
+
+- `tailwindcss`

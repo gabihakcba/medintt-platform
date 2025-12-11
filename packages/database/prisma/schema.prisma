@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../node_modules/@prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- USUARIOS & AUTH ---
+
+model User {
+  id       String  @id @default(uuid())
+  username String  @unique
+  email    String  @unique
+  password String // Hash
+  isActive Boolean @default(true)
+
+  isSuperAdmin Boolean @default(false)
+
+  memberships Member[]
+
+  logs Log[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// --- PROYECTOS ---
+
+model Project {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean @default(true)
+
+  members Member[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("projects")
+}
+
+// --- ROLES & PERMISOS (RBAC) ---
+
+model Member {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, projectId])
+  @@map("members")
+}
+
+model Role {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+
+  permissions RolePermission[]
+  members     Member[]
+
+  @@unique([name])
+  @@map("roles")
+}
+
+model Permission {
+  id       String @id @default(uuid())
+  resource String
+  action   String
+
+  roles RolePermission[]
+
+  @@unique([resource, action])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// --- AUDITORÍA ---
+
+model Log {
+  id String @id @default(uuid())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  action     String
+  resource   String
+  resourceId String?
+
+  preMod  Json?
+  postMod Json?
+  meta    Json?
+
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}

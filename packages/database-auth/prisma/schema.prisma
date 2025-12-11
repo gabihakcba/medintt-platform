@@ -11,17 +11,20 @@ datasource db {
 // --- USUARIOS & AUTH ---
 
 model User {
-  id       String  @id @default(uuid())
-  username String  @unique
-  email    String  @unique
-  password String // Hash
-  isActive Boolean @default(true)
+  id String @id @default(uuid())
+
+  username String @unique
+  email    String @unique
+  password String
 
   name     String
   lastName String
   dni      String @unique
 
+  isActive Boolean @default(true)
+
   isSuperAdmin Boolean @default(false)
+  hashedRefreshToken String?
 
   memberships Member[]
 

@@ -17,6 +17,10 @@ model User {
   password String // Hash
   isActive Boolean @default(true)
 
+  name     String
+  lastName String
+  dni      String @unique
+
   isSuperAdmin Boolean @default(false)
 
   memberships Member[]

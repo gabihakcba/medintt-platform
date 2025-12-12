@@ -14,10 +14,11 @@ import { ConfigService } from '@nestjs/config';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { MailService } from '@medintt/mail';
 import { ResetPasswordDto } from './dto/resset-paswwrod.dto';
-import { JwtPayload } from './types/jwt-payload.type';
+import { JwtPayload, PermissionsPayload } from './types/jwt-payload.type';
 import { UserService } from 'src/user/user.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { TwoFactorAuthService } from './two-factor-auth.service';
+import { Prisma } from '@medintt/database-auth';
 
 @Injectable()
 export class AuthService {
@@ -101,8 +102,16 @@ export class AuthService {
       }
     }
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const permissionsPayload = await this.getPermissions(user.id);
+
+    const tokens = await this.getTokens(
+      user.id,
+      user.email,
+      permissionsPayload,
+    );
+
     await this.updateRtHash(user.id, tokens.refresh_token);
+
     return tokens;
   }
 
@@ -125,7 +134,14 @@ export class AuthService {
     const rtMatches = await argon2.verify(user.hashedRefreshToken, rt);
     if (!rtMatches) throw new ForbiddenException('Acceso Denegado');
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const permissionsPayload = await this.getPermissions(user.id);
+
+    const tokens = await this.getTokens(
+      user.id,
+      user.email,
+      permissionsPayload,
+    );
+
     await this.updateRtHash(user.id, tokens.refresh_token);
 
     return tokens;
@@ -246,6 +262,36 @@ export class AuthService {
 
   // --- HELPERS PRIVADOS ---
 
+  async getPermissions(userId: string): Promise<PermissionsPayload> {
+    type MemberWithContext = Prisma.MemberGetPayload<{
+      include: {
+        project: true;
+        role: true;
+        organization: true;
+      };
+    }>;
+
+    const members: MemberWithContext[] = await this.prisma.member.findMany({
+      where: { userId },
+      include: {
+        project: true,
+        role: true,
+        organization: true,
+      },
+    });
+
+    const permissionsPayload = {};
+
+    members.forEach((member) => {
+      permissionsPayload[member.projectId] = {
+        role: member.role?.name,
+        organizationId: member.organizationId as string,
+      };
+    });
+
+    return permissionsPayload;
+  }
+
   async updateRtHash(userId: string, rt: string | null) {
     let hash = rt;
     if (rt) {
@@ -257,8 +303,12 @@ export class AuthService {
     });
   }
 
-  async getTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
+  async getTokens(
+    userId: string,
+    email: string,
+    permissionsPayload: PermissionsPayload,
+  ) {
+    const payload = { sub: userId, email, permissions: permissionsPayload };
 
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(payload, {

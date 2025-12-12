@@ -9,7 +9,8 @@ import { MedinttMailModule } from '@medintt/mail';
 import { UserModule } from './user/user.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { MedinttThrottlerGuard } from './common/throttler-behind-proxy.guard';
+import { MedinttThrottlerGuard } from './common/guards/throttler-behind-proxy.guard';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { MedinttThrottlerGuard } from './common/throttler-behind-proxy.guard';
         limit: 5,
       },
     ]),
+    AdminModule,
     PrismaModule,
     HealthModule,
     AuthModule,

@@ -116,7 +116,7 @@ export class AuthController {
     const isCodeValid =
       this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         code,
-        user?.twoFactorSecret as string,
+        user?.twoFactorSecret,
       );
 
     if (!isCodeValid) {

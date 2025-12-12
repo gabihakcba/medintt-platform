@@ -7,6 +7,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { MedinttMailModule } from '@medintt/mail';
 import { UserModule } from './user/user.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { MedinttThrottlerGuard } from './common/throttler-behind-proxy.guard';
 
 @Module({
   imports: [
@@ -26,12 +29,25 @@ import { UserModule } from './user/user.module';
         senderEmail: config.get('MAIL_FROM') ?? 'no-reply@medintt.com',
       }),
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 60000,
+        limit: 5,
+      },
+    ]),
     PrismaModule,
     HealthModule,
     AuthModule,
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: MedinttThrottlerGuard,
+    },
+    AppService,
+  ],
 })
 export class AppModule {}

@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/@prisma/client"
+  // output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -70,10 +70,23 @@ model Member {
   roleId String
   role   Role   @relation(fields: [roleId], references: [id])
 
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
   createdAt DateTime @default(now())
 
   @@unique([userId, projectId])
   @@map("members")
+}
+
+model Organization {
+  id   String  @id @default(uuid())
+  name String
+  cuit String?
+
+  members Member[]
+
+  @@map("organizations")
 }
 
 model Role {

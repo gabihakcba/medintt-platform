@@ -180,7 +180,7 @@ export class AuthService {
 
       return { message: 'Email confirmado exitosamente' };
     } catch (error) {
-      if (error?.name === 'TokenExpiredError') {
+      if (error instanceof Error && error.name === 'TokenExpiredError') {
         throw new BadRequestException('El token de confirmación ha expirado');
       }
       throw new BadRequestException('Token de confirmación inválido');

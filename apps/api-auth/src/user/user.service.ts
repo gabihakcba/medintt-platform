@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, User } from '@medintt/database-auth';
 import { RegisterDto } from 'src/auth/dto/register.dto';
@@ -19,10 +18,6 @@ export class UserService {
         isVerified: false,
       },
     });
-  }
-
-  findAll() {
-    return `This action returns all user`;
   }
 
   async findOneById(id: string) {
@@ -61,11 +56,21 @@ export class UserService {
     });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user ${JSON.stringify(updateUserDto)}`;
+  async setTwoFactorSecret(userId: string, secret: string) {
+    return await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorSecret: secret,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async turnOnTwoFactorAuthentication(userId: string) {
+    return await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isTwoFactorEnabled: true,
+      },
+    });
   }
 }

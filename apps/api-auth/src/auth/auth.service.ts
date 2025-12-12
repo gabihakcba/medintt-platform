@@ -17,6 +17,7 @@ import { ResetPasswordDto } from './dto/resset-paswwrod.dto';
 import { JwtPayload } from './types/jwt-payload.type';
 import { UserService } from 'src/user/user.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { TwoFactorAuthService } from './two-factor-auth.service';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,7 @@ export class AuthService {
     private config: ConfigService,
     private mailService: MailService,
     private usersService: UserService,
+    private twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -79,6 +81,25 @@ export class AuthService {
 
     const pwMatches = await argon2.verify(user.password, dto.password);
     if (!pwMatches) throw new UnauthorizedException('Credenciales inválidas');
+
+    if (user.isTwoFactorEnabled) {
+      if (!dto.twoFactorCode) {
+        throw new BadRequestException({
+          message: 'Se requiere código de autenticación de dos factores',
+          code: '2FA_REQUIRED',
+        });
+      }
+
+      const isCodeValid =
+        this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+          dto.twoFactorCode,
+          user.twoFactorSecret as string,
+        );
+
+      if (!isCodeValid) {
+        throw new UnauthorizedException('Código de autenticación 2FA inválido');
+      }
+    }
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRtHash(user.id, tokens.refresh_token);
@@ -213,6 +234,14 @@ export class AuthService {
       }
       throw new BadRequestException('Token de confirmación inválido');
     }
+  }
+
+  async turnOnTwoFactorAuthentication(userId: string) {
+    return await this.usersService.turnOnTwoFactorAuthentication(userId);
+  }
+
+  async getUserById(id: string) {
+    return await this.usersService.findOneById(id);
   }
 
   // --- HELPERS PRIVADOS ---

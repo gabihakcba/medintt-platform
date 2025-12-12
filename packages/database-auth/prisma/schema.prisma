@@ -24,10 +24,13 @@ model User {
   isVerified Boolean @default(false)
   isActive   Boolean @default(true)
 
-  isSuperAdmin       Boolean @default(false)
+  isTwoFactorEnabled Boolean @default(false)
+  twoFactorSecret    String?
+
   hashedRefreshToken String?
 
-  memberships Member[]
+  isSuperAdmin Boolean  @default(false)
+  memberships  Member[]
 
   logs Log[]
 

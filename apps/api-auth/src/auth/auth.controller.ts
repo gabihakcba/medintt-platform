@@ -10,6 +10,7 @@ import {
   BadRequestException,
   Patch,
   Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -22,10 +23,15 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/resset-paswwrod.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { Throttle } from '@nestjs/throttler';
+import { TwoFactorAuthService } from './two-factor-auth.service';
+import { VerifyTwoFactorDto } from './dto/verify-2fa.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly twoFactorAuthService: TwoFactorAuthService,
+  ) {}
 
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
@@ -82,5 +88,42 @@ export class AuthController {
       throw new BadRequestException('Token requerido');
     }
     return this.authService.confirmEmail(token);
+  }
+
+  @UseGuards(AtGuard)
+  @Post('2fa/generate')
+  async register2fa(@Request() req: { user: JwtPayload }) {
+    const { qrCodeUrl, secret } =
+      await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(
+        req.user.email,
+        req.user.sub,
+      );
+    return { qrCodeUrl, secret };
+  }
+
+  @UseGuards(AtGuard)
+  @Post('2fa/turn-on')
+  async turnOnTwoFactorAuthentication(
+    @Request() req: { user: JwtPayload },
+    @Body() { code }: VerifyTwoFactorDto,
+  ) {
+    const user = await this.authService.getUserById(req.user.sub);
+
+    if (!user?.twoFactorSecret) {
+      throw new BadRequestException('Primero debes generar el código QR');
+    }
+
+    const isCodeValid =
+      this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+        code,
+        user?.twoFactorSecret as string,
+      );
+
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Código de autenticación inválido');
+    }
+    await this.authService.turnOnTwoFactorAuthentication(req.user.sub);
+
+    return { message: 'Autenticación de dos factores activada correctamente' };
   }
 }

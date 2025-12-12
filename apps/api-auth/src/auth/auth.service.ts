@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
@@ -15,6 +16,7 @@ import { MailService } from '@medintt/mail';
 import { ResetPasswordDto } from './dto/resset-paswwrod.dto';
 import { JwtPayload } from './types/jwt-payload.type';
 import { UserService } from 'src/user/user.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -156,6 +158,32 @@ export class AuthService {
       console.log(error);
       throw new BadRequestException('Token inválido o expirado');
     }
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+    const { oldPassword, newPassword } = changePasswordDto;
+
+    const user = await this.usersService.findOneById(userId);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    if (!user.password) {
+      throw new BadRequestException(
+        'Este usuario no tiene contraseña configurada (Login Social)',
+      );
+    }
+
+    const isMatch = await argon2.verify(user.password, oldPassword);
+    if (!isMatch) {
+      throw new BadRequestException('La contraseña actual es incorrecta');
+    }
+
+    const hashedPassword = await argon2.hash(newPassword);
+
+    await this.usersService.updatePassword(userId, hashedPassword);
+
+    return { message: 'Contraseña actualizada correctamente' };
   }
 
   async confirmEmail(token: string) {

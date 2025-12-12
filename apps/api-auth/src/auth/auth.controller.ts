@@ -8,16 +8,19 @@ import {
   Get,
   Query,
   BadRequestException,
+  Patch,
+  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import type { JwtPayloadWithRt } from './types/jwt-payload.type';
+import type { JwtPayload, JwtPayloadWithRt } from './types/jwt-payload.type';
 import { GetUser } from './decorators/get-user.decorator';
 import { AtGuard } from './guards/at.guard';
 import { RtGuard } from './guards/rt.guard';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/resset-paswwrod.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -46,6 +49,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   refreshTokens(@GetUser() user: JwtPayloadWithRt) {
     return this.authService.refreshTokens(user.sub, user.refreshToken);
+  }
+
+  @UseGuards(AtGuard)
+  @Patch('change-password')
+  async changePassword(
+    @Request() req: { user: JwtPayload },
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    const userId = req.user.sub;
+    return this.authService.changePassword(userId, changePasswordDto);
   }
 
   @Post('forgot-password')

@@ -13,7 +13,7 @@ export class UserService {
     ctx?: Prisma.TransactionClient,
   ): Promise<User> {
     const client = ctx || this.prisma;
-    return client.user.create({
+    return await client.user.create({
       data: {
         ...data,
         isVerified: false,
@@ -25,8 +25,8 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOneById(id: string) {
+    return await this.prisma.user.findUnique({ where: { id } });
   }
 
   async findOneByEmail(
@@ -41,16 +41,23 @@ export class UserService {
   }
 
   async markEmailAsVerified(
-    id: string, // O number, según tu ID
+    id: string,
     ctx?: Prisma.TransactionClient,
   ): Promise<User> {
     const client = ctx || this.prisma;
 
-    return client.user.update({
+    return await client.user.update({
       where: { id },
       data: {
         isVerified: true,
       },
+    });
+  }
+
+  async updatePassword(id: string, newPasswordHash: string) {
+    return await this.prisma.user.update({
+      where: { id },
+      data: { password: newPasswordHash },
     });
   }
 

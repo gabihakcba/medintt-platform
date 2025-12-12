@@ -25,7 +25,14 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { Throttle } from '@nestjs/throttler';
 import { TwoFactorAuthService } from './two-factor-auth.service';
 import { VerifyTwoFactorDto } from './dto/verify-2fa.dto';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Autenticación')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -33,11 +40,22 @@ export class AuthController {
     private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Crear usuario' })
+  @ApiResponse({
+    status: 200,
+    description: 'Creacion exitosa, devuelve el usuario.',
+  })
+  @ApiResponse({ status: 401, description: 'Credenciales inválidas.' })
+  @UseGuards(AtGuard)
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
+  @ApiOperation({ summary: 'Iniciar sesión' })
+  @ApiResponse({ status: 200, description: 'Login exitoso, devuelve tokens.' })
+  @ApiResponse({ status: 401, description: 'Credenciales inválidas.' })
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -59,6 +77,8 @@ export class AuthController {
     return this.authService.refreshTokens(user.sub, user.refreshToken);
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cambiar contraseña' })
   @UseGuards(AtGuard)
   @Patch('change-password')
   async changePassword(

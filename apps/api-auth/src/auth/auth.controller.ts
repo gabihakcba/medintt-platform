@@ -5,6 +5,9 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Get,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -55,5 +58,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
+  }
+
+  @Get('confirm')
+  async confirm(@Query('token') token: string) {
+    if (!token) {
+      throw new BadRequestException('Token requerido');
+    }
+    return this.authService.confirmEmail(token);
   }
 }

@@ -21,9 +21,10 @@ model User {
   lastName String
   dni      String @unique
 
-  isActive Boolean @default(true)
+  isVerified Boolean @default(false)
+  isActive   Boolean @default(true)
 
-  isSuperAdmin Boolean @default(false)
+  isSuperAdmin       Boolean @default(false)
   hashedRefreshToken String?
 
   memberships Member[]

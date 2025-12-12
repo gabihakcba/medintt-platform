@@ -7,13 +7,14 @@ import {
 import { RegisterDto } from './dto/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon2 from 'argon2';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { MailService } from '@medintt/mail';
 import { ResetPasswordDto } from './dto/resset-paswwrod.dto';
 import { JwtPayload } from './types/jwt-payload.type';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private mailService: MailService,
+    private usersService: UserService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -48,9 +50,22 @@ export class AuthService {
       },
     });
 
-    const tokens = await this.getTokens(user.id, user.email);
-    await this.updateRtHash(user.id, tokens.refresh_token);
-    return tokens;
+    const token = this.jwtService.sign(
+      { sub: user.id, email: user.email },
+      {
+        secret: this.config.get('JWT_CONFIRM'),
+        expiresIn: this.config.get('JWT_CONFIRM_EXPIRATION'),
+      },
+    );
+
+    const url = `${this.config.getOrThrow('FRONTEND_URL_AUTH')}${this.config.getOrThrow('FRONTEND_PATH_CONFIRM')}?token=${token}`;
+    await this.mailService.sendUserConfirmation(user.email, url);
+
+    return {
+      message:
+        'Usuario registrado. Por favor revisa tu email para confirmar la cuenta.',
+      user,
+    };
   }
 
   async login(dto: LoginDto) {
@@ -107,7 +122,7 @@ export class AuthService {
       expiresIn: '15m',
     });
 
-    const url = `${this.config.getOrThrow('FRONTEND_URL')}/auth/reset-password?token=${token}`;
+    const url = `${this.config.getOrThrow('FRONTEND_URL_AUTH')}${this.config.getOrThrow('FRONTEND_PATH_RESET')}?token=${token}`;
 
     await this.mailService.sendPasswordReset(user.email, url);
 
@@ -140,6 +155,35 @@ export class AuthService {
     } catch (error) {
       console.log(error);
       throw new BadRequestException('Token inválido o expirado');
+    }
+  }
+
+  async confirmEmail(token: string) {
+    try {
+      const payload: JwtPayload = this.jwtService.verify(token, {
+        secret: this.config.getOrThrow('JWT_CONFIRM'),
+      } as JwtVerifyOptions);
+
+      const email = payload.email;
+
+      const user = await this.usersService.findOneByEmail(email);
+
+      if (!user) {
+        throw new BadRequestException('Usuario no encontrado');
+      }
+
+      if (user.isVerified) {
+        throw new BadRequestException('El correo ya ha sido verificado');
+      }
+
+      await this.usersService.markEmailAsVerified(user.id);
+
+      return { message: 'Email confirmado exitosamente' };
+    } catch (error) {
+      if (error?.name === 'TokenExpiredError') {
+        throw new BadRequestException('El token de confirmación ha expirado');
+      }
+      throw new BadRequestException('Token de confirmación inválido');
     }
   }
 

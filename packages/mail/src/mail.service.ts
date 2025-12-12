@@ -17,8 +17,7 @@ export class MailService {
 
   constructor(private mailerService: MailerService) {}
 
-  async sendUserConfirmation(email: string, token: string) {
-    const url = `https://medintt.com/auth/confirm?token=${token}`;
+  async sendUserConfirmation(email: string, url: string) {
 
     await this.mailerService.sendMail({
       to: email,

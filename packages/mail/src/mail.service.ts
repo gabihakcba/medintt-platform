@@ -23,24 +23,32 @@ export class MailService {
     await this.mailerService.sendMail({
       to: email,
       subject: "Bienvenido a MEDINTT - Confirma tu Email",
-      template: "./confirmation", // Nombre del archivo .hbs
-      context: {
-        name: email,
-        url,
-      },
+      html: `
+        <h1>Bienvenido a MEDINTT</h1>
+        <p>Hola ${email},</p>
+        <p>Gracias por registrarte. Por favor confirma tu correo electrónico haciendo clic en el siguiente enlace:</p>
+        <p>
+            <a href="${url}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Confirmar Email</a>
+        </p>
+        <p>Si no funciona el botón, copia este enlace: ${url}</p>
+      `,
     });
   }
 
-  async sendPasswordReset(email: string, token: string) {
-    const url = `https://medintt.com/auth/reset-password?token=${token}`;
-
+  async sendPasswordReset(email: string, url: string) {
     await this.mailerService.sendMail({
       to: email,
       subject: "Recuperación de Contraseña",
-      template: "./reset-password",
-      context: {
-        url,
-      },
+      html: `
+        <h1>Recuperación de contraseña</h1>
+        <p>Has solicitado restablecer tu contraseña en MEDINTT.</p>
+        <p>Haz clic en el siguiente enlace para continuar:</p>
+        <p>
+            <a href="${url}">Restablecer contraseña</a>
+        </p>
+        <br/>
+        <p>Si no fuiste tú, ignora este correo.</p>
+      `,
     });
   }
 
@@ -57,12 +65,16 @@ export class MailService {
     const delayMs = delayMinutes * 60 * 1000;
 
     const batches = this.chunkArray(emails, batchSize);
-    const results = [];
+    const results: Array<{
+      batchIndex: number;
+      ok: boolean;
+      id?: string;
+      error?: string;
+    }> = [];
 
     this.logger.log(
       `Iniciando envío masivo a ${emails.length} destinatarios en ${batches.length} lotes.`
     );
-
 
     for (const [index, batch] of batches.entries()) {
       try {

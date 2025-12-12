@@ -13,6 +13,8 @@ import type { JwtPayloadWithRt } from './types/jwt-payload.type';
 import { GetUser } from './decorators/get-user.decorator';
 import { AtGuard } from './guards/at.guard';
 import { RtGuard } from './guards/rt.guard';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/resset-paswwrod.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -41,5 +43,17 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   refreshTokens(@GetUser() user: JwtPayloadWithRt) {
     return this.authService.refreshTokens(user.sub, user.refreshToken);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 }

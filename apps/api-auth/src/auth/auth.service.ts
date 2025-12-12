@@ -10,6 +10,10 @@ import * as argon2 from 'argon2';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { MailService } from '@medintt/mail';
+import { ResetPasswordDto } from './dto/resset-paswwrod.dto';
+import { JwtPayload } from './types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +21,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
+    private mailService: MailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -88,10 +93,63 @@ export class AuthService {
     return tokens;
   }
 
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    // True para no revelear existencia de mails
+    if (!user) return true;
+
+    const payload = { sub: user.id, email: user.email };
+    const token = await this.jwtService.signAsync(payload, {
+      secret: this.config.getOrThrow('JWT_RESET_SECRET'),
+      expiresIn: '15m',
+    });
+
+    const url = `${this.config.getOrThrow('FRONTEND_URL')}/auth/reset-password?token=${token}`;
+
+    await this.mailService.sendPasswordReset(user.email, url);
+
+    return { message: 'Correo enviado si el usuario existe' };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    try {
+      const key: string = this.config.getOrThrow('JWT_RESET_SECRET');
+      const payload: JwtPayload = await this.jwtService.verifyAsync(dto.token, {
+        secret: key,
+      });
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+      });
+
+      if (!user) throw new BadRequestException('Usuario inválido');
+
+      const hash = await argon2.hash(dto.newPassword);
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { password: hash },
+      });
+
+      await this.updateRtHash(user.id, null);
+
+      return { message: 'Contraseña actualizada correctamente' };
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException('Token inválido o expirado');
+    }
+  }
+
   // --- HELPERS PRIVADOS ---
 
-  async updateRtHash(userId: string, rt: string) {
-    const hash = await argon2.hash(rt);
+  async updateRtHash(userId: string, rt: string | null) {
+    let hash = rt;
+    if (rt) {
+      hash = await argon2.hash(rt);
+    }
     await this.prisma.user.update({
       where: { id: userId },
       data: { hashedRefreshToken: hash },

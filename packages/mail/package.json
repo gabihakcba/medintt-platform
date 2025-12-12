@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "prebuild": "rimraf dist",
     "build": "tsc"
   },
   "keywords": [],
@@ -17,7 +18,8 @@
   "dependencies": {
     "@nestjs-modules/mailer": "2.0.2",
     "handlebars": "4.7.8",
-    "nodemailer": "7.0.11"
+    "nodemailer": "7.0.11",
+    "rimraf": "^5.0.0"
   },
   "peerDependencies": {
     "@nestjs/common": "10.0.0",

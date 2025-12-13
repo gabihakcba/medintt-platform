@@ -8,9 +8,11 @@ import { AuthModule } from './auth/auth.module';
 import { MedinttMailModule } from '@medintt/mail';
 import { UserModule } from './user/user.module';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { MedinttThrottlerGuard } from './common/guards/throttler-behind-proxy.guard';
 import { AdminModule } from './admin/admin.module';
+import { AuditModule } from './audit/audit.module';
+import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
   imports: [
@@ -42,6 +44,7 @@ import { AdminModule } from './admin/admin.module';
     HealthModule,
     AuthModule,
     UserModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [
@@ -49,6 +52,7 @@ import { AdminModule } from './admin/admin.module';
       provide: APP_GUARD,
       useClass: MedinttThrottlerGuard,
     },
+    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
     AppService,
   ],
 })

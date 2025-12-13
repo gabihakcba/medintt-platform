@@ -47,7 +47,7 @@ export class AuthController {
     description: 'Creacion exitosa, devuelve el usuario.',
   })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas.' })
-  @UseGuards(AtGuard)
+  // @UseGuards(AtGuard)
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);

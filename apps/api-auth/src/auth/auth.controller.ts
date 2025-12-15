@@ -46,6 +46,7 @@ export class AuthController {
     status: 201,
     description: 'Usuario creado exitosamente.',
   })
+  @UseGuards(AtGuard)
   @ApiResponse({ status: 400, description: 'Datos inválidos.' })
   @Post('register')
   register(@Body() registerDto: RegisterDto) {

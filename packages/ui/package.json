@@ -31,7 +31,7 @@
     "react-dom": "19.2.1",
     "react-hook-form": "7.68.0",
     "primeicons": "7.0.0",
-    "primereact": "10.8.0"
+    "primereact": "10.9.7"
   },
   "scripts": {
     "lint": "eslint .",

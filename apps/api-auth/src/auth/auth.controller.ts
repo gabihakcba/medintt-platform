@@ -30,6 +30,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiTags,
+  ApiQuery,
 } from '@nestjs/swagger';
 
 @ApiTags('Autenticación')
@@ -40,21 +41,19 @@ export class AuthController {
     private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Crear usuario' })
   @ApiResponse({
-    status: 200,
-    description: 'Creacion exitosa, devuelve el usuario.',
+    status: 201,
+    description: 'Usuario creado exitosamente.',
   })
-  @ApiResponse({ status: 401, description: 'Credenciales inválidas.' })
-  // @UseGuards(AtGuard)
+  @ApiResponse({ status: 400, description: 'Datos inválidos.' })
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
   @ApiOperation({ summary: 'Iniciar sesión' })
-  @ApiResponse({ status: 200, description: 'Login exitoso, devuelve tokens.' })
+  @ApiResponse({ status: 200, description: 'Inicio de sesión exitoso.' })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas.' })
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('login')
@@ -63,6 +62,9 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cerrar sesión' })
+  @ApiResponse({ status: 200, description: 'Sesión cerrada exitosamente.' })
   @UseGuards(AtGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
@@ -70,6 +72,13 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Refrescar tokens de acceso' })
+  @ApiResponse({ status: 200, description: 'Tokens refrescados exitosamente.' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de refresco inválido o expirado.',
+  })
   @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
@@ -79,6 +88,11 @@ export class AuthController {
 
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cambiar contraseña' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contraseña actualizada exitosamente.',
+  })
+  @ApiResponse({ status: 401, description: 'No autorizado / Token Inválido.' })
   @UseGuards(AtGuard)
   @Patch('change-password')
   async changePassword(
@@ -89,6 +103,11 @@ export class AuthController {
     return this.authService.changePassword(userId, changePasswordDto);
   }
 
+  @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })
+  @ApiResponse({
+    status: 200,
+    description: 'Correo de recuperación enviado exitosamente.',
+  })
   @Throttle({ default: { limit: 3, ttl: 3600000 } })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
@@ -96,12 +115,25 @@ export class AuthController {
     return this.authService.forgotPassword(dto);
   }
 
+  @ApiOperation({ summary: 'Restablecer contraseña' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contraseña restablecida exitosamente.',
+  })
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
   }
 
+  @ApiOperation({ summary: 'Confirmar correo electrónico' })
+  @ApiQuery({
+    name: 'token',
+    description: 'Token de confirmación recibido por correo',
+    required: true,
+  })
+  @ApiResponse({ status: 200, description: 'Correo confirmado exitosamente.' })
+  @ApiResponse({ status: 400, description: 'Token inválido o faltante.' })
   @Get('confirm')
   async confirm(@Query('token') token: string) {
     if (!token) {
@@ -110,6 +142,14 @@ export class AuthController {
     return this.authService.confirmEmail(token);
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Generar secreto para autenticación de dos factores (2FA)',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Secreto y código QR generados exitosamente.',
+  })
   @UseGuards(AtGuard)
   @Post('2fa/generate')
   async register2fa(@Request() req: { user: JwtPayload }) {
@@ -121,6 +161,13 @@ export class AuthController {
     return { qrCodeUrl, secret };
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Activar autenticación de dos factores' })
+  @ApiResponse({ status: 201, description: '2FA activado exitosamente.' })
+  @ApiResponse({
+    status: 400,
+    description: 'Código inválido o falta generar secreto.',
+  })
   @UseGuards(AtGuard)
   @Post('2fa/turn-on')
   async turnOnTwoFactorAuthentication(

@@ -1,13 +1,7 @@
-import { IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { ChangePasswordDto as SharedChangePasswordDto } from '@medintt/types-auth';
+import { OmitType } from '@nestjs/swagger';
 
-export class ChangePasswordDto {
-  @IsString()
-  @IsNotEmpty({ message: 'La contraseña actual es requerida' })
-  oldPassword: string;
-
-  @IsString()
-  @MinLength(6, {
-    message: 'La nueva contraseña debe tener al menos 6 caracteres',
-  })
-  newPassword: string;
-}
+export class ChangePasswordDto extends OmitType(
+  SharedChangePasswordDto,
+  [] as const,
+) {}

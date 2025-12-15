@@ -1,12 +1,7 @@
-import { IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { ResetPasswordDto as SharedResetPasswordDto } from '@medintt/types-auth';
+import { OmitType } from '@nestjs/swagger';
 
-export class ResetPasswordDto {
-  @IsNotEmpty()
-  @IsString()
-  token: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(6)
-  newPassword: string;
-}
+export class ResetPasswordDto extends OmitType(
+  SharedResetPasswordDto,
+  [] as const,
+) {}

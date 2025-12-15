@@ -1,2 +1,6 @@
 export * from "./auth/login.dto";
-// export * from './register.dto';
+export * from "./auth/register.dto";
+export * from "./auth/change-password.dto";
+export * from "./auth/forgot-password.dto";
+export * from "./auth/verify-2fa.dto";
+export * from "./auth/reset-password.dto";

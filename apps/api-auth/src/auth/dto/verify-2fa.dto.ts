@@ -1,8 +1,7 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { VerifyTwoFactorDto as SharedVerifyTwoFactorDto } from '@medintt/types-auth';
+import { OmitType } from '@nestjs/swagger';
 
-export class VerifyTwoFactorDto {
-  @IsString()
-  @IsNotEmpty()
-  @Length(6, 6, { message: 'El código debe tener 6 dígitos' })
-  code: string;
-}
+export class VerifyTwoFactorDto extends OmitType(
+  SharedVerifyTwoFactorDto,
+  [] as const,
+) {}

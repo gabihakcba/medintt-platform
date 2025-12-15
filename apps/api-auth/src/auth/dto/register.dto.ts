@@ -1,27 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength, MaxLength } from 'class-validator';
+import { RegisterDto as SharedRegisterDto } from '@medintt/types-auth';
+import { OmitType } from '@nestjs/swagger';
 
-export class RegisterDto {
-  @IsString()
-  @MinLength(4)
-  @MaxLength(20)
-  username: string;
-
-  @ApiProperty({ example: 'example@gmail.com' })
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
-  password: string;
-
-  @IsString()
-  name: string;
-
-  @IsString()
-  lastName: string;
-
-  @IsString()
-  @MinLength(7, { message: 'Debe tener la menos 7 caracteres' })
-  dni: string;
-}
+export class RegisterDto extends OmitType(SharedRegisterDto, [] as const) {}

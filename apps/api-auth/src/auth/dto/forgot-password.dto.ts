@@ -1,7 +1,7 @@
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { ForgotPasswordDto as SharedForgotPasswordDto } from '@medintt/types-auth';
+import { OmitType } from '@nestjs/swagger';
 
-export class ForgotPasswordDto {
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-}
+export class ForgotPasswordDto extends OmitType(
+  SharedForgotPasswordDto,
+  [] as const,
+) {}

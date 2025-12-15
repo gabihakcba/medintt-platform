@@ -93,7 +93,7 @@ export class AuthService {
 
       const isCodeValid =
         this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
-          dto.twoFactorCode,
+          dto.twoFactorCode as string,
           user.twoFactorSecret as string,
         );
 

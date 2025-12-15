@@ -23,6 +23,7 @@
   "dependencies": {
     "@medintt/database-auth": "workspace:*",
     "@medintt/mail": "workspace:*",
+    "@medintt/types-auth": "workspace:*",
     "@nestjs/axios": "4.0.1",
     "@nestjs/common": "10.0.0",
     "@nestjs/config": "4.0.2",

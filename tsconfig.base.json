@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@medintt/types-auth": ["packages/types/types-auth/src/index.ts"],
+      "@medintt/types-auth/*": ["packages/types/types-auth/src/*"]
+    }
+  }
+}

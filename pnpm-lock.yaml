@@ -36,6 +36,9 @@ importers:
       '@medintt/mail':
         specifier: workspace:*
         version: link:../../packages/mail
+      '@medintt/types-auth':
+        specifier: workspace:*
+        version: link:../../packages/types/types-auth
       '@nestjs/axios':
         specifier: 4.0.1
         version: 4.0.1(@nestjs/common@10.0.0(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.1.13)(rxjs@7.8.1))(axios@1.13.2)(rxjs@7.8.1)
@@ -288,6 +291,22 @@ importers:
       '@types/nodemailer':
         specifier: 7.0.4
         version: 7.0.4
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.2
+
+  packages/types/types-auth:
+    dependencies:
+      '@nestjs/swagger':
+        specifier: 7.4.0
+        version: 7.4.0(@nestjs/common@10.0.0(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.0.0(@nestjs/common@10.0.0(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.0.0)(reflect-metadata@0.1.13)(rxjs@7.8.1))(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.1.13)
+      class-transformer:
+        specifier: 0.5.1
+        version: 0.5.1
+      class-validator:
+        specifier: 0.14.3
+        version: 0.14.3
+    devDependencies:
       typescript:
         specifier: ^5.0.0
         version: 5.9.2

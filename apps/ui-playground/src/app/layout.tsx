@@ -3,7 +3,7 @@ import "./globals.css";
 import "primereact/resources/themes/lara-dark-teal/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
-import Sidebar from "@/components/Sidebar";
+import Sidebar from "../components/Sidebar";
 import { PrimeReactProvider } from "primereact/api";
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="es">
       <body className="antialiased bg-surface-card">
         <PrimeReactProvider>
-          <Sidebar/>
+          <Sidebar />
           {children}
         </PrimeReactProvider>
       </body>

@@ -1,11 +1,9 @@
 "use client";
 
-import React from "react";
 import { FieldValues, Control } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 import { Fieldset } from "primereact/fieldset";
 
-// ... (tus imports de componentes siguen igual)
 import { MedinttInputText } from "./MedinttInputText";
 import { MedinttInputNumber } from "./MedinttInputNumber";
 import { MedinttDropdown } from "./MedinttDropdown";

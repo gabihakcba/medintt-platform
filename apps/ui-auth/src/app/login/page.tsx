@@ -2,39 +2,67 @@
 
 import { MedinttButton, MedinttForm } from "@medintt/ui";
 import { ReactElement } from "react";
-import { useForm } from "react-hook-form";
+import { FieldValues, useForm } from "react-hook-form";
 import { Card } from "primereact/card";
+import { useLoginHook } from "@/hooks/login";
+import { LoginResponseDto, TYPE_LOGIN } from "@medintt/types-auth";
+import { AxiosError } from "axios";
 
-const sendParentMessage = (ok: boolean, data?: { user: object }) => {
+export const sendParentMessage = (
+  type: TYPE_LOGIN,
+  data?: {
+    user?: LoginResponseDto;
+    error?: AxiosError;
+  }
+) => {
   if (window.parent) {
-    let message = "MEDINTT_AUTH_SUCCESS";
-    if (!ok) {
-      message = "MEDINTT_AUTH_CANCELED";
-    }
-    window.parent.postMessage({ type: message, user: data?.user }, "*");
+    const message: {
+      type: TYPE_LOGIN;
+      error?: AxiosError;
+      user?: LoginResponseDto;
+    } = { type };
+    if (data?.error) message.error = data?.error;
+    console.log(message);
+    window.parent.postMessage(message, "*");
   }
 };
 
 export default function LoginPage(): ReactElement {
   const { control, handleSubmit } = useForm();
+  const { loginHook, loginPending } = useLoginHook();
+
   return (
     <Card className="h-screen flex justify-center items-center">
       <MedinttForm
         control={control}
         className="max-w-280"
-        onSubmit={() => console.log("Hola mundo")}
+        onSubmit={(data: FieldValues) => loginHook(data)}
         handleSubmit={handleSubmit}
         footer={
-          <>
-            <MedinttButton
-              label="Cancelar"
+          <div className="flex shrink justify-center items-center flex-col-reverse sm:flex-row w-full">
+            {/* <MedinttButton
+              label="Perdir acceso"
               type="button"
-              onClick={() => console.log("Cancelar")}
+              onClick={() => console.log("Mail enviado")}
+              severity="info"
+              link
+              text
+            /> */}
+            <MedinttButton
+              label="Olvide mi contraseña"
+              type="button"
+              onClick={() => sendParentMessage("FORGOT")}
               severity="secondary"
               text
+              link
             />
-            <MedinttButton label="Iniciar Sesión" type="submit" icon="pi pi-sign-in"/>
-          </>
+            <MedinttButton
+              label="Iniciar Sesión"
+              type="submit"
+              icon="pi pi-sign-in"
+              loading={loginPending}
+            />
+          </div>
         }
         sections={[
           {
@@ -44,9 +72,12 @@ export default function LoginPage(): ReactElement {
                 type: "text",
                 props: {
                   name: "email",
-                  label: "Email",
+                  label: "Email o Usuario",
                   autoComplete: "off",
-                  placeholder: "ejemplo@gmail.com",
+                  placeholder: "ejemplo@gmail.com | usuario",
+                  rules: {
+                    required: { value: true, message: "Campo obligatorio" },
+                  },
                 },
                 colSpan: 12,
               },
@@ -57,6 +88,10 @@ export default function LoginPage(): ReactElement {
                   label: "Contraseña",
                   autoComplete: "off",
                   placeholder: "******",
+                  rules: {
+                    required: { value: true, message: "Campo obligatorio" },
+                    minLength: { value: 6, message: "6 caracteres" },
+                  },
                 },
                 colSpan: 12,
               },

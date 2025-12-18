@@ -15,6 +15,17 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.enableCors({
+    origin: [
+      // 1. Producción: Cualquier subdominio de medintt.com (http o https)
+      /^(http|https):\/\/.*\.medintt\.com$/,
+      // 2. Desarrollo: Localhost en CUALQUIER puerto
+      /^http:\/\/localhost(:\d+)?$/,
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true, // <--- CRUCIAL para que pasen las Cookies
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Medintt API')

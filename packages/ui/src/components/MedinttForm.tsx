@@ -74,7 +74,7 @@ export const MedinttForm = <T extends FieldValues>({
 }: MedinttFormProps<T>) => {
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit((data: T) => onSubmit(data))}
       className={twMerge("flex flex-col gap-6 w-full", className)}
     >
       {sections.map((section, index) => (

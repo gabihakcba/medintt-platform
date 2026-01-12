@@ -4,3 +4,4 @@ export * from "./auth/change-password.dto";
 export * from "./auth/forgot-password.dto";
 export * from "./auth/verify-2fa.dto";
 export * from "./auth/reset-password.dto";
+export * from "./auth/login.type";

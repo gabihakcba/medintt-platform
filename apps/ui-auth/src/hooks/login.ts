@@ -1,6 +1,10 @@
 import { sendParentMessage } from "@/app/login/page";
 import { login } from "@/queries/login";
-import { LoginDto, LoginResponseDto, TYPE_LOGIN } from "@medintt/types-auth";
+import {
+  LoginTypeDto,
+  LoginResponseDto,
+  TYPE_LOGIN,
+} from "@medintt/types-auth";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { FieldValues } from "react-hook-form";
@@ -14,7 +18,7 @@ export function useLoginHook() {
     ...rest
   } = useMutation({
     mutationFn: async (data: FieldValues) => {
-      const user = await login(data as LoginDto);
+      const user = await login(data as LoginTypeDto);
       return user;
     },
     onSuccess: (data: LoginResponseDto) => {

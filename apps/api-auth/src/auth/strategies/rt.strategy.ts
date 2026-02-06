@@ -5,15 +5,19 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
 import { JwtPayloadWithRt } from '../types/jwt-payload.type';
 
+type RequestWithCookies = Omit<Request, 'cookies'> & {
+  cookies: Record<string, string>;
+};
+
 @Injectable()
 export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(config: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {
-          let token = null;
-          if (req && req.cookies) {
-            token = (req as any).cookies?.['Refresh'];
+          let token: string | null = null;
+          if (req && (req as unknown as RequestWithCookies).cookies) {
+            token = (req as unknown as RequestWithCookies).cookies['Refresh'];
           }
           return token;
         },
@@ -24,7 +28,9 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   }
 
   validate(req: Request, payload: JwtPayloadWithRt) {
-    const refreshToken = (req as any).cookies?.['Refresh'];
+    const refreshToken = (req as unknown as RequestWithCookies).cookies?.[
+      'Refresh'
+    ];
     if (!refreshToken) throw new ForbiddenException('Refresh token malformed');
     return { ...payload, refreshToken };
   }

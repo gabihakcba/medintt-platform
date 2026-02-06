@@ -74,7 +74,7 @@ export class AuthController {
         sameSite: 'lax',
         domain: process.env.SELF_DOMAIN,
         path: '/',
-        maxAge: 1000 * 60 * 15, // 15 minutes
+        maxAge: Number(process.env.JWT_EXPIRATION) || 1000 * 60 * 15, // 15 minutes
       });
 
       // Refresh Token Cookie (7 days)
@@ -84,7 +84,8 @@ export class AuthController {
         sameSite: 'lax',
         domain: process.env.SELF_DOMAIN,
         path: '/',
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+        maxAge:
+          Number(process.env.JWT_REFRESH_EXPIRATION) || 1000 * 60 * 60 * 24 * 7, // 7 days
       });
 
       return { user };

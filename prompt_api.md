@@ -14,7 +14,7 @@
 **Generables Requeridos:**
 
 1.  **`package.json`**:
-    - Nombre: `@medintt/api-[NOMBRE_DEL_MODULO]`.
+    - Nombre: `api-[NOMBRE_DEL_MODULO]`.
     - Dependencias: `@nestjs/common`, `@nestjs/core`, `rxjs`, `reflect-metadata`, y las dependencias internas usando `workspace:*`.
 
 2.  **`src/main.ts`**:

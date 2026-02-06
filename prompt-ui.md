@@ -15,7 +15,7 @@
 **Generables Requeridos:**
 
 1.  **`package.json`**:
-    - Nombre: `@medintt/ui-[NOMBRE_DEL_MODULO]`.
+    - Nombre: `ui-[NOMBRE_DEL_MODULO]`.
     - Dependencias internas: `@medintt/ui`, `@medintt/config-tailwind`, `@medintt/utils`, `@medintt/types-[NOMBRE_DEL_MODULO]` (usando `workspace:*`).
 
 2.  **`tailwind.config.ts`**:

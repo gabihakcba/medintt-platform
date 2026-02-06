@@ -37,6 +37,8 @@ export class TwoFactorAuthService {
     twoFactorCode: string,
     userSecret: string,
   ) {
+    // window: 1 permite una desviación de +/- 30 segundos
+    authenticator.options = { window: 1 };
     return authenticator.verify({
       token: twoFactorCode,
       secret: userSecret,

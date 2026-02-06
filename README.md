@@ -206,3 +206,21 @@ Esto asegura que si algún paquete necesita un paso de compilación previo, se e
 - Abre la "Command Palette" (`Ctrl+Shift+P`) y ejecuta `TypeScript: Restart TS Server`.
 
 - Asegúrate de que el archivo nuevo esté exportado en el `index.ts` del paquete.
+
+### 5. Syncpack
+
+#### 1. Quitar los carets (^) para tener versiones fijas
+
+npx syncpack set-semver-ranges --range ""
+
+#### 2. Asegurar que todas las apps usen la misma versión de cada librería
+
+npx syncpack fix-mismatches
+
+#### 3. Formatear los archivos package.json para que se vean bonitos
+
+npx syncpack format
+
+#### 4. Impactar los cambios en el lockfile
+
+pnpm install

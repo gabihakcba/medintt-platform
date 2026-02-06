@@ -6,7 +6,7 @@
     "@medintt/config-tailwind": "workspace:*",
     "@medintt/ui": "workspace:*",
     "@medintt/utils": "workspace:*",
-    "next": "16.0.7",
+    "next": "16.1.6",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "react-hook-form": "7.68.0"

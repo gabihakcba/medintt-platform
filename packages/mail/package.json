@@ -1,29 +1,29 @@
 {
   "name": "@medintt/mail",
-  "version": "0.0.0",
   "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "tsc"
-  },
-  "keywords": [],
+  "version": "0.0.0",
   "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/nodemailer": "7.0.4",
-    "typescript": "5.9.2"
-  },
   "dependencies": {
     "@nestjs-modules/mailer": "2.0.2",
     "handlebars": "4.7.8",
     "nodemailer": "7.0.11",
     "rimraf": "^5.0.0"
   },
+  "devDependencies": {
+    "@types/nodemailer": "7.0.4",
+    "typescript": "5.9.2"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "main": "dist/index.js",
   "peerDependencies": {
     "@nestjs/common": "10.0.0",
     "@nestjs/core": "10.0.0",
     "rxjs": "7.8.1"
-  }
+  },
+  "scripts": {
+    "build": "tsc",
+    "prebuild": "rimraf dist"
+  },
+  "types": "dist/index.d.ts"
 }

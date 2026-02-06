@@ -1,5 +1,6 @@
 packages:
-  - "apps/*"
+  - "apps/uis/*"
+  - "apps/apis/*"
   - "packages/*"
   - "packages/databases/*"
   - "packages/types/*"

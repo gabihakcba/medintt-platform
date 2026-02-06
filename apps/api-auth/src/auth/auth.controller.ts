@@ -65,16 +65,19 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     return this.authService.login(loginDto).then(({ tokens, user }) => {
-      const isProd = process.env.NODE_ENV === 'production';
+      const isProd =
+        this.configService.get<string>('NODE_ENV') === 'production';
 
       // Access Token Cookie (15 min)
       res.cookie('Authentication', tokens.access_token, {
         httpOnly: true,
         secure: isProd,
         sameSite: 'lax',
-        domain: process.env.SELF_DOMAIN,
+        domain: this.configService.getOrThrow<string>('SELF_DOMAIN'),
         path: '/',
-        maxAge: Number(process.env.JWT_EXPIRATION) || 1000 * 60 * 15, // 15 minutes
+        maxAge:
+          Number(this.configService.getOrThrow<string>('JWT_EXPIRATION')) ||
+          1000 * 60 * 15, // 15 minutes
       });
 
       // Refresh Token Cookie (7 days)
@@ -82,10 +85,12 @@ export class AuthController {
         httpOnly: true,
         secure: isProd,
         sameSite: 'lax',
-        domain: process.env.SELF_DOMAIN,
+        domain: this.configService.getOrThrow<string>('SELF_DOMAIN'),
         path: '/',
         maxAge:
-          Number(process.env.JWT_REFRESH_EXPIRATION) || 1000 * 60 * 60 * 24 * 7, // 7 days
+          Number(
+            this.configService.getOrThrow<string>('JWT_REFRESH_EXPIRATION'),
+          ) || 1000 * 60 * 60 * 24 * 7, // 7 days
       });
 
       return { user };
@@ -102,12 +107,12 @@ export class AuthController {
     @GetUser('sub') userId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
     const cookieOptions = {
       httpOnly: true,
       secure: isProd,
       sameSite: 'lax' as const,
-      domain: process.env.SELF_DOMAIN,
+      domain: this.configService.getOrThrow<string>('SELF_DOMAIN'),
       path: '/',
     };
 
@@ -134,14 +139,15 @@ export class AuthController {
     return this.authService
       .refreshTokens(user.sub, user.refreshToken)
       .then((tokens) => {
-        const isProd = process.env.NODE_ENV === 'production';
+        const isProd =
+          this.configService.get<string>('NODE_ENV') === 'production';
 
         // Access Token Cookie (15 min)
         res.cookie('Authentication', tokens.access_token, {
           httpOnly: true,
           secure: isProd,
           sameSite: 'lax',
-          domain: process.env.SELF_DOMAIN,
+          domain: this.configService.getOrThrow<string>('SELF_DOMAIN'),
           path: '/',
           maxAge: 1000 * 60 * 15, // 15 minutes
         });
@@ -151,7 +157,7 @@ export class AuthController {
           httpOnly: true,
           secure: isProd,
           sameSite: 'lax',
-          domain: process.env.SELF_DOMAIN,
+          domain: this.configService.getOrThrow<string>('SELF_DOMAIN'),
           path: '/',
           maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         });

@@ -17,10 +17,10 @@ async function bootstrap() {
   );
   app.enableCors({
     origin: [
-      // 1. Producción: Cualquier subdominio de medintt.com (http o https)
+      // Regex para producción (.medintt.com)
       /^(http|https):\/\/.*\.medintt\.com$/,
-      // 2. Desarrollo: Localhost en CUALQUIER puerto
-      /^http:\/\/localhost(:\d+)?$/,
+      // Regex para nuevo entorno local (.medintt.local)
+      /^(http|https):\/\/.*\.medintt\.local(:\d+)?$/,
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true, // <--- CRUCIAL para que pasen las Cookies

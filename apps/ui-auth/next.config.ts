@@ -27,8 +27,8 @@ const nextConfig: NextConfig = {
       config.plugins.push(
         new webpack.IgnorePlugin({
           resourceRegExp:
-            /^@nestjs\/(microservices|websockets|platform-express)/,
-        })
+            /^@nestjs\/(swagger|microservices|websockets|platform-express|core)/,
+        }),
       );
 
       // Opcional: Ignorar drivers de base de datos si se cuelan
@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
         new webpack.IgnorePlugin({
           resourceRegExp:
             /^(pg-native|sqlite3|mysql2|oracledb|pg-query-stream)$/,
-        })
+        }),
       );
     }
     return config;

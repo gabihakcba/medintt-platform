@@ -65,7 +65,7 @@ export class AuditInterceptor implements NestInterceptor {
             meta: meta as object,
           })
           .catch((err) => {
-            console.log(err);
+            console.error(err);
             this.logger.error(`Error al guardar audit log para ${action}`, err);
           });
       }),

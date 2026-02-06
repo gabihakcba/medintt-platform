@@ -12,3 +12,4 @@ export * from "./components/MedinttChips";
 export * from "./components/MedinttInputTextArea";
 export * from "./components/MedinttRadioButton";
 export * from "./components/MedinttTable";
+export * from "./components/MedinttToast";

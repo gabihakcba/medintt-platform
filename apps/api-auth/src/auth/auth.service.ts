@@ -13,7 +13,7 @@ import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { MailService } from '@medintt/mail';
-import { ResetPasswordDto } from './dto/resset-paswwrod.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtPayload, PermissionsPayload } from './types/jwt-payload.type';
 import { UserService } from 'src/user/user.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -91,10 +91,14 @@ export class AuthService {
         });
       }
 
+      if (!user.twoFactorSecret) {
+        throw new BadRequestException('Error en 2FA: Secreto no encontrado');
+      }
+
       const isCodeValid =
         this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
           dto.twoFactorCode,
-          user.twoFactorSecret as string,
+          user.twoFactorSecret,
         );
 
       if (!isCodeValid) {
@@ -112,7 +116,10 @@ export class AuthService {
 
     await this.updateRtHash(user.id, tokens.refresh_token);
 
-    return tokens;
+    return {
+      tokens,
+      user: { id: user.id, email: user.email },
+    };
   }
 
   async logout(userId: string) {
@@ -192,7 +199,7 @@ export class AuthService {
 
       return { message: 'Contraseña actualizada correctamente' };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw new BadRequestException('Token inválido o expirado');
     }
   }

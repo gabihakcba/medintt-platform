@@ -11,7 +11,10 @@ import {
   Patch,
   Request,
   UnauthorizedException,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -20,7 +23,7 @@ import { GetUser } from './decorators/get-user.decorator';
 import { AtGuard } from './guards/at.guard';
 import { RtGuard } from './guards/rt.guard';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/resset-paswwrod.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { Throttle } from '@nestjs/throttler';
 import { TwoFactorAuthService } from './two-factor-auth.service';
@@ -39,6 +42,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly twoFactorAuthService: TwoFactorAuthService,
+    private readonly configService: ConfigService,
   ) {}
 
   @ApiOperation({ summary: 'Crear usuario' })
@@ -59,8 +63,21 @@ export class AuthController {
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    return this.authService.login(loginDto).then(({ tokens, user }) => {
+      const isProd = process.env.NODE_ENV === 'production';
+
+      res.cookie('Authentication', tokens.access_token, {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: 'lax',
+        domain: process.env.SELF_DOMAIN,
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      });
+
+      return { user };
+    });
   }
 
   @ApiBearerAuth()

@@ -67,7 +67,18 @@ export class AuthController {
     return this.authService.login(loginDto).then(({ tokens, user }) => {
       const isProd = process.env.NODE_ENV === 'production';
 
+      // Access Token Cookie (15 min)
       res.cookie('Authentication', tokens.access_token, {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: 'lax',
+        domain: process.env.SELF_DOMAIN,
+        path: '/',
+        maxAge: 1000 * 60 * 15, // 15 minutes
+      });
+
+      // Refresh Token Cookie (7 days)
+      res.cookie('Refresh', tokens.refresh_token, {
         httpOnly: true,
         secure: isProd,
         sameSite: 'lax',
@@ -86,7 +97,22 @@ export class AuthController {
   @UseGuards(AtGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@GetUser('sub') userId: string) {
+  logout(
+    @GetUser('sub') userId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const isProd = process.env.NODE_ENV === 'production';
+    const cookieOptions = {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax' as const,
+      domain: process.env.SELF_DOMAIN,
+      path: '/',
+    };
+
+    res.clearCookie('Authentication', cookieOptions);
+    res.clearCookie('Refresh', cookieOptions);
+
     return this.authService.logout(userId);
   }
 
@@ -100,8 +126,37 @@ export class AuthController {
   @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refreshTokens(@GetUser() user: JwtPayloadWithRt) {
-    return this.authService.refreshTokens(user.sub, user.refreshToken);
+  refreshTokens(
+    @GetUser() user: JwtPayloadWithRt,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService
+      .refreshTokens(user.sub, user.refreshToken)
+      .then((tokens) => {
+        const isProd = process.env.NODE_ENV === 'production';
+
+        // Access Token Cookie (15 min)
+        res.cookie('Authentication', tokens.access_token, {
+          httpOnly: true,
+          secure: isProd,
+          sameSite: 'lax',
+          domain: process.env.SELF_DOMAIN,
+          path: '/',
+          maxAge: 1000 * 60 * 15, // 15 minutes
+        });
+
+        // Refresh Token Cookie (7 days)
+        res.cookie('Refresh', tokens.refresh_token, {
+          httpOnly: true,
+          secure: isProd,
+          sameSite: 'lax',
+          domain: process.env.SELF_DOMAIN,
+          path: '/',
+          maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+        });
+
+        return { message: 'Tokens refreshed' };
+      });
   }
 
   @ApiBearerAuth()

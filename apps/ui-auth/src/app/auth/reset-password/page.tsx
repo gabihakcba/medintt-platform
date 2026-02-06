@@ -1,20 +1,20 @@
 "use client";
 
 import { MedinttButton, MedinttForm, MedinttToast } from "@medintt/ui";
-import { ReactElement, useEffect, useRef } from "react";
+import { ReactElement, Suspense, useEffect, useRef } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { Card } from "primereact/card";
 import { useResetPassword } from "@/hooks/useResetPassword";
 import { Toast } from "primereact/toast";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ResetPasswordPage(): ReactElement {
+function ResetPasswordContent(): ReactElement {
   const { control, handleSubmit, watch, setError } = useForm();
   const { resetPasswordMutate, resetPasswordPending } = useResetPassword();
   const toast = useRef<Toast>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const token = searchParams.get("token") || "";
 
   useEffect(() => {
     if (!token) {
@@ -74,7 +74,7 @@ export default function ResetPasswordPage(): ReactElement {
   };
 
   return (
-    <Card className="h-screen flex justify-center items-center">
+    <>
       <MedinttToast ref={toast} />
       <MedinttForm
         control={control}
@@ -140,6 +140,16 @@ export default function ResetPasswordPage(): ReactElement {
           },
         ]}
       />
+    </>
+  );
+}
+
+export default function ResetPasswordPage(): ReactElement {
+  return (
+    <Card className="h-screen flex justify-center items-center">
+      <Suspense fallback={<div>Cargando...</div>}>
+        <ResetPasswordContent />
+      </Suspense>
     </Card>
   );
 }

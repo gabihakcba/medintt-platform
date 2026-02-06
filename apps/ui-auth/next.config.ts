@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   transpilePackages: ["@medintt/ui", "@medintt/utils", "@medintt/types-auth"],
+  turbopack: {},
 
   webpack: (config, { isServer, webpack }) => {
     // <--- Agrega 'webpack' aquí en los argumentos

@@ -1,4 +1,4 @@
-import { sendParentMessage } from "@/app/login/page";
+import { sendParentMessage } from "@/utils/parent-message";
 import { login } from "@/queries/login";
 import { useState } from "react";
 import {

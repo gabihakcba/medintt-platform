@@ -9,7 +9,7 @@ export function use2FA() {
     data: generateData,
     error: generateError,
   } = useMutation({
-    mutationFn: (token: string) => generate2Fa(token),
+    mutationFn: () => generate2Fa(),
   });
 
   const {
@@ -18,8 +18,7 @@ export function use2FA() {
     isSuccess: turnOnSuccess,
     error: turnOnError,
   } = useMutation({
-    mutationFn: ({ token, code }: { token: string; code: string }) =>
-      turnOn2Fa(token, code),
+    mutationFn: ({ code }: { code: string }) => turnOn2Fa(code),
   });
 
   return {

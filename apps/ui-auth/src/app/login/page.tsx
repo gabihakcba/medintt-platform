@@ -52,7 +52,9 @@ export default function LoginPage(): ReactElement {
   const [isActivationMode, setIsActivationMode] = useState(false);
   const [isForgotMode, setIsForgotMode] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
-  const [loginResponse, setLoginResponse] = useState<any>(null); // Store full response
+  const [loginResponse, setLoginResponse] = useState<LoginResponseDto | null>(
+    null,
+  ); // Store full response
   const [twoFaCode, setTwoFaCode] = useState("");
   const toast = useRef<Toast>(null);
 
@@ -87,25 +89,23 @@ export default function LoginPage(): ReactElement {
     if (isActivationMode) {
       // Flow de activacion: Primero logueamos para obtener token
       loginHook(data, {
-        onSuccess: (response: any) => {
+        onSuccess: (response: LoginResponseDto) => {
           // Guardamos la respuesta completa para enviarla al padre despues
           setLoginResponse(response);
-          const token = response.access_token || response.accessToken;
-          if (token) {
-            generateMutate(token, {
-              onSuccess: () => {
-                setShowQrModal(true);
-              },
-              onError: () => {
-                toast.current?.show({
-                  severity: "error",
-                  summary: "Error",
-                  detail: "No se pudo generar el código QR",
-                  life: 3000,
-                });
-              },
-            });
-          }
+          // Ya no necesitamos el token para generar 2FA, usamos cookies
+          generateMutate(undefined, {
+            onSuccess: () => {
+              setShowQrModal(true);
+            },
+            onError: () => {
+              toast.current?.show({
+                severity: "error",
+                summary: "Error",
+                detail: "No se pudo generar el código QR",
+                life: 3000,
+              });
+            },
+          });
         },
         onError: () => {
           toast.current?.show({
@@ -155,10 +155,9 @@ export default function LoginPage(): ReactElement {
   };
 
   const handleActivate2FA = () => {
-    const token = loginResponse?.access_token || loginResponse?.accessToken;
-    if (token && twoFaCode) {
+    if (twoFaCode) {
       turnOnMutate(
-        { token: token, code: twoFaCode },
+        { code: twoFaCode },
         {
           onSuccess: () => {
             toast.current?.show({
@@ -172,7 +171,7 @@ export default function LoginPage(): ReactElement {
             // Retardo para que el usuario vea el toast antes de redirigir (opcional)
             setTimeout(() => {
               sendParentMessage(TYPE_LOGIN.SUCCESS, {
-                user: loginResponse, // Send the full original response
+                user: loginResponse || undefined, // Send the full original response
               });
             }, 1000);
           },

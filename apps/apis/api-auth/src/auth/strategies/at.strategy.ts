@@ -8,7 +8,20 @@ import { JwtPayload } from '../types/jwt-payload.type';
 export class AtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(config: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        (req: Request) => {
+          let token: null | string = null;
+          if (
+            req &&
+            (req as unknown as { cookies: Record<string, string> }).cookies
+          ) {
+            token = (req as unknown as { cookies: Record<string, string> })
+              .cookies['Authentication'];
+          }
+          return token;
+        },
+      ]),
       secretOrKey: config.getOrThrow<string>('JWT_SECRET'),
     });
   }

@@ -20,6 +20,14 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { TwoFactorAuthService } from './two-factor-auth.service';
 import { Prisma } from '@medintt/database-auth';
 
+type MemberWithContext = Prisma.MemberGetPayload<{
+  include: {
+    project: true;
+    role: true;
+    organization: true;
+  };
+}>;
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -106,7 +114,8 @@ export class AuthService {
       }
     }
 
-    const permissionsPayload = await this.getPermissions(user.id);
+    const members = await this.getMembersWithDetails(user.id);
+    const permissionsPayload = this.formatPermissions(members);
 
     const tokens = await this.getTokens(
       user.id,
@@ -116,9 +125,29 @@ export class AuthService {
 
     await this.updateRtHash(user.id, tokens.refresh_token);
 
+    const membersResponse = members.map((member) => ({
+      project: {
+        code: member.project.name, // Asumiendo que 'name' es el código o se usa como tal
+        id: member.projectId,
+      },
+      role: member.role.name,
+      organization: member.organization
+        ? {
+            id: member.organization.id,
+            name: member.organization.name,
+          }
+        : undefined,
+    }));
+
     return {
       tokens,
-      user: { id: user.id, email: user.email },
+      user: {
+        id: user.id,
+        email: user.email,
+        permissions: permissionsPayload,
+        isSuperAdmin: user.isSuperAdmin,
+        members: membersResponse,
+      },
     };
   }
 
@@ -141,7 +170,8 @@ export class AuthService {
     const rtMatches = await argon2.verify(user.hashedRefreshToken, rt);
     if (!rtMatches) throw new ForbiddenException('Acceso Denegado');
 
-    const permissionsPayload = await this.getPermissions(user.id);
+    const members = await this.getMembersWithDetails(user.id);
+    const permissionsPayload = this.formatPermissions(members);
 
     const tokens = await this.getTokens(
       user.id,
@@ -151,7 +181,30 @@ export class AuthService {
 
     await this.updateRtHash(user.id, tokens.refresh_token);
 
-    return tokens;
+    const membersResponse = members.map((member) => ({
+      project: {
+        code: member.project.name,
+        id: member.projectId,
+      },
+      role: member.role.name,
+      organization: member.organization
+        ? {
+            id: member.organization.id,
+            name: member.organization.name,
+          }
+        : undefined,
+    }));
+
+    return {
+      tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        permissions: permissionsPayload,
+        isSuperAdmin: user.isSuperAdmin,
+        members: membersResponse,
+      },
+    };
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {
@@ -269,24 +322,16 @@ export class AuthService {
 
   // --- HELPERS PRIVADOS ---
 
+  /**
+   * Obtiene (o formatea si ya se tienen) los permisos para el token.
+   * Ahora delega en getMembersWithDetails si no se pasan miembros.
+   */
   async getPermissions(userId: string): Promise<PermissionsPayload> {
-    type MemberWithContext = Prisma.MemberGetPayload<{
-      include: {
-        project: true;
-        role: true;
-        organization: true;
-      };
-    }>;
+    const members = await this.getMembersWithDetails(userId);
+    return this.formatPermissions(members);
+  }
 
-    const members: MemberWithContext[] = await this.prisma.member.findMany({
-      where: { userId },
-      include: {
-        project: true,
-        role: true,
-        organization: true,
-      },
-    });
-
+  private formatPermissions(members: MemberWithContext[]): PermissionsPayload {
     const permissionsPayload = {};
 
     members.forEach((member) => {
@@ -297,6 +342,19 @@ export class AuthService {
     });
 
     return permissionsPayload;
+  }
+
+  private async getMembersWithDetails(
+    userId: string,
+  ): Promise<MemberWithContext[]> {
+    return await this.prisma.member.findMany({
+      where: { userId },
+      include: {
+        project: true,
+        role: true,
+        organization: true,
+      },
+    });
   }
 
   async updateRtHash(userId: string, rt: string | null) {

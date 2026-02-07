@@ -73,7 +73,8 @@ export class AuthController {
         httpOnly: true,
         secure: isProd,
         sameSite: 'lax',
-        domain: this.configService.getOrThrow<string>('SELF_DOMAIN'),
+        domain:
+          this.configService.getOrThrow<string>('SELF_DOMAIN') || undefined,
         path: '/',
         maxAge:
           Number(this.configService.getOrThrow<string>('JWT_EXPIRATION')) ||
@@ -138,7 +139,7 @@ export class AuthController {
   ) {
     return this.authService
       .refreshTokens(user.sub, user.refreshToken)
-      .then((tokens) => {
+      .then(({ tokens, user }) => {
         const isProd =
           this.configService.get<string>('NODE_ENV') === 'production';
 
@@ -162,7 +163,7 @@ export class AuthController {
           maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         });
 
-        return { message: 'Tokens refreshed' };
+        return { user };
       });
   }
 

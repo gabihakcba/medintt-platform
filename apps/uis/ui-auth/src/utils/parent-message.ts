@@ -1,13 +1,11 @@
-import {
-  LoginResponseDto,
-  TYPE_LOGIN,
-} from "@medintt/types-auth/dist/auth/login.type";
+import { TYPE_LOGIN } from "@medintt/types-auth/dist/auth/login.type";
+import { User } from "@medintt/types-auth/dist/auth/user.type";
 import { AxiosError } from "axios";
 
 export const sendParentMessage = (
   type: TYPE_LOGIN,
   data?: {
-    user?: LoginResponseDto;
+    user?: User;
     error?: AxiosError;
   },
 ) => {
@@ -15,7 +13,7 @@ export const sendParentMessage = (
     const message: {
       type: TYPE_LOGIN;
       error?: AxiosError;
-      user?: LoginResponseDto;
+      user?: User;
     } = { type };
     if (data?.error) message.error = data?.error;
     if (data?.user) message.user = data?.user;

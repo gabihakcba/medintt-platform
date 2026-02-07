@@ -2,10 +2,9 @@
 "use client";
 
 import { MedinttButton, MedinttForm, MedinttToast } from "@medintt/ui";
-import { ReactElement, useState, useRef } from "react";
+import { useRef, useState, ReactElement } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { Card } from "primereact/card";
-import { Dialog } from "primereact/dialog";
 import { useLoginHook } from "@/hooks/login";
 import { use2FA } from "@/hooks/use2FA";
 import { useForgotPassword } from "@/hooks/useForgotPassword";
@@ -13,7 +12,6 @@ import {
   LoginResponseDto,
   TYPE_LOGIN,
 } from "@medintt/types-auth/dist/auth/login.type";
-import Image from "next/image";
 import { Toast } from "primereact/toast";
 
 import { sendParentMessage } from "@/utils/parent-message";
@@ -105,6 +103,9 @@ export default function LoginPage(): ReactElement {
       loginHook(
         { ...credentials, ...data },
         {
+          onSuccess: (response: LoginResponseDto) => {
+            sendParentMessage(TYPE_LOGIN.SUCCESS, { user: response.user });
+          },
           onError: () => {
             toast.current?.show({
               severity: "error",
@@ -118,6 +119,9 @@ export default function LoginPage(): ReactElement {
     } else {
       setCredentials(data);
       loginHook(data, {
+        onSuccess: (response: LoginResponseDto) => {
+          sendParentMessage(TYPE_LOGIN.SUCCESS, { user: response.user });
+        },
         onError: (error) => {
           // Si NO es 2FA required (ya que ese caso lo maneja el hook internamente sin llamar a onError prop si no lo pasamos explicitamente o si?)
           // El hook loginHook maneja onError interno para setear isTwoFactorRequired.
@@ -153,7 +157,7 @@ export default function LoginPage(): ReactElement {
             // Retardo para que el usuario vea el toast antes de redirigir (opcional)
             setTimeout(() => {
               sendParentMessage(TYPE_LOGIN.SUCCESS, {
-                user: loginResponse || undefined, // Send the full original response
+                user: loginResponse?.user || undefined, // Send the full original response
               });
             }, 1000);
           },
@@ -190,6 +194,7 @@ export default function LoginPage(): ReactElement {
   const getSubmitLabel = () => {
     if (isForgotMode) return "Enviar Email";
     if (isTwoFactorRequired) return "Verificar";
+    if (isActivationMode) return "Activar";
     return "Iniciar Sesión";
   };
 
@@ -207,183 +212,29 @@ export default function LoginPage(): ReactElement {
   return (
     <Card className="h-screen flex justify-center items-center">
       <MedinttToast ref={toast} />
-      <MedinttForm
-        control={control}
-        className="max-w-280"
-        onSubmit={handleLogin}
-        handleSubmit={handleSubmit}
-        footer={
-          <div className="flex flex-col w-full gap-2 mt-2">
-            <div className="flex shrink justify-center items-center flex-col-reverse sm:flex-row w-full gap-2">
-              {!isTwoFactorRequired && !isActivationMode && !isForgotMode && (
-                <MedinttButton
-                  label="Olvide mi contraseña"
-                  type="button"
-                  onClick={toggleForgotMode}
-                  severity="secondary"
-                  text
-                  link
-                />
-              )}
-
-              {isForgotMode && (
-                <MedinttButton
-                  label="Volver al Login"
-                  type="button"
-                  onClick={toggleForgotMode}
-                  severity="secondary"
-                  text
-                  link
-                />
-              )}
-
-              <MedinttButton
-                label={getSubmitLabel()}
-                type="submit"
-                icon={getSubmitIcon()}
-                loading={getLoadingState()}
-              />
-            </div>
-
-            {!isTwoFactorRequired && !isForgotMode && (
-              <div className="flex justify-center w-full">
-                <MedinttButton
-                  label={
-                    isActivationMode
-                      ? "Volver al Login"
-                      : "Activar 2FA (Generar QR)"
-                  }
-                  type="button"
-                  onClick={toggleActivationMode}
-                  severity="secondary"
-                  text
-                  link
-                />
-              </div>
-            )}
-          </div>
-        }
-        sections={[
-          {
-            group: isForgotMode
-              ? "Recuperar Contraseña"
-              : isActivationMode
-                ? "Activar autenticación de dos factores"
-                : "Iniciar Sesión",
-            fields: [
-              ...(isTwoFactorRequired
-                ? [
-                    {
-                      type: "text" as const,
-                      props: {
-                        name: "twoFactorCode",
-                        label: "Código de doble factor",
-                        autoFocus: true,
-                        autoComplete: "off" as const,
-                        placeholder: "123456",
-                        rules: {
-                          required: {
-                            value: true,
-                            message: "Campo obligatorio",
-                          },
-                          minLength: { value: 6, message: "6 caracteres" },
-                          pattern: {
-                            value: /^[0-9]+$/,
-                            message: "Solo números",
-                          },
-                        },
-                      },
-                      colSpan: 12,
-                    },
-                  ]
-                : isForgotMode
-                  ? [
-                      {
-                        type: "text" as const,
-                        props: {
-                          name: "email",
-                          label: "Correo Electrónico",
-                          autoComplete: "on" as const,
-                          placeholder: "ejemplo@gmail.com",
-                          rules: {
-                            required: {
-                              value: true,
-                              message: "Campo obligatorio",
-                            },
-                            pattern: {
-                              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                              message: "Email inválido",
-                            },
-                          },
-                        },
-                        colSpan: 12,
-                      },
-                    ]
-                  : [
-                      {
-                        type: "text" as const,
-                        props: {
-                          name: "email",
-                          label: "Email o Usuario",
-                          autoComplete: "off" as const,
-                          placeholder: "ejemplo@gmail.com | usuario",
-                          rules: {
-                            required: {
-                              value: true,
-                              message: "Campo obligatorio",
-                            },
-                          },
-                        },
-                        colSpan: 12,
-                      },
-                      {
-                        type: "password" as const,
-                        props: {
-                          name: "password",
-                          label: "Contraseña",
-                          autoComplete: "off" as const,
-                          placeholder: "******",
-                          rules: {
-                            required: {
-                              value: true,
-                              message: "Campo obligatorio",
-                            },
-                            minLength: { value: 6, message: "6 caracteres" },
-                          },
-                        },
-                        colSpan: 12,
-                      },
-                    ]),
-            ],
-          },
-        ]}
-      />
-
-      <Dialog
-        header="Escanear Código QR"
-        visible={showQrModal}
-        style={{ width: "90vw", maxWidth: "400px" }}
-        onHide={() => setShowQrModal(false)}
-      >
-        <div className="flex flex-col items-center gap-4">
+      {showQrModal ? (
+        <div className="flex flex-col items-center gap-4 w-full max-w-sm">
+          <h2 className="text-xl font-bold mb-4">Escanear Código QR</h2>
           {generateData?.qrCodeUrl && (
-            <Image
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               src={generateData.qrCodeUrl}
               alt="QR Code"
               width={200}
               height={200}
+              style={{ objectFit: "contain" }}
             />
           )}
-          <p className="text-center text-sm text-gray-600">
+          <p className="text-center text-sm">
             Escanea el código con tu aplicación de autenticación (Google
             Authenticator, Authy, etc).
           </p>
           {generateData?.secret && (
             <div className="text-center">
-              <p className="text-xs font-bold text-gray-500">
+              <p className="text-xs font-bold">
                 O ingresa este código manualmente:
               </p>
-              <p className="font-mono text-lg select-all bg-gray-100 p-2 rounded mt-1">
+              <p className="font-mono text-lg select-all p-2 rounded mt-1">
                 {generateData.secret}
               </p>
             </div>
@@ -395,22 +246,183 @@ export default function LoginPage(): ReactElement {
             </label>
             <input
               type="text"
-              className="w-full p-2 border rounded focus:outline-primary"
+              className="w-full p-2 border rounded"
               placeholder="123456"
               value={twoFaCode}
               onChange={(e) => setTwoFaCode(e.target.value)}
             />
           </div>
 
-          <MedinttButton
-            label="Activar"
-            className="w-full mt-2"
-            onClick={handleActivate2FA}
-            loading={turnOnPending}
-            disabled={!twoFaCode || twoFaCode.length < 6}
-          />
+          <div className="flex w-full gap-2 mt-2">
+            <MedinttButton
+              label="Cancelar"
+              severity="secondary"
+              className="w-full"
+              onClick={() => setShowQrModal(false)}
+            />
+            <MedinttButton
+              label="Activar"
+              className="w-full"
+              onClick={handleActivate2FA}
+              loading={turnOnPending}
+              disabled={!twoFaCode || twoFaCode.length < 6}
+            />
+          </div>
         </div>
-      </Dialog>
+      ) : (
+        <MedinttForm
+          control={control}
+          className="max-w-280"
+          onSubmit={handleLogin}
+          handleSubmit={handleSubmit}
+          footer={
+            <div className="flex flex-col w-full gap-2 mt-2">
+              <div className="flex shrink justify-center items-center flex-col-reverse sm:flex-row w-full gap-2">
+                {!isTwoFactorRequired && !isActivationMode && !isForgotMode && (
+                  <MedinttButton
+                    label="Olvide mi contraseña"
+                    type="button"
+                    onClick={toggleForgotMode}
+                    severity="secondary"
+                    text
+                    link
+                  />
+                )}
+
+                {isForgotMode && (
+                  <MedinttButton
+                    label="Volver al Login"
+                    type="button"
+                    onClick={toggleForgotMode}
+                    severity="secondary"
+                    text
+                    link
+                  />
+                )}
+
+                <MedinttButton
+                  label={getSubmitLabel()}
+                  type="submit"
+                  icon={getSubmitIcon()}
+                  loading={getLoadingState()}
+                />
+              </div>
+
+              {!isTwoFactorRequired && !isForgotMode && (
+                <div className="flex justify-center w-full">
+                  <MedinttButton
+                    label={
+                      isActivationMode
+                        ? "Volver al Login"
+                        : "Activar 2FA (Generar QR)"
+                    }
+                    type="button"
+                    onClick={toggleActivationMode}
+                    severity="secondary"
+                    text
+                    link
+                  />
+                </div>
+              )}
+            </div>
+          }
+          sections={[
+            {
+              group: isForgotMode
+                ? "Recuperar Contraseña"
+                : isActivationMode
+                  ? "Activar autenticación de dos factores"
+                  : "Iniciar Sesión",
+              fields: [
+                ...(isTwoFactorRequired
+                  ? [
+                      {
+                        type: "text" as const,
+                        props: {
+                          name: "twoFactorCode",
+                          label: "Código de doble factor",
+                          autoFocus: true,
+                          autoComplete: "off" as const,
+                          placeholder: "123456",
+                          rules: {
+                            required: {
+                              value: true,
+                              message: "Campo obligatorio",
+                            },
+                            minLength: { value: 6, message: "6 caracteres" },
+                            pattern: {
+                              value: /^[0-9]+$/,
+                              message: "Solo números",
+                            },
+                          },
+                        },
+                        colSpan: 12,
+                      },
+                    ]
+                  : isForgotMode
+                    ? [
+                        {
+                          type: "text" as const,
+                          props: {
+                            name: "email",
+                            label: "Correo Electrónico",
+                            autoComplete: "on" as const,
+                            placeholder: "ejemplo@gmail.com",
+                            rules: {
+                              required: {
+                                value: true,
+                                message: "Campo obligatorio",
+                              },
+                              pattern: {
+                                value:
+                                  /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                message: "Email inválido",
+                              },
+                            },
+                          },
+                          colSpan: 12,
+                        },
+                      ]
+                    : [
+                        {
+                          type: "text" as const,
+                          props: {
+                            name: "email",
+                            label: "Email o Usuario",
+                            autoComplete: "off" as const,
+                            placeholder: "ejemplo@gmail.com | usuario",
+                            rules: {
+                              required: {
+                                value: true,
+                                message: "Campo obligatorio",
+                              },
+                            },
+                          },
+                          colSpan: 12,
+                        },
+                        {
+                          type: "password" as const,
+                          props: {
+                            name: "password",
+                            label: "Contraseña",
+                            autoComplete: "off" as const,
+                            placeholder: "******",
+                            rules: {
+                              required: {
+                                value: true,
+                                message: "Campo obligatorio",
+                              },
+                              minLength: { value: 6, message: "6 caracteres" },
+                            },
+                          },
+                          colSpan: 12,
+                        },
+                      ]),
+              ],
+            },
+          ]}
+        />
+      )}
     </Card>
   );
 }

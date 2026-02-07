@@ -2,6 +2,7 @@
 "use client";
 
 import { MedinttButton, MedinttForm, MedinttToast } from "@medintt/ui";
+import Image from "next/image";
 import { useRef, useState, ReactElement } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { Card } from "primereact/card";
@@ -194,7 +195,7 @@ export default function LoginPage(): ReactElement {
   const getSubmitLabel = () => {
     if (isForgotMode) return "Enviar Email";
     if (isTwoFactorRequired) return "Verificar";
-    if (isActivationMode) return "Activar";
+    if (isActivationMode) return "Generar QR";
     return "Iniciar Sesión";
   };
 
@@ -270,158 +271,173 @@ export default function LoginPage(): ReactElement {
           </div>
         </div>
       ) : (
-        <MedinttForm
-          control={control}
-          className="max-w-280"
-          onSubmit={handleLogin}
-          handleSubmit={handleSubmit}
-          footer={
-            <div className="flex flex-col w-full gap-2 mt-2">
-              <div className="flex shrink justify-center items-center flex-col-reverse sm:flex-row w-full gap-2">
-                {!isTwoFactorRequired && !isActivationMode && !isForgotMode && (
-                  <MedinttButton
-                    label="Olvide mi contraseña"
-                    type="button"
-                    onClick={toggleForgotMode}
-                    severity="secondary"
-                    text
-                    link
-                  />
-                )}
+        <div className="w-full flex flex-col items-center">
+          <Image
+            src="/logo_large.png"
+            alt="Medintt Logo"
+            width={250}
+            height={80}
+            className="mb-6 object-contain"
+            priority
+          />
+          <MedinttForm
+            control={control}
+            className="w-full max-w-sm"
+            onSubmit={handleLogin}
+            handleSubmit={handleSubmit}
+            footer={
+              <div className="flex flex-col w-full gap-2 mt-2">
+                <div className="flex shrink justify-center items-center flex-col-reverse sm:flex-row w-full gap-2">
+                  {!isTwoFactorRequired &&
+                    !isActivationMode &&
+                    !isForgotMode && (
+                      <MedinttButton
+                        label="Olvide mi contraseña"
+                        type="button"
+                        onClick={toggleForgotMode}
+                        severity="secondary"
+                        text
+                        link
+                      />
+                    )}
 
-                {isForgotMode && (
-                  <MedinttButton
-                    label="Volver al Login"
-                    type="button"
-                    onClick={toggleForgotMode}
-                    severity="secondary"
-                    text
-                    link
-                  />
-                )}
+                  {isForgotMode && (
+                    <MedinttButton
+                      label="Volver al Login"
+                      type="button"
+                      onClick={toggleForgotMode}
+                      severity="secondary"
+                      text
+                      link
+                    />
+                  )}
 
-                <MedinttButton
-                  label={getSubmitLabel()}
-                  type="submit"
-                  icon={getSubmitIcon()}
-                  loading={getLoadingState()}
-                />
-              </div>
-
-              {!isTwoFactorRequired && !isForgotMode && (
-                <div className="flex justify-center w-full">
                   <MedinttButton
-                    label={
-                      isActivationMode
-                        ? "Volver al Login"
-                        : "Activar 2FA (Generar QR)"
-                    }
-                    type="button"
-                    onClick={toggleActivationMode}
-                    severity="secondary"
-                    text
-                    link
+                    label={getSubmitLabel()}
+                    type="submit"
+                    icon={getSubmitIcon()}
+                    loading={getLoadingState()}
                   />
                 </div>
-              )}
-            </div>
-          }
-          sections={[
-            {
-              group: isForgotMode
-                ? "Recuperar Contraseña"
-                : isActivationMode
-                  ? "Activar autenticación de dos factores"
-                  : "Iniciar Sesión",
-              fields: [
-                ...(isTwoFactorRequired
-                  ? [
-                      {
-                        type: "text" as const,
-                        props: {
-                          name: "twoFactorCode",
-                          label: "Código de doble factor",
-                          autoFocus: true,
-                          autoComplete: "off" as const,
-                          placeholder: "123456",
-                          rules: {
-                            required: {
-                              value: true,
-                              message: "Campo obligatorio",
-                            },
-                            minLength: { value: 6, message: "6 caracteres" },
-                            pattern: {
-                              value: /^[0-9]+$/,
-                              message: "Solo números",
-                            },
-                          },
-                        },
-                        colSpan: 12,
-                      },
-                    ]
-                  : isForgotMode
+
+                {!isTwoFactorRequired && !isForgotMode && (
+                  <div className="flex justify-center w-full">
+                    <MedinttButton
+                      label={
+                        isActivationMode
+                          ? "Volver al Login"
+                          : "Activar 2FA (Generar QR)"
+                      }
+                      type="button"
+                      onClick={toggleActivationMode}
+                      severity="secondary"
+                      text
+                      link
+                    />
+                  </div>
+                )}
+              </div>
+            }
+            sections={[
+              {
+                group: isForgotMode
+                  ? "Recuperar Contraseña"
+                  : isActivationMode
+                    ? "Activar autenticación de dos factores"
+                    : "Iniciar Sesión",
+                fields: [
+                  ...(isTwoFactorRequired
                     ? [
                         {
                           type: "text" as const,
                           props: {
-                            name: "email",
-                            label: "Correo Electrónico",
-                            autoComplete: "on" as const,
-                            placeholder: "ejemplo@gmail.com",
-                            rules: {
-                              required: {
-                                value: true,
-                                message: "Campo obligatorio",
-                              },
-                              pattern: {
-                                value:
-                                  /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                message: "Email inválido",
-                              },
-                            },
-                          },
-                          colSpan: 12,
-                        },
-                      ]
-                    : [
-                        {
-                          type: "text" as const,
-                          props: {
-                            name: "email",
-                            label: "Email o Usuario",
+                            name: "twoFactorCode",
+                            label: "Código de doble factor",
+                            autoFocus: true,
                             autoComplete: "off" as const,
-                            placeholder: "ejemplo@gmail.com | usuario",
-                            rules: {
-                              required: {
-                                value: true,
-                                message: "Campo obligatorio",
-                              },
-                            },
-                          },
-                          colSpan: 12,
-                        },
-                        {
-                          type: "password" as const,
-                          props: {
-                            name: "password",
-                            label: "Contraseña",
-                            autoComplete: "off" as const,
-                            placeholder: "******",
+                            placeholder: "123456",
                             rules: {
                               required: {
                                 value: true,
                                 message: "Campo obligatorio",
                               },
                               minLength: { value: 6, message: "6 caracteres" },
+                              pattern: {
+                                value: /^[0-9]+$/,
+                                message: "Solo números",
+                              },
                             },
                           },
                           colSpan: 12,
                         },
-                      ]),
-              ],
-            },
-          ]}
-        />
+                      ]
+                    : isForgotMode
+                      ? [
+                          {
+                            type: "text" as const,
+                            props: {
+                              name: "email",
+                              label: "Correo Electrónico",
+                              autoComplete: "on" as const,
+                              placeholder: "ejemplo@gmail.com",
+                              rules: {
+                                required: {
+                                  value: true,
+                                  message: "Campo obligatorio",
+                                },
+                                pattern: {
+                                  value:
+                                    /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                  message: "Email inválido",
+                                },
+                              },
+                            },
+                            colSpan: 12,
+                          },
+                        ]
+                      : [
+                          {
+                            type: "text" as const,
+                            props: {
+                              name: "email",
+                              label: "Email o Usuario",
+                              autoComplete: "off" as const,
+                              placeholder: "ejemplo@gmail.com | usuario",
+                              rules: {
+                                required: {
+                                  value: true,
+                                  message: "Campo obligatorio",
+                                },
+                              },
+                            },
+                            colSpan: 12,
+                          },
+                          {
+                            type: "password" as const,
+                            props: {
+                              name: "password",
+                              label: "Contraseña",
+                              autoComplete: "off" as const,
+                              placeholder: "******",
+                              rules: {
+                                required: {
+                                  value: true,
+                                  message: "Campo obligatorio",
+                                },
+                                minLength: {
+                                  value: 6,
+                                  message: "6 caracteres",
+                                },
+                              },
+                            },
+                            colSpan: 12,
+                          },
+                        ]),
+                ],
+              },
+            ]}
+          />
+        </div>
       )}
     </Card>
   );

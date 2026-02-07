@@ -7,6 +7,7 @@ import { Card } from "primereact/card";
 import { useResetPassword } from "@/hooks/useResetPassword";
 import { Toast } from "primereact/toast";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 function ResetPasswordContent(): ReactElement {
   const { control, handleSubmit, watch, setError } = useForm();
@@ -76,70 +77,80 @@ function ResetPasswordContent(): ReactElement {
   return (
     <>
       <MedinttToast ref={toast} />
-      <MedinttForm
-        control={control}
-        className="max-w-md w-full"
-        onSubmit={onSubmit}
-        handleSubmit={handleSubmit}
-        footer={
-          <div className="flex flex-col w-full gap-2 mt-4">
-            <MedinttButton
-              label="Restablecer Contraseña"
-              type="submit"
-              loading={resetPasswordPending}
-              disabled={!token}
-            />
-          </div>
-        }
-        sections={[
-          {
-            group: "Restablecer Contraseña",
-            fields: [
-              {
-                type: "password",
-                props: {
-                  name: "newPassword",
-                  label: "Nueva Contraseña",
-                  autoComplete: "new-password",
-                  placeholder: "******",
-                  rules: {
-                    required: {
-                      value: true,
-                      message: "Campo obligatorio",
-                    },
-                    minLength: {
-                      value: 6,
-                      message: "Mínimo 6 caracteres",
-                    },
-                  },
-                },
-                colSpan: 12,
-              },
-              {
-                type: "password",
-                props: {
-                  name: "confirmPassword",
-                  label: "Confirmar Contraseña",
-                  autoComplete: "new-password",
-                  placeholder: "******",
-                  rules: {
-                    required: {
-                      value: true,
-                      message: "Campo obligatorio",
-                    },
-                    validate: (val: string) => {
-                      if (watch("newPassword") != val) {
-                        return "Las contraseñas no coinciden";
-                      }
+      <div className="w-full flex flex-col items-center">
+        <Image
+          src="/logo_large.png"
+          alt="Medintt Logo"
+          width={250}
+          height={80}
+          className="mb-6 object-contain"
+          priority
+        />
+        <MedinttForm
+          control={control}
+          className="max-w-md w-full"
+          onSubmit={onSubmit}
+          handleSubmit={handleSubmit}
+          footer={
+            <div className="flex flex-col w-full gap-2 mt-4">
+              <MedinttButton
+                label="Restablecer Contraseña"
+                type="submit"
+                loading={resetPasswordPending}
+                disabled={!token}
+              />
+            </div>
+          }
+          sections={[
+            {
+              group: "Restablecer Contraseña",
+              fields: [
+                {
+                  type: "password",
+                  props: {
+                    name: "newPassword",
+                    label: "Nueva Contraseña",
+                    autoComplete: "new-password",
+                    placeholder: "******",
+                    rules: {
+                      required: {
+                        value: true,
+                        message: "Campo obligatorio",
+                      },
+                      minLength: {
+                        value: 6,
+                        message: "Mínimo 6 caracteres",
+                      },
                     },
                   },
+                  colSpan: 12,
                 },
-                colSpan: 12,
-              },
-            ],
-          },
-        ]}
-      />
+                {
+                  type: "password",
+                  props: {
+                    name: "confirmPassword",
+                    label: "Confirmar Contraseña",
+                    autoComplete: "new-password",
+                    placeholder: "******",
+                    rules: {
+                      required: {
+                        value: true,
+                        message: "Campo obligatorio",
+                      },
+                      validate: (val: string) => {
+                        if (watch("newPassword") != val) {
+                          return "Las contraseñas no coinciden";
+                        }
+                      },
+                    },
+                  },
+                  colSpan: 12,
+                },
+              ],
+            },
+          ]}
+        />
+      </div>
     </>
   );
 }

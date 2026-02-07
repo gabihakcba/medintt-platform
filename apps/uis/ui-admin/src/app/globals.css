@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* 1. Vinculamos tu configuración JS para que tome el 'important: true' 
+     y tu tema personalizado.
+     La ruta es relativa a este archivo (src/app/globals.css) -> sube 2 niveles a ui-playground
+*/
+@config "../../tailwind.config.ts";
+
+/* 2. IMPORTANTE: En Tailwind v4, usamos @source para decirle explícitamente
+     que escanee el paquete UI.
+     Ruta: src/app (actual) -> src -> ui-playground -> apps -> raiz -> packages -> ui
+*/
+@source "../../../../packages/ui";
+
+/*
+  3. Opcional: Si usas clases de PrimeReact dentro de @apply o capas,
+     puedes mantener tus utilidades aquí.
+*/
+@theme {
+  /* Aquí conectamos las variables de PrimeReact con el sistema de Tailwind.
+  La sintaxis es: --color-<nombre-clase>: <valor>;
+*/
+  /* --- Colores de Marca --- */
+  --color-primary: var(--primary-color);
+  --color-primary-text: var(--primary-color-text);
+
+  /* --- Texto --- */
+  /* Uso "main" para evitar conflicto con utilidades base si quisieras */
+  --color-text-main: var(--text-color);
+  --color-text-secondary: var(--text-color-secondary);
+
+  /* --- Superficies (Modo Claro/Oscuro automático) --- */
+  --color-surface-ground: var(--surface-ground);
+  --color-surface-section: var(--surface-section);
+  --color-surface-card: var(--surface-card);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-border: var(--surface-border);
+  --color-surface-hover: var(--surface-hover);
+
+  /* --- Escala de Superficies (Opcional pero útil) --- */
+  /* PrimeReact define surface-0, surface-50 ... surface-900 */
+  --color-surface-0: var(--surface-0);
+  --color-surface-50: var(--surface-50);
+  --color-surface-100: var(--surface-100);
+  --color-surface-200: var(--surface-200);
+  --color-surface-700: var(--surface-700);
+  --color-surface-800: var(--surface-800);
+  --color-surface-900: var(--surface-900);
+
+  /* --- Varios --- */
+  --radius-base: var(--border-radius); /* rounded-base */
+}

@@ -4,15 +4,15 @@ import { AppService } from './app.service';
 import { HealthModule } from './health/health.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
-import { AuthModule } from './auth/auth.module';
+
 import { MedinttMailModule } from '@medintt/mail';
 import { UserModule } from './user/user.module';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { AtStrategy } from './common/strategies/at.strategy';
+import { PassportModule } from '@nestjs/passport';
+import { APP_GUARD } from '@nestjs/core';
 import { MedinttThrottlerGuard } from './common/guards/throttler-behind-proxy.guard';
-
-import { AuditModule } from './audit/audit.module';
-import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -39,19 +39,20 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
         limit: 5,
       },
     ]),
+    AdminModule,
     PrismaModule,
     HealthModule,
-    AuthModule,
     UserModule,
-    AuditModule,
+    PassportModule.register({}),
   ],
   controllers: [AppController],
   providers: [
+    AtStrategy,
     {
       provide: APP_GUARD,
       useClass: MedinttThrottlerGuard,
     },
-    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
+
     AppService,
   ],
 })

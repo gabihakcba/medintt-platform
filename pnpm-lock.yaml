@@ -786,6 +786,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@medintt/types-auth':
+        specifier: workspace:*
+        version: link:../types/types-auth
       '@medintt/utils':
         specifier: workspace:*
         version: link:../utils

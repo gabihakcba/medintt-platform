@@ -81,11 +81,12 @@ model Member {
 }
 
 model Organization {
-  id      String   @id @default(uuid())
-  name    String
-  cuit    String?
-  code    String   @unique
-  members Member[]
+  id         String   @id
+  name       String
+  cuit       String?
+  code       String   @unique
+  externalId String?  @unique
+  members    Member[]
 
   @@map("organizations")
 }

@@ -158,7 +158,8 @@ exports.Prisma.OrganizationScalarFieldEnum = {
   id: 'id',
   name: 'name',
   cuit: 'cuit',
-  code: 'code'
+  code: 'code',
+  externalId: 'externalId'
 };
 
 exports.Prisma.RoleScalarFieldEnum = {

@@ -31,6 +31,7 @@ export class OrganizationsController {
   create(
     @Body()
     createOrganizationDto: {
+      id: string;
       name: string;
       code: string;
       cuit?: string;

@@ -5,7 +5,12 @@ import { PrismaService } from '../prisma/prisma.service';
 export class OrganizationsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: { name: string; code: string; cuit?: string }) {
+  async create(data: {
+    id: string;
+    name: string;
+    code: string;
+    cuit?: string;
+  }) {
     return this.prisma.organization.create({
       data,
     });

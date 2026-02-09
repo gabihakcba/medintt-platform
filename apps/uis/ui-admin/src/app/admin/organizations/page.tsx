@@ -14,6 +14,9 @@ import { useState, useEffect } from "react";
 import { Dialog } from "primereact/dialog";
 import { useToast } from "@/context/ToastContext";
 import { useForm } from "react-hook-form";
+import { usePrestatarias } from "@/hooks/usePrestatarias";
+import { Prestataria } from "@/queries/prestatarias";
+import { Dropdown } from "primereact/dropdown";
 
 export default function OrganizationsPage() {
   const { user } = useAuth();
@@ -30,10 +33,14 @@ export default function OrganizationsPage() {
   const [selectedOrganization, setSelectedOrganization] = useState<
     Organization | undefined
   >(undefined);
+  const [selectedPrestataria, setSelectedPrestataria] =
+    useState<Prestataria | null>(null);
   const toast = useToast();
+  const { prestatarias, isLoading: isLoadingPrestatarias } = usePrestatarias();
 
-  const { control, handleSubmit, reset } = useForm<Organization>({
+  const { control, handleSubmit, reset, setValue } = useForm<Organization>({
     defaultValues: {
+      id: "",
       name: "",
       code: "",
       cuit: "",
@@ -44,9 +51,18 @@ export default function OrganizationsPage() {
     if (selectedOrganization) {
       reset(selectedOrganization);
     } else {
-      reset({ name: "", code: "", cuit: "" });
+      reset({ id: "", name: "", code: "", cuit: "" });
     }
   }, [selectedOrganization, reset]);
+
+  useEffect(() => {
+    if (selectedPrestataria && !selectedOrganization) {
+      setValue("id", selectedPrestataria.Id.toString());
+      setValue("name", selectedPrestataria.Nombre || "");
+      setValue("code", selectedPrestataria.Codigo || "");
+      setValue("cuit", selectedPrestataria.Cuit || "");
+    }
+  }, [selectedPrestataria, selectedOrganization, setValue]);
 
   const isAdmin = checkPermissions(
     user,
@@ -56,18 +72,21 @@ export default function OrganizationsPage() {
 
   const openNew = () => {
     setSelectedOrganization(undefined);
+    setSelectedPrestataria(null);
     setIsDialogVisible(true);
   };
 
   const openEdit = (org: Organization) => {
     setSelectedOrganization(org);
+    setSelectedPrestataria(null);
     setIsDialogVisible(true);
   };
 
   const hideDialog = () => {
     setIsDialogVisible(false);
     setSelectedOrganization(undefined);
-    reset({ name: "", code: "", cuit: "" });
+    setSelectedPrestataria(null);
+    reset({ id: "", name: "", code: "", cuit: "" });
   };
 
   const handleSave = async (data: Organization) => {
@@ -154,6 +173,16 @@ export default function OrganizationsPage() {
           type: "text",
           colSpan: 12,
           props: {
+            name: "id",
+            label: "ID",
+            rules: { required: "El ID es requerido" },
+            disabled: !!selectedOrganization,
+          },
+        },
+        {
+          type: "text",
+          colSpan: 12,
+          props: {
             name: "name",
             label: "Nombre",
             rules: { required: "El nombre es requerido" },
@@ -230,6 +259,29 @@ export default function OrganizationsPage() {
           modal
           onHide={hideDialog}
         >
+          {!selectedOrganization && (
+            <div className="mb-4">
+              <label htmlFor="prestataria" className="font-bold block mb-2">
+                Seleccionar Prestataria
+              </label>
+              <Dropdown
+                id="prestataria"
+                value={selectedPrestataria}
+                options={prestatarias || []}
+                onChange={(e) => setSelectedPrestataria(e.value)}
+                optionLabel="Nombre"
+                placeholder="Seleccione una prestataria..."
+                className="w-full"
+                filter
+                showClear
+                loading={isLoadingPrestatarias}
+              />
+              <small className="text-gray-500">
+                Al seleccionar una prestataria, se autocompletarán los campos
+                del formulario.
+              </small>
+            </div>
+          )}
           <MedinttForm
             control={control}
             sections={formSections}

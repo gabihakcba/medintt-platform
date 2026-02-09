@@ -4673,6 +4673,7 @@ export namespace Prisma {
     name: string | null
     cuit: string | null
     code: string | null
+    externalId: string | null
   }
 
   export type OrganizationMaxAggregateOutputType = {
@@ -4680,6 +4681,7 @@ export namespace Prisma {
     name: string | null
     cuit: string | null
     code: string | null
+    externalId: string | null
   }
 
   export type OrganizationCountAggregateOutputType = {
@@ -4687,6 +4689,7 @@ export namespace Prisma {
     name: number
     cuit: number
     code: number
+    externalId: number
     _all: number
   }
 
@@ -4696,6 +4699,7 @@ export namespace Prisma {
     name?: true
     cuit?: true
     code?: true
+    externalId?: true
   }
 
   export type OrganizationMaxAggregateInputType = {
@@ -4703,6 +4707,7 @@ export namespace Prisma {
     name?: true
     cuit?: true
     code?: true
+    externalId?: true
   }
 
   export type OrganizationCountAggregateInputType = {
@@ -4710,6 +4715,7 @@ export namespace Prisma {
     name?: true
     cuit?: true
     code?: true
+    externalId?: true
     _all?: true
   }
 
@@ -4790,6 +4796,7 @@ export namespace Prisma {
     name: string
     cuit: string | null
     code: string
+    externalId: string | null
     _count: OrganizationCountAggregateOutputType | null
     _min: OrganizationMinAggregateOutputType | null
     _max: OrganizationMaxAggregateOutputType | null
@@ -4814,6 +4821,7 @@ export namespace Prisma {
     name?: boolean
     cuit?: boolean
     code?: boolean
+    externalId?: boolean
     members?: boolean | Organization$membersArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["organization"]>
@@ -4823,6 +4831,7 @@ export namespace Prisma {
     name?: boolean
     cuit?: boolean
     code?: boolean
+    externalId?: boolean
   }, ExtArgs["result"]["organization"]>
 
   export type OrganizationSelectScalar = {
@@ -4830,6 +4839,7 @@ export namespace Prisma {
     name?: boolean
     cuit?: boolean
     code?: boolean
+    externalId?: boolean
   }
 
   export type OrganizationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4848,6 +4858,7 @@ export namespace Prisma {
       name: string
       cuit: string | null
       code: string
+      externalId: string | null
     }, ExtArgs["result"]["organization"]>
     composites: {}
   }
@@ -5246,6 +5257,7 @@ export namespace Prisma {
     readonly name: FieldRef<"Organization", 'String'>
     readonly cuit: FieldRef<"Organization", 'String'>
     readonly code: FieldRef<"Organization", 'String'>
+    readonly externalId: FieldRef<"Organization", 'String'>
   }
     
 
@@ -9441,7 +9453,8 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     cuit: 'cuit',
-    code: 'code'
+    code: 'code',
+    externalId: 'externalId'
   };
 
   export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
@@ -9846,6 +9859,7 @@ export namespace Prisma {
     name?: StringFilter<"Organization"> | string
     cuit?: StringNullableFilter<"Organization"> | string | null
     code?: StringFilter<"Organization"> | string
+    externalId?: StringNullableFilter<"Organization"> | string | null
     members?: MemberListRelationFilter
   }
 
@@ -9854,25 +9868,28 @@ export namespace Prisma {
     name?: SortOrder
     cuit?: SortOrderInput | SortOrder
     code?: SortOrder
+    externalId?: SortOrderInput | SortOrder
     members?: MemberOrderByRelationAggregateInput
   }
 
   export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     code?: string
+    externalId?: string
     AND?: OrganizationWhereInput | OrganizationWhereInput[]
     OR?: OrganizationWhereInput[]
     NOT?: OrganizationWhereInput | OrganizationWhereInput[]
     name?: StringFilter<"Organization"> | string
     cuit?: StringNullableFilter<"Organization"> | string | null
     members?: MemberListRelationFilter
-  }, "id" | "code">
+  }, "id" | "code" | "externalId">
 
   export type OrganizationOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
     cuit?: SortOrderInput | SortOrder
     code?: SortOrder
+    externalId?: SortOrderInput | SortOrder
     _count?: OrganizationCountOrderByAggregateInput
     _max?: OrganizationMaxOrderByAggregateInput
     _min?: OrganizationMinOrderByAggregateInput
@@ -9886,6 +9903,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"Organization"> | string
     cuit?: StringNullableWithAggregatesFilter<"Organization"> | string | null
     code?: StringWithAggregatesFilter<"Organization"> | string
+    externalId?: StringNullableWithAggregatesFilter<"Organization"> | string | null
   }
 
   export type RoleWhereInput = {
@@ -10379,18 +10397,20 @@ export namespace Prisma {
   }
 
   export type OrganizationCreateInput = {
-    id?: string
+    id: string
     name: string
     cuit?: string | null
     code: string
+    externalId?: string | null
     members?: MemberCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateInput = {
-    id?: string
+    id: string
     name: string
     cuit?: string | null
     code: string
+    externalId?: string | null
     members?: MemberUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -10399,6 +10419,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     cuit?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     members?: MemberUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -10407,14 +10428,16 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     cuit?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     members?: MemberUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationCreateManyInput = {
-    id?: string
+    id: string
     name: string
     cuit?: string | null
     code: string
+    externalId?: string | null
   }
 
   export type OrganizationUpdateManyMutationInput = {
@@ -10422,6 +10445,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     cuit?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type OrganizationUncheckedUpdateManyInput = {
@@ -10429,6 +10453,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     cuit?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type RoleCreateInput = {
@@ -10928,6 +10953,7 @@ export namespace Prisma {
     name?: SortOrder
     cuit?: SortOrder
     code?: SortOrder
+    externalId?: SortOrder
   }
 
   export type OrganizationMaxOrderByAggregateInput = {
@@ -10935,6 +10961,7 @@ export namespace Prisma {
     name?: SortOrder
     cuit?: SortOrder
     code?: SortOrder
+    externalId?: SortOrder
   }
 
   export type OrganizationMinOrderByAggregateInput = {
@@ -10942,6 +10969,7 @@ export namespace Prisma {
     name?: SortOrder
     cuit?: SortOrder
     code?: SortOrder
+    externalId?: SortOrder
   }
 
   export type RolePermissionListRelationFilter = {
@@ -11913,17 +11941,19 @@ export namespace Prisma {
   }
 
   export type OrganizationCreateWithoutMembersInput = {
-    id?: string
+    id: string
     name: string
     cuit?: string | null
     code: string
+    externalId?: string | null
   }
 
   export type OrganizationUncheckedCreateWithoutMembersInput = {
-    id?: string
+    id: string
     name: string
     cuit?: string | null
     code: string
+    externalId?: string | null
   }
 
   export type OrganizationCreateOrConnectWithoutMembersInput = {
@@ -12054,6 +12084,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     cuit?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type OrganizationUncheckedUpdateWithoutMembersInput = {
@@ -12061,6 +12092,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     cuit?: NullableStringFieldUpdateOperationsInput | string | null
     code?: StringFieldUpdateOperationsInput | string
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MemberCreateWithoutOrganizationInput = {

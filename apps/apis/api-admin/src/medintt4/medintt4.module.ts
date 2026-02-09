@@ -4,9 +4,15 @@ import { Medintt4Service } from './medintt4.service';
 import { LocalidadesModule } from './localidades/localidades.module';
 import { ProfesionalesModule } from './profesionales/profesionales.module';
 import { EmailsModule } from './emails/emails.module';
+import { PrestatariasModule } from './prestatarias/prestatarias.module';
 
 @Module({
-  imports: [LocalidadesModule, ProfesionalesModule, EmailsModule],
+  imports: [
+    LocalidadesModule,
+    ProfesionalesModule,
+    EmailsModule,
+    PrestatariasModule,
+  ],
   controllers: [Medintt4Controller],
   providers: [Medintt4Service],
 })

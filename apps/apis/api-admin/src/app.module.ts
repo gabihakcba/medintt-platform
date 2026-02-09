@@ -22,6 +22,7 @@ import { MembersModule } from './members/members.module';
 import { PrismaMedinttModule } from './prisma-medintt/prisma-medintt.module';
 import { Medintt4Module } from './medintt4/medintt4.module';
 import { MailingModule } from './mailing/mailing.module';
+import { MedicinaLaboralModule } from './medicina-laboral/medicina-laboral.module';
 
 @Module({
   imports: [
@@ -48,11 +49,11 @@ import { MailingModule } from './mailing/mailing.module';
         limit: 5,
       },
     ]),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     // AdminModule,
     PrismaModule,
     PrismaMedinttModule,
     Medintt4Module,
-    HealthModule,
     UserModule,
     ProjectsModule,
     OrganizationsModule,
@@ -60,8 +61,9 @@ import { MailingModule } from './mailing/mailing.module';
     PermissionsModule,
     RolePermissionsModule,
     MembersModule,
-    PassportModule.register({}),
+    HealthModule,
     MailingModule,
+    MedicinaLaboralModule,
   ],
   controllers: [AppController],
   providers: [

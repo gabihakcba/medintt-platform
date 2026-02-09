@@ -120,6 +120,8 @@ export class AuthService {
     const tokens = await this.getTokens(
       user.id,
       user.email,
+      user.username,
+      user.isSuperAdmin,
       permissionsPayload,
     );
 
@@ -127,14 +129,15 @@ export class AuthService {
 
     const membersResponse = members.map((member) => ({
       project: {
-        code: member.project.name, // Asumiendo que 'name' es el código o se usa como tal
+        code: member.project.code as string,
         id: member.projectId,
       },
-      role: member.role.name,
+      role: member.role.code as string,
       organization: member.organization
         ? {
             id: member.organization.id,
             name: member.organization.name,
+            code: member.organization.code as string,
           }
         : undefined,
     }));
@@ -176,6 +179,8 @@ export class AuthService {
     const tokens = await this.getTokens(
       user.id,
       user.email,
+      user.username,
+      user.isSuperAdmin,
       permissionsPayload,
     );
 
@@ -183,14 +188,15 @@ export class AuthService {
 
     const membersResponse = members.map((member) => ({
       project: {
-        code: member.project.name,
+        code: member.project.code as string,
         id: member.projectId,
       },
-      role: member.role.name,
+      role: member.role.code as string,
       organization: member.organization
         ? {
             id: member.organization.id,
             name: member.organization.name,
+            code: member.organization.code as string,
           }
         : undefined,
     }));
@@ -335,9 +341,9 @@ export class AuthService {
     const permissionsPayload = {};
 
     members.forEach((member) => {
-      permissionsPayload[member.projectId] = {
-        role: member.role?.name,
-        organizationId: member.organizationId as string,
+      permissionsPayload[member.project.code as string] = {
+        role: member.role?.code as string,
+        organizationCode: member.organization?.code as string,
       };
     });
 
@@ -371,9 +377,17 @@ export class AuthService {
   async getTokens(
     userId: string,
     email: string,
+    username: string,
+    isSuperAdmin: boolean,
     permissionsPayload: PermissionsPayload,
   ) {
-    const payload = { sub: userId, email, permissions: permissionsPayload };
+    const payload = {
+      sub: userId,
+      email,
+      username,
+      isSuperAdmin,
+      permissions: permissionsPayload,
+    };
 
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(payload, {

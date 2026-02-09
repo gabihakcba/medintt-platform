@@ -46,7 +46,6 @@ export function useAuth() {
       const { type, user: loggedUser } = event.data;
 
       if (type === TYPE_LOGIN.SUCCESS && loggedUser) {
-        console.log("Login success from iframe:", loggedUser);
         queryClient.setQueryData(["auth-user"], loggedUser);
         setShowLoginModal(false);
       }

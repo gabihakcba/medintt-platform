@@ -1,6 +1,6 @@
 export type PermissionsPayload = Record<
   string,
-  { role: string | undefined; organizationId: string | null }
+  { role: string | undefined; organizationCode: string | null }
 >;
 
 export type JwtPayload = {

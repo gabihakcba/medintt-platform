@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import Image from "next/image";
 import pkg from "../../../package.json";
+import { checkPermissions } from "@/services/permissions";
+import { ToastProvider } from "@/providers/ToastProvider";
 
 export default function AdminLayout({
   children,
@@ -15,46 +17,77 @@ export default function AdminLayout({
   const { user, logout, isLoading } = useAuth();
   const router = useRouter();
 
-  // Redirect if not authenticated (optional, but good UX)
-  // MedinttGuard in pages handles access control, but basic auth check here is fine.
   useEffect(() => {
     if (!isLoading && !user) {
-      // Handle redirect or let Guard handle it
+      router.push("/");
     }
-  }, [user, isLoading, router]);
+  }, [isLoading, user, router]);
 
   const items: MedinttMenuItem[] = useMemo(() => {
-    return [
+    const isAdmin = checkPermissions(
+      user,
+      process.env.NEXT_PUBLIC_SELF_PROJECT!,
+      process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+    );
+
+    const menuItems: MedinttMenuItem[] = [
       {
         label: "Mailing",
         icon: "pi pi-envelope",
         command: () => router.push("/admin/mailing"),
       },
-      {
-        label: "Proyectos",
-        icon: "pi pi-folder",
-        command: () => router.push("/admin/projects"),
-      },
-      {
-        label: "Usuarios",
-        icon: "pi pi-users",
-        command: () => router.push("/admin/users"),
-      },
-      {
-        label: "Auditoria",
-        icon: "pi pi-list",
-        command: () => router.push("/admin/audit"),
-      },
     ];
-  }, [router]);
+
+    if (isAdmin) {
+      menuItems.push(
+        {
+          label: "Usuarios",
+          icon: "pi pi-users",
+          command: () => router.push("/admin/users"),
+        },
+        {
+          label: "Membresías",
+          icon: "pi pi-id-card",
+          command: () => router.push("/admin/members"),
+        },
+        {
+          label: "Proyectos",
+          icon: "pi pi-folder",
+          command: () => router.push("/admin/projects"),
+        },
+        {
+          label: "Organizaciones",
+          icon: "pi pi-building",
+          command: () => router.push("/admin/organizations"),
+        },
+        {
+          label: "Roles",
+          icon: "pi pi-id-card",
+          command: () => router.push("/admin/roles"),
+        },
+        {
+          label: "Permisos",
+          icon: "pi pi-key",
+          command: () => router.push("/admin/permissions"),
+        },
+        {
+          label: "Auditoria",
+          icon: "pi pi-list",
+          command: () => router.push("/admin/audit"),
+        },
+      );
+    }
+
+    return menuItems;
+  }, [router, user]);
 
   const sidebarUser: SidebarUser = {
     name: user?.email || "Usuario",
-    // Assuming user has a members array and we want the role for 'admin' app?
-    // Or just displaying main role? MedinttSideBar expects a single string for role display.
-    // Let's try to get role for this app code 'admin'.
-    role:
-      user?.members?.find((m) => m.project.code === "admin")?.role || "Sin Rol",
+    role: user?.isSuperAdmin
+      ? "SuperAdmin"
+      : user?.members?.find(
+          (m) => m.project.code === process.env.NEXT_PUBLIC_SELF_PROJECT!,
+        )?.role || "Sin Rol",
   };
 
   if (!user && isLoading)
@@ -87,7 +120,9 @@ export default function AdminLayout({
           command: () => logout(),
         }}
       />
-      <main className="flex-1 overflow-auto bg-gray-50">{children}</main>
+      <main className="flex-1 overflow-auto bg-gray-50">
+        <ToastProvider>{children}</ToastProvider>
+      </main>
     </div>
   );
 }

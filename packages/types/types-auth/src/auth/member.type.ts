@@ -7,5 +7,6 @@ export interface Member {
   organization?: {
     id: string;
     name: string;
+    code: string;
   };
 }

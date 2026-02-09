@@ -7,12 +7,19 @@ import { PrismaModule } from './prisma/prisma.module';
 
 import { MedinttMailModule } from '@medintt/mail';
 import { UserModule } from './user/user.module';
+import { ProjectsModule } from './projects/projects.module'; // Import ProjectsModule
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AtStrategy } from './common/strategies/at.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { APP_GUARD } from '@nestjs/core';
 import { MedinttThrottlerGuard } from './common/guards/throttler-behind-proxy.guard';
 import { AdminModule } from './admin/admin.module';
+
+import { OrganizationsModule } from './organizations/organizations.module';
+import { RolesModule } from './roles/roles.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { RolePermissionsModule } from './role-permissions/role-permissions.module';
+import { MembersModule } from './members/members.module';
 
 @Module({
   imports: [
@@ -43,6 +50,12 @@ import { AdminModule } from './admin/admin.module';
     PrismaModule,
     HealthModule,
     UserModule,
+    ProjectsModule,
+    OrganizationsModule,
+    RolesModule,
+    PermissionsModule,
+    RolePermissionsModule,
+    MembersModule,
     PassportModule.register({}),
   ],
   controllers: [AppController],

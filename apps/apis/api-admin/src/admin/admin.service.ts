@@ -13,13 +13,23 @@ export class AdminService {
 
   // --- ROLES ---
   async createRole(dto: CreateRoleDto) {
-    // Verificar duplicados
-    const exists = await this.prisma.role.findUnique({
-      where: { name: dto.name },
-    });
-    if (exists) throw new BadRequestException('El rol ya existe');
+    const code = dto.code || dto.name.toUpperCase().replace(/\s+/g, '_');
 
-    return this.prisma.role.create({ data: dto });
+    // Verificar duplicados
+    const exists = await this.prisma.role.findFirst({
+      where: {
+        OR: [{ name: dto.name }, { code }],
+      },
+    });
+    if (exists)
+      throw new BadRequestException('El rol ya existe (nombre o código)');
+
+    return this.prisma.role.create({
+      data: {
+        ...dto,
+        code,
+      },
+    });
   }
 
   async getRoles() {

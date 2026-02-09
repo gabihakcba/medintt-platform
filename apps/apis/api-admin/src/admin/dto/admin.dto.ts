@@ -8,6 +8,10 @@ export class CreateRoleDto {
 
   @IsString()
   @IsOptional()
+  code?: string;
+
+  @IsString()
+  @IsOptional()
   description?: string;
 }
 
@@ -22,6 +26,10 @@ export class CreateProjectDto {
   name: string;
 
   @IsString()
+  @IsNotEmpty()
+  code: string;
+
+  @IsString()
   @IsOptional()
   description?: string;
 }
@@ -31,6 +39,10 @@ export class CreateOrganizationDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  code: string;
 
   @IsString()
   @IsOptional()

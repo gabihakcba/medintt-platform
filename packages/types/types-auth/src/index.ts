@@ -1,4 +1,5 @@
 export * from "./auth/login.dto";
+export * from "./auth/organization.type";
 export * from "./auth/register.dto";
 export * from "./auth/change-password.dto";
 export * from "./auth/forgot-password.dto";
@@ -7,3 +8,6 @@ export * from "./auth/reset-password.dto";
 export * from "./auth/login.type";
 export * from "./auth/member.type";
 export * from "./auth/user.type";
+export * from "./auth/role.type";
+export * from "./auth/permission.type";
+export * from "./auth/project.type";

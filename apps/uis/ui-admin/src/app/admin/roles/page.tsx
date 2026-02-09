@@ -94,7 +94,11 @@ export default function RolesPage() {
     <MedinttGuard
       data={user}
       validator={(u) =>
-        checkPermissions(u, process.env.NEXT_PUBLIC_SELF_PROJECT!, "ADMIN")
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
       }
     >
       <MedinttButton
@@ -111,7 +115,11 @@ export default function RolesPage() {
     <MedinttGuard
       data={user}
       validator={(u) =>
-        checkPermissions(u, process.env.NEXT_PUBLIC_SELF_PROJECT!, "ADMIN")
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
       }
     >
       <MedinttButton

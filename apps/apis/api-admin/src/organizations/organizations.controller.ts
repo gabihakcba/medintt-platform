@@ -36,7 +36,6 @@ export class OrganizationsController {
       cuit?: string;
     },
   ) {
-    console.log(createOrganizationDto);
     return this.organizationsService.create(createOrganizationDto);
   }
 

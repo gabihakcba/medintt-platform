@@ -139,7 +139,13 @@ export default function ProjectsPage() {
   const headerActions = (
     <MedinttGuard
       data={user}
-      validator={(u) => checkPermissions(u, "admin", "ADMIN")}
+      validator={(u) =>
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
+      }
     >
       <MedinttButton
         label="Crear"
@@ -156,7 +162,13 @@ export default function ProjectsPage() {
   return (
     <MedinttGuard
       data={user}
-      validator={(u) => checkPermissions(u, "admin", "ADMIN")}
+      validator={(u) =>
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
+      }
     >
       <div className="p-4 h-full flex flex-col relative gap-4">
         <MedinttToast ref={toast} />

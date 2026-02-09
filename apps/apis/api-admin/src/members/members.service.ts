@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -78,7 +74,7 @@ export class MembersService {
         where: { id },
         data,
       });
-    } catch (error) {
+    } catch {
       throw new NotFoundException(`Miembro con ID ${id} no encontrado`);
     }
   }
@@ -88,7 +84,7 @@ export class MembersService {
       return await this.prisma.member.delete({
         where: { id },
       });
-    } catch (error) {
+    } catch {
       throw new NotFoundException(`Miembro con ID ${id} no encontrado`);
     }
   }

@@ -71,7 +71,6 @@ export default function OrganizationsPage() {
   };
 
   const handleSave = async (data: Organization) => {
-    console.log(data);
     try {
       if (selectedOrganization?.id) {
         await updateOrganization({ ...data, id: selectedOrganization.id });
@@ -102,7 +101,13 @@ export default function OrganizationsPage() {
   const headerActions = (
     <MedinttGuard
       data={user}
-      validator={(u) => checkPermissions(u, "admin", "ADMIN")}
+      validator={(u) =>
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
+      }
     >
       <MedinttButton
         label="Crear"
@@ -117,7 +122,13 @@ export default function OrganizationsPage() {
   const actionBodyTemplate = (rowData: Organization) => (
     <MedinttGuard
       data={user}
-      validator={(u) => checkPermissions(u, "admin", "ADMIN")}
+      validator={(u) =>
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
+      }
     >
       <MedinttButton
         icon="pi pi-pencil"
@@ -191,7 +202,13 @@ export default function OrganizationsPage() {
   return (
     <MedinttGuard
       data={user}
-      validator={(u) => checkPermissions(u, "admin", "ADMIN")}
+      validator={(u) =>
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
+      }
     >
       <div className="p-4">
         <h1 className="text-2xl font-bold mb-4">Organizaciones</h1>

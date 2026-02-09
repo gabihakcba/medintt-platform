@@ -60,6 +60,7 @@ export class AuthService {
         name: dto.name,
         lastName: dto.lastName,
         dni: dto.dni,
+        isVerified: false,
       },
     });
 
@@ -129,15 +130,15 @@ export class AuthService {
 
     const membersResponse = members.map((member) => ({
       project: {
-        code: member.project.code as string,
+        code: member.project.code,
         id: member.projectId,
       },
-      role: member.role.code as string,
+      role: member.role.code,
       organization: member.organization
         ? {
             id: member.organization.id,
             name: member.organization.name,
-            code: member.organization.code as string,
+            code: member.organization.code,
           }
         : undefined,
     }));
@@ -188,15 +189,15 @@ export class AuthService {
 
     const membersResponse = members.map((member) => ({
       project: {
-        code: member.project.code as string,
+        code: member.project.code,
         id: member.projectId,
       },
-      role: member.role.code as string,
+      role: member.role.code,
       organization: member.organization
         ? {
             id: member.organization.id,
             name: member.organization.name,
-            code: member.organization.code as string,
+            code: member.organization.code,
           }
         : undefined,
     }));
@@ -224,7 +225,7 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email };
     const token = await this.jwtService.signAsync(payload, {
       secret: this.config.getOrThrow('JWT_RESET_SECRET'),
-      expiresIn: '15m',
+      expiresIn: this.config.get('JWT_RESET_EXPIRATION'),
     });
 
     const url = `${this.config.getOrThrow('FRONTEND_URL_AUTH')}${this.config.getOrThrow('FRONTEND_PATH_RESET')}?token=${token}`;
@@ -341,9 +342,10 @@ export class AuthService {
     const permissionsPayload = {};
 
     members.forEach((member) => {
-      permissionsPayload[member.project.code as string] = {
-        role: member.role?.code as string,
-        organizationCode: member.organization?.code as string,
+      permissionsPayload[member.project.code] = {
+        role: member.role?.code,
+        organizationCode: member.organization?.code,
+        projectCode: member.project.code,
       };
     });
 

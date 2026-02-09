@@ -16,7 +16,6 @@ export class SuperAdminOrProjectAdminGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
     const user = request.user as JwtPayload;
-
     if (!user) return false;
 
     // 1. Super Admin (God Mode)
@@ -34,10 +33,14 @@ export class SuperAdminOrProjectAdminGuard implements CanActivate {
       );
     }
 
-    const adminPermission = user.permissions?.[selfProject];
-    const isAdminProjectAdmin = adminPermission?.role === roleAdmin;
+    // Check if user has membership in the project with 'ADMIN' role
+    // user.permissions is a record where key is projectCode
+    const membership = user.permissions?.[selfProject];
+    const hasAdminRole = membership?.role === roleAdmin;
 
-    if (isAdminProjectAdmin) return true;
+    if (hasAdminRole) {
+      return true;
+    }
 
     throw new ForbiddenException(
       `Se requiere ser SuperAdmin o tener rol "${roleAdmin}" en el proyecto "${selfProject}".`,

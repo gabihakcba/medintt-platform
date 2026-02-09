@@ -1,4 +1,4 @@
-import { api } from "@/lib/axios";
+import { api, apiAuth } from "@/lib/axios";
 
 export interface CreateUserData {
   username: string;
@@ -10,7 +10,7 @@ export interface CreateUserData {
 }
 
 export const createUser = async (data: CreateUserData) => {
-  const response = await api.post("/admin/users", data);
+  const response = await apiAuth.post("/auth/register", data);
   return response.data;
 };
 

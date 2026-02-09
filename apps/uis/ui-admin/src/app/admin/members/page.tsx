@@ -21,7 +21,14 @@ import { CreateMemberData, Member } from "@/queries/members";
 
 export default function MembersPage() {
   const { user } = useAuth();
-  const { organizations, isLoading, deleteMember, isDeleting, createMember, isCreating } = useMembers();
+  const {
+    organizations,
+    isLoading,
+    deleteMember,
+    isDeleting,
+    createMember,
+    isCreating,
+  } = useMembers();
   const { users } = useUsers();
   const { roles } = useRoles();
   const { organizations: allOrganizations } = useOrganizations();
@@ -53,14 +60,14 @@ export default function MembersPage() {
         roleCode: member.role.code,
         projectName: member.project.name,
         projectCode: member.project.code,
-      }))
+      })),
     );
   }, [organizations]);
 
   const isAdmin = checkPermissions(
     user,
     process.env.NEXT_PUBLIC_SELF_PROJECT!,
-    "ADMIN"
+    process.env.NEXT_PUBLIC_ROLE_ADMIN!,
   );
 
   const openNew = () => {
@@ -105,7 +112,7 @@ export default function MembersPage() {
         detail: "Membresía eliminada",
       });
     } catch (error) {
-       toast.show({
+      toast.show({
         severity: "error",
         summary: "Error",
         detail: "Error al eliminar membresía",
@@ -117,7 +124,11 @@ export default function MembersPage() {
     <MedinttGuard
       data={user}
       validator={(u) =>
-        checkPermissions(u, process.env.NEXT_PUBLIC_SELF_PROJECT!, "ADMIN")
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
       }
     >
       <MedinttButton
@@ -133,7 +144,11 @@ export default function MembersPage() {
     <MedinttGuard
       data={user}
       validator={(u) =>
-        checkPermissions(u, process.env.NEXT_PUBLIC_SELF_PROJECT!, "ADMIN")
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
       }
     >
       <MedinttButton
@@ -156,33 +171,40 @@ export default function MembersPage() {
   ];
 
   const userOptions = useMemo(() => {
-    return users?.map((u: any) => ({
+    return (
+      users?.map((u: any) => ({
         label: `${u.lastName} ${u.name} - ${u.dni}`,
-        value: u.id
-    })) || [];
+        value: u.id,
+      })) || []
+    );
   }, [users]);
 
   const roleOptions = useMemo(() => {
-      return roles?.map(r => ({
-          label: `${r.name} (${r.code})`,
-          value: r.id
-      })) || [];
+    return (
+      roles?.map((r) => ({
+        label: `${r.name} (${r.code})`,
+        value: r.id,
+      })) || []
+    );
   }, [roles]);
 
   const orgOptions = useMemo(() => {
-      return allOrganizations?.map(o => ({
-          label: `${o.name} (${o.code}) - ${o.cuit}`,
-          value: o.id
-      })) || [];
+    return (
+      allOrganizations?.map((o) => ({
+        label: `${o.name} (${o.code}) - ${o.cuit}`,
+        value: o.id,
+      })) || []
+    );
   }, [allOrganizations]);
 
   const projectOptions = useMemo(() => {
-      return projects?.map(p => ({
-          label: `${p.name} (${p.code})`,
-          value: p.id
-      })) || [];
+    return (
+      projects?.map((p) => ({
+        label: `${p.name} (${p.code})`,
+        value: p.id,
+      })) || []
+    );
   }, [projects]);
-
 
   const formSections: any[] = [
     {
@@ -221,7 +243,7 @@ export default function MembersPage() {
             filter: true,
           },
         },
-         {
+        {
           type: "dropdown",
           colSpan: 12,
           props: {
@@ -258,7 +280,11 @@ export default function MembersPage() {
     <MedinttGuard
       data={user}
       validator={(u) =>
-        checkPermissions(u, process.env.NEXT_PUBLIC_SELF_PROJECT!, "ADMIN")
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
       }
     >
       <div className="p-4">

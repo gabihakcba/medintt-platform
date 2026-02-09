@@ -33,6 +33,9 @@ importers:
       '@medintt/database-auth':
         specifier: workspace:*
         version: link:../../../packages/databases/database-auth
+      '@medintt/database-medintt4':
+        specifier: workspace:*
+        version: link:../../../packages/databases/database-medintt4
       '@medintt/mail':
         specifier: workspace:*
         version: link:../../../packages/mail
@@ -697,6 +700,22 @@ importers:
       typescript:
         specifier: 5.9.2
         version: 5.9.2
+
+  packages/databases/database-medintt4:
+    dependencies:
+      '@prisma/client':
+        specifier: 6.0.0
+        version: 6.0.0(prisma@6.0.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.7
+        version: 22.19.2
+      prisma:
+        specifier: 6.0.0
+        version: 6.0.0
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
 
   packages/mail:
     dependencies:
@@ -6246,6 +6265,11 @@ packages:
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
       typescript: '>=4.8.4 <6.0.0'
+
+  typescript@5.7.3:
+    resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
   typescript@5.9.2:
     resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
@@ -13306,6 +13330,8 @@ snapshots:
       typescript: 5.9.2
     transitivePeerDependencies:
       - supports-color
+
+  typescript@5.7.3: {}
 
   typescript@5.9.2: {}
 

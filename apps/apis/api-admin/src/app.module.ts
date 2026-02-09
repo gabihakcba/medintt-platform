@@ -11,15 +11,17 @@ import { ProjectsModule } from './projects/projects.module'; // Import ProjectsM
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AtStrategy } from './common/strategies/at.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { APP_GUARD } from '@nestjs/core';
-import { MedinttThrottlerGuard } from './common/guards/throttler-behind-proxy.guard';
-import { AdminModule } from './admin/admin.module';
+// import { APP_GUARD } from '@nestjs/core';
+// import { MedinttThrottlerGuard } from './common/guards/throttler-behind-proxy.guard';
 
 import { OrganizationsModule } from './organizations/organizations.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolePermissionsModule } from './role-permissions/role-permissions.module';
 import { MembersModule } from './members/members.module';
+import { PrismaMedinttModule } from './prisma-medintt/prisma-medintt.module';
+import { Medintt4Module } from './medintt4/medintt4.module';
+import { MailingModule } from './mailing/mailing.module';
 
 @Module({
   imports: [
@@ -46,8 +48,10 @@ import { MembersModule } from './members/members.module';
         limit: 5,
       },
     ]),
-    AdminModule,
+    // AdminModule,
     PrismaModule,
+    PrismaMedinttModule,
+    Medintt4Module,
     HealthModule,
     UserModule,
     ProjectsModule,
@@ -57,14 +61,15 @@ import { MembersModule } from './members/members.module';
     RolePermissionsModule,
     MembersModule,
     PassportModule.register({}),
+    MailingModule,
   ],
   controllers: [AppController],
   providers: [
     AtStrategy,
-    {
-      provide: APP_GUARD,
-      useClass: MedinttThrottlerGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: MedinttThrottlerGuard,
+    // },
 
     AppService,
   ],

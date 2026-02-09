@@ -31,7 +31,6 @@ export class RolesController {
   create(
     @Body() createRoleDto: { name: string; description?: string; code: string },
   ) {
-    console.log(createRoleDto);
     return this.rolesService.create(createRoleDto);
   }
 

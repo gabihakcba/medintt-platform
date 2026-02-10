@@ -13,6 +13,7 @@ import { MedinttThrottlerGuard } from './common/guards/throttler-behind-proxy.gu
 
 import { AuditModule } from './audit/audit.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+import { OAuthModule } from './oauth/oauth.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     AuthModule,
     UserModule,
     AuditModule,
+    OAuthModule,
   ],
   controllers: [AppController],
   providers: [

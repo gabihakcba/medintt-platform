@@ -34,6 +34,10 @@ model User {
 
   logs Log[]
 
+  // OAuth2 relations
+  oauthTokens OAuthToken[]
+  oauthCodes  OAuthAuthorizationCode[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -146,4 +150,76 @@ model Log {
   createdAt DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+// --- OAUTH2 / OPENID CONNECT ---
+
+model OAuthClient {
+  id String @id @default(uuid())
+
+  clientId     String   @unique
+  clientSecret String
+  name         String
+  redirectUris String[] // Array de URIs permitidas para redirect
+  grants       String[] // Ej: ["authorization_code", "refresh_token"]
+
+  // Metadatos
+  isActive Boolean @default(true)
+
+  // Relaciones
+  tokens OAuthToken[]
+  codes  OAuthAuthorizationCode[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("oauth_clients")
+}
+
+model OAuthAuthorizationCode {
+  id String @id @default(uuid())
+
+  code String @unique
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  clientId    String
+  oauthClient OAuthClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  redirectUri String
+  scopes      String[] // Ej: ["openid", "profile", "email"]
+
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@map("oauth_authorization_codes")
+}
+
+model OAuthToken {
+  id String @id @default(uuid())
+
+  accessToken  String  @unique
+  refreshToken String? @unique
+  tokenType    String  @default("Bearer")
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  clientId    String
+  oauthClient OAuthClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  scopes String[] // Ej: ["openid", "profile", "email"]
+
+  accessTokenExpiresAt  DateTime
+  refreshTokenExpiresAt DateTime?
+
+  isRevoked Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("oauth_tokens")
 }

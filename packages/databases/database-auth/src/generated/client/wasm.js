@@ -193,6 +193,45 @@ exports.Prisma.LogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.OAuthClientScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  clientSecret: 'clientSecret',
+  name: 'name',
+  redirectUris: 'redirectUris',
+  grants: 'grants',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OAuthAuthorizationCodeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  userId: 'userId',
+  clientId: 'clientId',
+  redirectUri: 'redirectUri',
+  scopes: 'scopes',
+  expiresAt: 'expiresAt',
+  isUsed: 'isUsed',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.OAuthTokenScalarFieldEnum = {
+  id: 'id',
+  accessToken: 'accessToken',
+  refreshToken: 'refreshToken',
+  tokenType: 'tokenType',
+  userId: 'userId',
+  clientId: 'clientId',
+  scopes: 'scopes',
+  accessTokenExpiresAt: 'accessTokenExpiresAt',
+  refreshTokenExpiresAt: 'refreshTokenExpiresAt',
+  isRevoked: 'isRevoked',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -228,7 +267,10 @@ exports.Prisma.ModelName = {
   Role: 'Role',
   Permission: 'Permission',
   RolePermission: 'RolePermission',
-  Log: 'Log'
+  Log: 'Log',
+  OAuthClient: 'OAuthClient',
+  OAuthAuthorizationCode: 'OAuthAuthorizationCode',
+  OAuthToken: 'OAuthToken'
 };
 
 /**

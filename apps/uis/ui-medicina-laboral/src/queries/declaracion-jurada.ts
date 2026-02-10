@@ -124,6 +124,9 @@ export interface PacienteResponse {
   Genero: string;
   Barrio?: string;
   Id_Localidad?: number;
+  Telefono?: string;
+  Celular1?: string;
+  Email?: string;
   firma?: string | null;
   firmaUrl?: string;
 }

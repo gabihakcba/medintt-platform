@@ -31,28 +31,12 @@ import * as handlebars from 'handlebars';
 import * as puppeteer from 'puppeteer';
 import { now, formatDate } from '@medintt/utils';
 
+import { InvitePayload, ProofPayload } from './dto/token-payloads.interface';
+
 // Type for DeclaracionJurada with Paciente included
 type DeclaracionJuradaWithPaciente = Prisma.Declaraciones_JuradasGetPayload<{
   include: { Pacientes: true };
 }>;
-
-// Token payload types
-interface InvitePayload {
-  did: number;
-  typ: 'invite';
-  v: number;
-  n: string;
-  exp: number;
-}
-
-interface ProofPayload {
-  did: number;
-  typ: 'proof';
-  v: number;
-  n: string;
-  exp: number;
-  dnih: string;
-}
 
 interface ExamenLaboralQueryResult {
   Id_Examen_Laboral: number | null;
@@ -222,6 +206,11 @@ export class DeclaracionJuradaService {
           FechaNacimiento: Pacientes.FechaNacimiento as Date,
           Direccion: Pacientes.Direccion as string,
           Genero: Pacientes.Genero as string,
+          Barrio: Pacientes.Barrio as string,
+          Id_Localidad: Pacientes.Id_Localidad as number,
+          Telefono: Pacientes.Telefono as string,
+          Celular1: Pacientes.Celular1 as string,
+          Email: Pacientes.Email as string,
           firma: hasFirma
             ? Buffer.from(Pacientes.ImagenFirma!).toString('base64')
             : null,
@@ -318,6 +307,23 @@ export class DeclaracionJuradaService {
 
     if (dj.Status === 'TERMINADO') {
       throw new ConflictException('DDJJ already updated');
+    }
+
+    // Validate required personal data
+    if (
+      !dj.Pacientes ||
+      !dj.Pacientes.Direccion ||
+      !dj.Pacientes.Barrio ||
+      !dj.Pacientes.Id_Localidad ||
+      !dj.Pacientes.NroDocumento ||
+      !dj.Pacientes.Email ||
+      !dj.Pacientes.FechaNacimiento ||
+      (!dj.Pacientes.Telefono && !dj.Pacientes.Celular1)
+    ) {
+      throw new ConflictException({
+        message: 'Faltan datos personales del paciente',
+        paciente: dj.Pacientes,
+      });
     }
 
     if (
@@ -676,8 +682,8 @@ export class DeclaracionJuradaService {
         fechaNac: paciente?.FechaNacimiento
           ? this.formatDateSimple(paciente.FechaNacimiento)
           : '',
-        telefono: paciente?.Celular1 || paciente?.Telefono || '',
-        direccion: paciente?.Direccion || '',
+        telefono: `${paciente?.Celular1} ${paciente?.Telefono}`,
+        domicilio: paciente?.Direccion || '',
         email: paciente?.Email || '',
         barrio: paciente?.Barrio || '',
         estadoCivil: '',

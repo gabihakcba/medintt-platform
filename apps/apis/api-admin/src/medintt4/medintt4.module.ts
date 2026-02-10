@@ -5,6 +5,8 @@ import { LocalidadesModule } from './localidades/localidades.module';
 import { ProfesionalesModule } from './profesionales/profesionales.module';
 import { EmailsModule } from './emails/emails.module';
 import { PrestatariasModule } from './prestatarias/prestatarias.module';
+import { ProvinciasModule } from './provincias/provincias.module';
+import { PacientesModule } from './pacientes/pacientes.module';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { PrestatariasModule } from './prestatarias/prestatarias.module';
     ProfesionalesModule,
     EmailsModule,
     PrestatariasModule,
+    ProvinciasModule,
+    PacientesModule,
   ],
   controllers: [Medintt4Controller],
   providers: [Medintt4Service],

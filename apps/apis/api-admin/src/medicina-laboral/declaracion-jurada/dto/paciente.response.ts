@@ -7,7 +7,7 @@ export class PacienteResponse {
   Genero: string;
   Barrio?: string;
   Id_Localidad?: number;
-  Celular?: string;
+  Celular1?: string;
   Telefono?: string;
   Email?: string;
   firma?: string | null;

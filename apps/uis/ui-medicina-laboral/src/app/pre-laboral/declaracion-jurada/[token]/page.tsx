@@ -12,10 +12,18 @@ import {
   getData,
   DeclaracionJurada,
 } from "@/queries/declaracion-jurada";
+import { PacienteData, updatePaciente } from "@/queries/medintt4";
 import { StepDNIVerification } from "./components/StepDNIVerification";
 import Formulario from "../components/Formulario";
+import DatosPersonalesForm from "../components/DatosPersonalesForm";
 
-type Step = "dni" | "form" | "error" | "success" | "signature_required";
+type Step =
+  | "dni"
+  | "personal_data"
+  | "form"
+  | "error"
+  | "success"
+  | "signature_required";
 
 interface PageProps {
   params: Promise<{
@@ -98,17 +106,45 @@ export default function DeclaracionJuradaPage({ params }: PageProps) {
       return;
     }
 
-    // Check for missing signature
-    if (!response.ddjj.paciente.firma && response.ddjj.paciente.firmaUrl) {
-      setSignatureUrl(response.ddjj.paciente.firmaUrl);
-      setStep("signature_required");
-      return;
-    }
-
-    setStep("form");
+    // New step: Personal Data
+    setStep("personal_data");
   };
 
-  // 2. Update Data (Mutation)
+  // 2. Update Personal Data
+  const personalDataMutation = useMutation({
+    mutationFn: (formData: PacienteData) => updatePaciente(proof!, formData),
+    onSuccess: () => {
+      toast.current?.show({
+        severity: "success",
+        summary: "Datos actualizados",
+        detail: "Tus datos personales se han guardado correctamente.",
+        life: 3000,
+      });
+
+      // After updating personal data, proceed to signature check or form
+      if (data && !data.paciente.firma && data.paciente.firmaUrl) {
+        setSignatureUrl(data.paciente.firmaUrl);
+        setStep("signature_required");
+      } else {
+        setStep("form");
+      }
+    },
+    onError: (error: AxiosError) => {
+      console.error("Error updating personal data", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Error al actualizar tus datos personales. Inténtalo de nuevo.",
+        life: 3000,
+      });
+    },
+  });
+
+  const handlePersonalDataSubmit = (formData: PacienteData) => {
+    personalDataMutation.mutate(formData);
+  };
+
+  // 3. Update DDJJ Data (Mutation)
   const mutation = useMutation({
     mutationFn: (
       formData: Omit<
@@ -129,6 +165,7 @@ export default function DeclaracionJuradaPage({ params }: PageProps) {
       interface ApiErrorResponse {
         message?: string;
         firmaUrl?: string;
+        paciente?: any; // To verify if patient data was missing (backend returns 409)
       }
       const errorData = error.response?.data as ApiErrorResponse;
 
@@ -139,6 +176,18 @@ export default function DeclaracionJuradaPage({ params }: PageProps) {
           severity: "warn",
           summary: "Firma Requerida",
           detail: "Debes completar tu firma antes de finalizar.",
+          life: 5000,
+        });
+        return;
+      }
+
+      if (errorData?.message === "Faltan datos personales del paciente") {
+        // Should not happen if we did step personal_data correctly, but as failsafe:
+        setStep("personal_data");
+        toast.current?.show({
+          severity: "warn",
+          summary: "Datos Incompletos",
+          detail: "Faltan datos personales obligatorios.",
           life: 5000,
         });
         return;
@@ -263,6 +312,14 @@ export default function DeclaracionJuradaPage({ params }: PageProps) {
         <div className="pt-20">
           <StepDNIVerification token={token} onVerified={handleDNIVerified} />
         </div>
+      )}
+
+      {step === "personal_data" && data && (
+        <DatosPersonalesForm
+          initialData={data.paciente}
+          onSubmit={handlePersonalDataSubmit}
+          isLoading={personalDataMutation.isPending}
+        />
       )}
 
       {step === "form" && data && data.empresa && (

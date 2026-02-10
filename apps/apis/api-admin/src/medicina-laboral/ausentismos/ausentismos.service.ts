@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@medintt/database-medintt4';
 import { PrismaMedinttService } from '../../prisma-medintt/prisma-medintt.service';
 import type { JwtPayload } from '../../common/types/jwt-payload.type';
 import { AusentismosFilterDto } from './dto/ausentismos-filter.dto';

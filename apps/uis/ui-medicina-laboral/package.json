@@ -21,7 +21,8 @@
     "primeicons": "7.0.0",
     "primereact": "10.9.7",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "react-signature-canvas": "1.1.0-alpha.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -4,7 +4,7 @@ import { Calendar } from "primereact/calendar";
 import { Controller, FieldValues } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 
-import { parseToJsDate, toIsoString } from "@medintt/utils/date";
+import { parseToJsDate, toIsoString } from "@medintt/utils";
 import { MedinttCalendarProps } from "../types/form";
 
 export const MedinttCalendar = <T extends FieldValues>({

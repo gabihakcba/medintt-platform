@@ -30,10 +30,9 @@ const colSpanClasses: Record<number, string> = {
   11: "md:col-span-11",
   12: "md:col-span-12",
 };
-
 const renderField = <T extends FieldValues>(
   field: FieldDefinition<T>,
-  control: Control<T>
+  control: Control<T>,
 ) => {
   const { type, props } = field;
   const commonProps = { control, ...props };

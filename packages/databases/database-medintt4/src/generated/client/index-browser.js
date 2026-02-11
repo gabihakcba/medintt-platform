@@ -835,9 +835,9 @@ exports.Prisma.InterlocutoresScalarFieldEnum = {
   Ausentismos: 'Ausentismos',
   Pagos: 'Pagos',
   Examenes: 'Examenes',
+  CoordinadorSiniestros: 'CoordinadorSiniestros',
   UsuarioWeb: 'UsuarioWeb',
-  PasswordWeb: 'PasswordWeb',
-  CoordinadorSiniestros: 'CoordinadorSiniestros'
+  PasswordWeb: 'PasswordWeb'
 };
 
 exports.Prisma.InterrogatorioScalarFieldEnum = {
@@ -918,7 +918,9 @@ exports.Prisma.PacientesScalarFieldEnum = {
   Puesto: 'Puesto',
   Funcion: 'Funcion',
   ImagenFirma: 'ImagenFirma',
-  Activo: 'Activo'
+  Activo: 'Activo',
+  Nacionalidad: 'Nacionalidad',
+  CUIL: 'CUIL'
 };
 
 exports.Prisma.PagosScalarFieldEnum = {
@@ -971,26 +973,26 @@ exports.Prisma.Pagos_BancariosScalarFieldEnum = {
   Id_Beneficiario: 'Id_Beneficiario',
   Id_Concepto: 'Id_Concepto',
   Id_Cuenta: 'Id_Cuenta',
+  Id_Tipo_Pago_Bancario: 'Id_Tipo_Pago_Bancario',
+  Fecha_Obligacion: 'Fecha_Obligacion',
+  Fecha_Vencimiento: 'Fecha_Vencimiento',
+  Fecha_Pago: 'Fecha_Pago',
   Importe: 'Importe',
   Pagado: 'Pagado',
   Saldo: 'Saldo',
-  Fecha_Obligacion: 'Fecha_Obligacion',
-  Fecha_Pago: 'Fecha_Pago',
-  Fecha_Vencimiento: 'Fecha_Vencimiento',
-  Id_Tipo_Pago_Bancario: 'Id_Tipo_Pago_Bancario',
-  Notas: 'Notas',
-  Status: 'Status'
+  Status: 'Status',
+  Notas: 'Notas'
 };
 
 exports.Prisma.Pagos_Bancarios_AttachsScalarFieldEnum = {
   Id: 'Id',
+  Id_Pago_Bancario_Realizado: 'Id_Pago_Bancario_Realizado',
   Descripcion: 'Descripcion',
   Observaciones: 'Observaciones',
   FileName: 'FileName',
   FileSize: 'FileSize',
   Extension: 'Extension',
-  Archivo: 'Archivo',
-  Id_Pago_Bancario_Realizado: 'Id_Pago_Bancario_Realizado'
+  Archivo: 'Archivo'
 };
 
 exports.Prisma.Pagos_Bancarios_RealizadosScalarFieldEnum = {

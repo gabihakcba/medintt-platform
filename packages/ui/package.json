@@ -3,6 +3,7 @@
   "description": "",
   "version": "0.0.0",
   "dependencies": {
+    "@medintt/types-auth": "workspace:*",
     "@medintt/utils": "workspace:*",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
@@ -27,11 +28,11 @@
     "./styles": "./src/styles.css"
   },
   "peerDependencies": {
+    "primeicons": "7.0.0",
+    "primereact": "10.9.7",
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "react-hook-form": "7.68.0",
-    "primeicons": "7.0.0",
-    "primereact": "10.9.7"
+    "react-hook-form": "7.68.0"
   },
   "scripts": {
     "lint": "eslint .",

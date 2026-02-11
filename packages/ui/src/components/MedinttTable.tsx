@@ -15,8 +15,10 @@ import { FilterMatchMode } from "primereact/api";
 import { twMerge } from "tailwind-merge";
 import { Calendar } from "primereact/calendar";
 
-export interface MedinttColumnConfig<T = any>
-  extends Omit<ColumnProps, "field" | "body"> {
+export interface MedinttColumnConfig<T = any> extends Omit<
+  ColumnProps,
+  "field" | "body"
+> {
   header: string;
   field?: string;
   body?: (data: T) => React.ReactNode;
@@ -30,14 +32,17 @@ export interface DateFilterConfig {
   placeholder?: string;
 }
 
-interface MedinttTableProps<T extends DataTableValue>
-  extends Omit<DataTableProps<T[]>, "value" | "filters" | "header"> {
+interface MedinttTableProps<T extends DataTableValue> extends Omit<
+  DataTableProps<T[]>,
+  "value" | "filters" | "header"
+> {
   data: T[];
   columns: MedinttColumnConfig<T>[];
 
   enableGlobalFilter?: boolean;
   globalFilterFields?: string[];
   dateFilter?: DateFilterConfig;
+  headerActions?: ReactNode;
 
   actions?: (row: T) => ReactNode;
   actionsHeader?: string;
@@ -53,6 +58,7 @@ export const MedinttTable = <T extends object>({
   enableGlobalFilter = false,
   globalFilterFields,
   dateFilter,
+  headerActions,
   actions,
   actionsHeader = "Acciones",
   loading = false,
@@ -104,13 +110,14 @@ export const MedinttTable = <T extends object>({
   };
 
   const renderHeader = () => {
-    if (!title && !enableGlobalFilter && !dateFilter) return null;
+    if (!title && !enableGlobalFilter && !dateFilter && !headerActions)
+      return null;
 
     return (
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="text-xl font-bold text-text-main">{title}</div>
 
-        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+        <div className="flex flex-row sm:flex-row gap-2 w-full md:w-auto items-center flex-1 justify-end">
           {dateFilter && (
             <Calendar
               value={(filters[dateFilter.field] as any)?.value}
@@ -131,10 +138,11 @@ export const MedinttTable = <T extends object>({
                 value={globalFilterValue}
                 onChange={onGlobalFilterChange}
                 placeholder="Buscar..."
-                className="w-full md:w-64 p-2 pl-10"
+                className="w-full p-2 pl-10"
               />
             </IconField>
           )}
+          {headerActions}
         </div>
       </div>
     );
@@ -148,7 +156,7 @@ export const MedinttTable = <T extends object>({
     <div
       className={twMerge(
         "card rounded-lg shadow-sm bg-surface-card",
-        className
+        className,
       )}
     >
       <DataTable
@@ -165,6 +173,8 @@ export const MedinttTable = <T extends object>({
         className="p-datatable-sm"
         stripedRows
         removableSort
+        scrollable
+        scrollHeight="flex"
         {...(props as any)}
       >
         {columns.map((col, index) => (

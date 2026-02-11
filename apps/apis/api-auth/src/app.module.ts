@@ -10,9 +10,10 @@ import { UserModule } from './user/user.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { MedinttThrottlerGuard } from './common/guards/throttler-behind-proxy.guard';
-import { AdminModule } from './admin/admin.module';
+
 import { AuditModule } from './audit/audit.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+import { OAuthModule } from './oauth/oauth.module';
 
 @Module({
   imports: [
@@ -39,12 +40,12 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
         limit: 5,
       },
     ]),
-    AdminModule,
     PrismaModule,
     HealthModule,
     AuthModule,
     UserModule,
     AuditModule,
+    OAuthModule,
   ],
   controllers: [AppController],
   providers: [

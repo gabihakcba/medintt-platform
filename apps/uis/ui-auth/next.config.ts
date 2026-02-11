@@ -50,7 +50,7 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "frame-ancestors 'self' https://*.medintt.com http://localhost:*;",
+              "frame-ancestors 'self' https://*.medintt.com http://localhost:* http://*.medintt.local:*;",
           },
         ],
       },

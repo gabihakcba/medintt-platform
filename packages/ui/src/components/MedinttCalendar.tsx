@@ -1,13 +1,10 @@
 "use client";
 
 import { Calendar } from "primereact/calendar";
-import {
-  Controller,
-  FieldValues
-} from "react-hook-form";
+import { Controller, FieldValues } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 
-import { parseToJsDate, toIsoString } from "@medintt/utils/date"; 
+import { parseToJsDate, toIsoString } from "@medintt/utils";
 import { MedinttCalendarProps } from "../types/form";
 
 export const MedinttCalendar = <T extends FieldValues>({
@@ -17,24 +14,23 @@ export const MedinttCalendar = <T extends FieldValues>({
   rules,
   className,
   viewMode = "date",
-  dateFormat, 
+  dateFormat,
   placeholder,
   ...props
 }: MedinttCalendarProps<T>) => {
-
   // date: dd/mm/yy
   // month: mm/yy
   // year: yy
   const getDateFormat = () => {
     if (dateFormat) return dateFormat;
-    
+
     switch (viewMode) {
       case "month":
         return "mm/yy";
       case "year":
         return "yy";
       default:
-        return "dd/mm/yy"; 
+        return "dd/mm/yy";
     }
   };
 
@@ -50,7 +46,7 @@ export const MedinttCalendar = <T extends FieldValues>({
               htmlFor={field.name}
               className={twMerge(
                 "text-sm font-medium transition-colors",
-                fieldState.invalid ? "text-red-500" : "text-text-main"
+                fieldState.invalid ? "text-red-500" : "text-text-main",
               )}
             >
               {label}
@@ -60,24 +56,18 @@ export const MedinttCalendar = <T extends FieldValues>({
 
           <Calendar
             id={field.name}
-            
             value={parseToJsDate(field.value)}
-            
             onChange={(e) => field.onChange(toIsoString(e.value as Date))}
-            
             onBlur={field.onBlur}
             view={viewMode}
             dateFormat={getDateFormat()}
             showIcon
             placeholder={placeholder}
-            className={twMerge(
-              "w-full",
-              fieldState.invalid && "p-invalid"
-            )}
+            className={twMerge("w-full", fieldState.invalid && "p-invalid")}
             inputClassName={twMerge(
               "w-full",
-              fieldState.invalid && 
-              "border-red-500 ring-1 ring-red-500 focus:ring-red-500 focus:border-red-500"
+              fieldState.invalid &&
+                "border-red-500 ring-1 ring-red-500 focus:ring-red-500 focus:border-red-500",
             )}
             {...props}
           />

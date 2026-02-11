@@ -1,4 +1,17 @@
-"use client";
+// MedinttSideBar.tsx content is fine, no changes needed for export syntax if "export interface" is used.
+// The issue might be in layout.tsx usage or next.js build process with workspace packages.
+// Let's try to verify if `SidebarUser` is reachable.
+// Actually, `MedinttSideBar` uses `MenuItem` from `primereact/menuitem`.
+// ui-admin has `primereact` installed.
+// Let's look at the error again: "ReferenceError: React is not defined" or similar? No, "command finished with error".
+// The traceback showed `ui-admin/src/app/admin/layout.tsx [Server Component]`.
+// But `layout.tsx` starts with "use client".
+// Next.js might be treating it as Server Component initally?
+// Wait, `layout.tsx` imports `MedinttSideBar` which is "use client".
+// If `MedinttSideBar` is imported from `@medintt/ui`, and `@medintt/ui` is not transpiled correctly?
+// Usually workspace packages need to be transpiled.
+// `next.config.js` in `ui-admin` might need `transpilePackages: ["@medintt/ui"]`.
+// Let's check `next.config.js`.
 
 import { ReactNode, useState } from "react";
 import { Sidebar } from "primereact/sidebar";

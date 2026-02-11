@@ -10,16 +10,6 @@
     "node": ">=18"
   },
   "packageManager": "pnpm@9.0.0",
-  "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "check-types": "turbo run check-types",
-    "dev": "turbo run dev",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint": "turbo run lint",
-    "lint:deps": "syncpack list-mismatches",
-    "fix:deps": "syncpack fix-mismatches"
-  },
   "pnpm": {
     "overrides": {
       "@nestjs/common": "10.0.0",
@@ -28,5 +18,15 @@
       "rxjs": "7.8.1",
       "reflect-metadata": "0.1.13"
     }
+  },
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "dev": "turbo run dev",
+    "fix:deps": "syncpack fix-mismatches",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint": "turbo run lint",
+    "lint:deps": "syncpack list-mismatches"
   }
 }

@@ -1,9 +1,7 @@
+import { User } from "./user.type";
+
 export class LoginResponseDto {
-  user: {
-    id: string;
-    email: string;
-    role: string;
-  };
+  user: User;
 }
 
 export class LoginTypeDto {

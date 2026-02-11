@@ -20,6 +20,14 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { TwoFactorAuthService } from './two-factor-auth.service';
 import { Prisma } from '@medintt/database-auth';
 
+type MemberWithContext = Prisma.MemberGetPayload<{
+  include: {
+    project: true;
+    role: true;
+    organization: true;
+  };
+}>;
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -52,6 +60,7 @@ export class AuthService {
         name: dto.name,
         lastName: dto.lastName,
         dni: dto.dni,
+        isVerified: false,
       },
     });
 
@@ -106,19 +115,43 @@ export class AuthService {
       }
     }
 
-    const permissionsPayload = await this.getPermissions(user.id);
+    const members = await this.getMembersWithDetails(user.id);
+    const permissionsPayload = this.formatPermissions(members);
 
     const tokens = await this.getTokens(
       user.id,
       user.email,
+      user.username,
+      user.isSuperAdmin,
       permissionsPayload,
     );
 
     await this.updateRtHash(user.id, tokens.refresh_token);
 
+    const membersResponse = members.map((member) => ({
+      project: {
+        code: member.project.code,
+        id: member.projectId,
+      },
+      role: member.role.code,
+      organization: member.organization
+        ? {
+            id: member.organization.id,
+            name: member.organization.name,
+            code: member.organization.code,
+          }
+        : undefined,
+    }));
+
     return {
       tokens,
-      user: { id: user.id, email: user.email },
+      user: {
+        id: user.id,
+        email: user.email,
+        permissions: permissionsPayload,
+        isSuperAdmin: user.isSuperAdmin,
+        members: membersResponse,
+      },
     };
   }
 
@@ -141,17 +174,44 @@ export class AuthService {
     const rtMatches = await argon2.verify(user.hashedRefreshToken, rt);
     if (!rtMatches) throw new ForbiddenException('Acceso Denegado');
 
-    const permissionsPayload = await this.getPermissions(user.id);
+    const members = await this.getMembersWithDetails(user.id);
+    const permissionsPayload = this.formatPermissions(members);
 
     const tokens = await this.getTokens(
       user.id,
       user.email,
+      user.username,
+      user.isSuperAdmin,
       permissionsPayload,
     );
 
     await this.updateRtHash(user.id, tokens.refresh_token);
 
-    return tokens;
+    const membersResponse = members.map((member) => ({
+      project: {
+        code: member.project.code,
+        id: member.projectId,
+      },
+      role: member.role.code,
+      organization: member.organization
+        ? {
+            id: member.organization.id,
+            name: member.organization.name,
+            code: member.organization.code,
+          }
+        : undefined,
+    }));
+
+    return {
+      tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        permissions: permissionsPayload,
+        isSuperAdmin: user.isSuperAdmin,
+        members: membersResponse,
+      },
+    };
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {
@@ -165,7 +225,7 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email };
     const token = await this.jwtService.signAsync(payload, {
       secret: this.config.getOrThrow('JWT_RESET_SECRET'),
-      expiresIn: '15m',
+      expiresIn: this.config.get('JWT_RESET_EXPIRATION'),
     });
 
     const url = `${this.config.getOrThrow('FRONTEND_URL_AUTH')}${this.config.getOrThrow('FRONTEND_PATH_RESET')}?token=${token}`;
@@ -269,16 +329,33 @@ export class AuthService {
 
   // --- HELPERS PRIVADOS ---
 
+  /**
+   * Obtiene (o formatea si ya se tienen) los permisos para el token.
+   * Ahora delega en getMembersWithDetails si no se pasan miembros.
+   */
   async getPermissions(userId: string): Promise<PermissionsPayload> {
-    type MemberWithContext = Prisma.MemberGetPayload<{
-      include: {
-        project: true;
-        role: true;
-        organization: true;
-      };
-    }>;
+    const members = await this.getMembersWithDetails(userId);
+    return this.formatPermissions(members);
+  }
 
-    const members: MemberWithContext[] = await this.prisma.member.findMany({
+  private formatPermissions(members: MemberWithContext[]): PermissionsPayload {
+    const permissionsPayload = {};
+
+    members.forEach((member) => {
+      permissionsPayload[member.project.code] = {
+        role: member.role?.code,
+        organizationCode: member.organization?.code,
+        projectCode: member.project.code,
+      };
+    });
+
+    return permissionsPayload;
+  }
+
+  private async getMembersWithDetails(
+    userId: string,
+  ): Promise<MemberWithContext[]> {
+    return await this.prisma.member.findMany({
       where: { userId },
       include: {
         project: true,
@@ -286,17 +363,6 @@ export class AuthService {
         organization: true,
       },
     });
-
-    const permissionsPayload = {};
-
-    members.forEach((member) => {
-      permissionsPayload[member.projectId] = {
-        role: member.role?.name,
-        organizationId: member.organizationId as string,
-      };
-    });
-
-    return permissionsPayload;
   }
 
   async updateRtHash(userId: string, rt: string | null) {
@@ -313,9 +379,17 @@ export class AuthService {
   async getTokens(
     userId: string,
     email: string,
+    username: string,
+    isSuperAdmin: boolean,
     permissionsPayload: PermissionsPayload,
   ) {
-    const payload = { sub: userId, email, permissions: permissionsPayload };
+    const payload = {
+      sub: userId,
+      email,
+      username,
+      isSuperAdmin,
+      permissions: permissionsPayload,
+    };
 
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(payload, {

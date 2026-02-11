@@ -3,7 +3,6 @@ import { login } from "@/queries/login";
 import { useState } from "react";
 import {
   LoginTypeDto,
-  LoginResponseDto,
   TYPE_LOGIN,
 } from "@medintt/types-auth/dist/auth/login.type";
 import { useMutation } from "@tanstack/react-query";
@@ -21,9 +20,6 @@ export function useLoginHook() {
     mutationFn: async (data: FieldValues) => {
       const user = await login(data as LoginTypeDto);
       return user;
-    },
-    onSuccess: (data: LoginResponseDto) => {
-      sendParentMessage(TYPE_LOGIN.SUCCESS, { user: data });
     },
     onError: (error: AxiosError) => {
       // @ts-expect-error type

@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev --webpack -p 3000",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3000",
     "lint": "eslint"
   },
   "dependencies": {
@@ -18,7 +18,7 @@
     "axios": "1.13.2",
     "class-transformer": "0.5.1",
     "class-validator": "0.14.3",
-    "next": "16.0.7",
+    "next": "16.1.6",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "7.68.0"

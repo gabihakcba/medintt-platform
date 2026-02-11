@@ -39,8 +39,6 @@ yarn-error.log*
 
 # Prisma generated clients
 **/src/generated/client
-**/packages/databases/database-medintt4/src/generated/client
-**/packages/databases/database-auth/src/generated/client
 *.node
 
 # Next.js files

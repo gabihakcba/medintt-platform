@@ -156,8 +156,6 @@ export class OAuthService {
         name: `${authCode.user.name} ${authCode.user.lastName}`,
         email: authCode.user.email,
         preferred_username: authCode.user.username,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(accessTokenExpiresAt.getTime() / 1000),
       },
       {
         issuer: 'medintt-auth',

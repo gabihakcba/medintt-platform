@@ -46,6 +46,11 @@ export default function AdminLayout({
           command: () => router.push("/admin/users"),
         },
         {
+          label: "DDJJs pendientes",
+          icon: "pi pi-fw pi-clock",
+          command: () => router.push("/admin/declaraciones-pendientes"),
+        },
+        {
           label: "Membresías",
           icon: "pi pi-id-card",
           command: () => router.push("/admin/members"),

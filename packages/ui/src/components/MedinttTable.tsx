@@ -180,12 +180,8 @@ export const MedinttTable = <T extends object>({
         {columns.map((col, index) => (
           <Column
             key={`${col.field || index}`}
-            field={col.field}
-            header={col.header}
-            body={col.body}
+            {...col}
             sortable={col.sortable ?? true}
-            style={col.style}
-            className={col.className}
             dataType={dateFilter?.field === col.field ? "date" : undefined}
           />
         ))}

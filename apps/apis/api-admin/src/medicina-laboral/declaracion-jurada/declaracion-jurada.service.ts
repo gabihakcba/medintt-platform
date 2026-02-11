@@ -30,6 +30,7 @@ import * as fs from 'fs';
 import * as handlebars from 'handlebars';
 import * as puppeteer from 'puppeteer';
 import { now, formatDate } from '@medintt/utils';
+import { MailService } from '@medintt/mail';
 
 import { InvitePayload, ProofPayload } from './dto/token-payloads.interface';
 
@@ -47,6 +48,7 @@ export class DeclaracionJuradaService {
   constructor(
     private prisma: PrismaMedinttService,
     private readonly firmaPacienteService: FirmaPacienteService,
+    private readonly mailService: MailService,
   ) {}
 
   private get inviteSecret(): string {
@@ -90,7 +92,6 @@ export class DeclaracionJuradaService {
       n: nonceB64url(),
       exp: expiresAt,
     };
-
     const token = createSignedToken(payload, this.inviteSecret);
     const baseUrl = process.env.FRONT_URL;
     const url = `${baseUrl}/${process.env.DD_JJ_URL}/${token}`;
@@ -794,5 +795,67 @@ export class DeclaracionJuradaService {
     if (!dateString) return '';
     // Use shared formatDate utility
     return formatDate(dateString, 'DD/MM/YYYY');
+  }
+
+  // --- Pending DDJJ Feature ---
+
+  async getPendientes() {
+    return this.prisma.declaraciones_Juradas.findMany({
+      where: {
+        AND: [{ Status: { not: 'TERMINADO' } }],
+      },
+      include: {
+        Pacientes: true,
+        Prestatarias: true,
+      },
+      orderBy: {
+        Fecha: 'desc',
+      },
+    });
+  }
+
+  async sendPendingEmails(ids: number[]) {
+    // 1. Fetch DDJJs
+    const ddjjs = await this.prisma.declaraciones_Juradas.findMany({
+      where: {
+        Id: { in: ids },
+      },
+      include: {
+        Pacientes: true,
+      },
+    });
+
+    const results: { id: number; success: boolean; error?: string }[] = [];
+
+    for (const dj of ddjjs) {
+      if (!dj.Pacientes || !dj.Pacientes.Email) {
+        results.push({ id: dj.Id, success: false, error: 'No patient email' });
+        continue;
+      }
+
+      try {
+        const ttlMinutes = 288800;
+
+        const invite = await this.createInvite({ ddjjId: dj.Id, ttlMinutes });
+
+        // 3. Send Email
+        await this.mailService.sendLinkMail(
+          dj.Pacientes.Email,
+          `${dj.Pacientes.Apellido}, ${dj.Pacientes.Nombre}`,
+          invite.url,
+        );
+
+        results.push({ id: dj.Id, success: true });
+      } catch (error) {
+        console.error(`Error sending email to DDJJ ${dj.Id}`, error);
+        results.push({
+          id: dj.Id,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    }
+
+    return results;
   }
 }

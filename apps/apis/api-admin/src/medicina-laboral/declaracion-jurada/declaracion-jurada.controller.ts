@@ -1,9 +1,11 @@
-import { Controller, Post, Body, Put } from '@nestjs/common';
+import { Controller, Post, Body, Put, Get, UseGuards } from '@nestjs/common';
 import { DeclaracionJuradaService } from './declaracion-jurada.service';
 import { InviteRequestDto } from './dto/invite-request.dto';
 import { VerifyRequestDto } from './dto/verify-request.dto';
 import { GetDeclaracionBodyDto } from './dto/get-declaracion-body.dto';
 import { UpdateByProofDto } from './dto/update-by-proof.dto';
+import { AtGuard } from '../../common/guards/at.guard';
+import { Medintt4Guard } from '../../medintt4/guards/medintt4.guard';
 
 @Controller('medicina-laboral/declaracion-jurada')
 export class DeclaracionJuradaController {
@@ -38,5 +40,16 @@ export class DeclaracionJuradaController {
   @Put()
   updateByProof(@Body() body: UpdateByProofDto) {
     return this.declaracionJuradaService.updateByProof(body.proof, body.data);
+  }
+
+  @UseGuards(AtGuard, Medintt4Guard)
+  @Get('pendientes')
+  getPendientes() {
+    return this.declaracionJuradaService.getPendientes();
+  }
+  @UseGuards(AtGuard, Medintt4Guard)
+  @Post('send-ddjj-link')
+  sendPendingEmails(@Body('ids') ids: number[]) {
+    return this.declaracionJuradaService.sendPendingEmails(ids);
   }
 }

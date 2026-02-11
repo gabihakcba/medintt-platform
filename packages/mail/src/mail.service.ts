@@ -18,7 +18,6 @@ export class MailService {
   constructor(private mailerService: MailerService) {}
 
   async sendUserConfirmation(email: string, url: string) {
-
     await this.mailerService.sendMail({
       to: email,
       subject: "Bienvenido a MEDINTT - Confirma tu Email",
@@ -72,7 +71,7 @@ export class MailService {
     }> = [];
 
     this.logger.log(
-      `Iniciando envío masivo a ${emails.length} destinatarios en ${batches.length} lotes.`
+      `Iniciando envío masivo a ${emails.length} destinatarios en ${batches.length} lotes.`,
     );
 
     for (const [index, batch] of batches.entries()) {
@@ -86,7 +85,7 @@ export class MailService {
         });
 
         this.logger.log(
-          `Lote ${index + 1}/${batches.length} enviado. ID: ${info.messageId}`
+          `Lote ${index + 1}/${batches.length} enviado. ID: ${info.messageId}`,
         );
         results.push({ batchIndex: index, ok: true, id: info.messageId });
       } catch (error) {
@@ -97,13 +96,28 @@ export class MailService {
       // Esperar si no es el último lote
       if (index < batches.length - 1) {
         this.logger.log(
-          `Esperando ${delayMinutes} minutos para el siguiente lote...`
+          `Esperando ${delayMinutes} minutos para el siguiente lote...`,
         );
         await this.wait(delayMs);
       }
     }
 
     return results;
+  }
+
+  async sendLinkMail(to: string, name: string, link: string) {
+    await this.mailerService.sendMail({
+      to,
+      subject: "Link para llenar la declaración jurada",
+      html: `
+        <h1>Estimado/a ${name},</h1>
+        <p>Por favor complete su declaración jurada utilizando el siguiente enlace:</p>
+        <p>
+            <a href="${link}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Completar Declaración Jurada</a>
+        </p>
+        <p>Si no funciona el botón, copia este enlace: ${link}</p>
+      `,
+    });
   }
 
   // --- HELPERS PRIVADOS (Tu lógica de utils) ---

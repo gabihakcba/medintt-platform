@@ -400,111 +400,112 @@ model Cuentas_Bancarias {
 }
 
 model Declaraciones_Juradas {
-  Id                                                    Int        @id(map: "PK_Declaraciones_Juradas") @default(autoincrement())
+  Id                                                    Int           @id(map: "PK_Declaraciones_Juradas") @default(autoincrement())
   Id_empresa                                            Int?
   Id_Paciente                                           Int?
   Id_Practica                                           Int?
-  Fecha                                                 DateTime?  @db.Date
-  Status                                                String?    @db.NVarChar(50)
-  Genero                                                String?    @db.NVarChar(50)
+  Fecha                                                 DateTime?     @db.Date
+  Status                                                String?       @db.NVarChar(50)
+  Genero                                                String?       @db.NVarChar(50)
   Fuma                                                  Int?
   Cantidad_Cigarros_diarios                             Int?
   Consume_Alcohol                                       Int?
-  Frecuencia                                            String?    @db.NVarChar(250)
+  Frecuencia                                            String?       @db.NVarChar(250)
   Practica_Deportes                                     Int?
-  Cuales_Deportes                                       String?    @db.NVarChar(250)
-  Mano_Habil                                            String?    @db.NVarChar(250)
-  Ultima_Tarea_Trabajo_Puesto                           String?    @db.NVarChar(250)
+  Cuales_Deportes                                       String?       @db.NVarChar(250)
+  Mano_Habil                                            String?       @db.NVarChar(250)
+  Ultima_Tarea_Trabajo_Puesto                           String?       @db.NVarChar(250)
   Recibio_Indeminizacion_o_tiene_pendiente              Int?
-  Recibio_Indeminizacion_o_tiene_pendiente_Aclaraciones String?    @db.NVarChar(250)
+  Recibio_Indeminizacion_o_tiene_pendiente_Aclaraciones String?       @db.NVarChar(250)
   Mareos_Desmayos                                       Int?
-  Mareos_Desmayos_Aclaraciones                          String?    @db.NVarChar(250)
+  Mareos_Desmayos_Aclaraciones                          String?       @db.NVarChar(250)
   Convulsiones                                          Int?
-  Convulsiones_Aclaraciones                             String?    @db.NVarChar(250)
+  Convulsiones_Aclaraciones                             String?       @db.NVarChar(250)
   Epilepsia                                             Int?
-  Epilepsia_Aclaraciones                                String?    @db.NVarChar(250)
+  Epilepsia_Aclaraciones                                String?       @db.NVarChar(250)
   Depresion                                             Int?
-  Depresion_Aclaraciones                                String?    @db.NVarChar(250)
+  Depresion_Aclaraciones                                String?       @db.NVarChar(250)
   Enfermedad_Neurologica                                Int?
-  Enfermedad_Neurologica_Aclaraciones                   String?    @db.NVarChar(250)
+  Enfermedad_Neurologica_Aclaraciones                   String?       @db.NVarChar(250)
   Diabetes                                              Int?
-  Diabetes_Aclaraciones                                 String?    @db.NVarChar(250)
+  Diabetes_Aclaraciones                                 String?       @db.NVarChar(250)
   Dolor_Frecuente_de_Cabeza                             Int?
-  Dolor_Frecuente_de_Cabeza_Aclaraciones                String?    @db.NVarChar(250)
+  Dolor_Frecuente_de_Cabeza_Aclaraciones                String?       @db.NVarChar(250)
   Toma_Medicacion                                       Int?
-  Toma_Medicacion_Aclaraciones                          String?    @db.NVarChar(250)
+  Toma_Medicacion_Aclaraciones                          String?       @db.NVarChar(250)
   Hipertension_Arterial                                 Int?
-  Hipertension_Arterial_Aclaraciones                    String?    @db.NVarChar(250)
+  Hipertension_Arterial_Aclaraciones                    String?       @db.NVarChar(250)
   Cardiopatias                                          Int?
-  Cardiopatias_Aclaraciones                             String?    @db.NVarChar(250)
+  Cardiopatias_Aclaraciones                             String?       @db.NVarChar(250)
   Varices                                               Int?
-  Varices_Aclaraciones                                  String?    @db.NVarChar(250)
+  Varices_Aclaraciones                                  String?       @db.NVarChar(250)
   Chagas                                                Int?
-  Chagas_Aclaraciones                                   String?    @db.NVarChar(250)
+  Chagas_Aclaraciones                                   String?       @db.NVarChar(250)
   Dentadura_Sana                                        Int?
-  Dentadura_Sana_Aclaraciones                           String?    @db.NVarChar(250)
+  Dentadura_Sana_Aclaraciones                           String?       @db.NVarChar(250)
   Alergias                                              Int?
-  Alergias_Aclaraciones                                 String?    @db.NVarChar(250)
+  Alergias_Aclaraciones                                 String?       @db.NVarChar(250)
   Tumor_Cancer                                          Int?
-  Tumor_Cancer_Aclaraciones                             String?    @db.NVarChar(250)
+  Tumor_Cancer_Aclaraciones                             String?       @db.NVarChar(250)
   Hepatitis                                             Int?
-  Hepatitis_Aclaraciones                                String?    @db.NVarChar(250)
+  Hepatitis_Aclaraciones                                String?       @db.NVarChar(250)
   Disminucion_Auditiva                                  Int?
-  Disminucion_Auditiva_Aclaraciones                     String?    @db.NVarChar(250)
+  Disminucion_Auditiva_Aclaraciones                     String?       @db.NVarChar(250)
   Tratamiento_Tiroides                                  Int?
-  Tratamiento_Tiroides_Aclaraciones                     String?    @db.NVarChar(250)
+  Tratamiento_Tiroides_Aclaraciones                     String?       @db.NVarChar(250)
   Enfermedades_de_la_Piel                               Int?
-  Enfermedades_de_la_Piel_Aclaraciones                  String?    @db.NVarChar(250)
+  Enfermedades_de_la_Piel_Aclaraciones                  String?       @db.NVarChar(250)
   Analisis_HIV                                          Int?
-  Analisis_HIV_Aclaraciones                             String?    @db.NVarChar(250)
+  Analisis_HIV_Aclaraciones                             String?       @db.NVarChar(250)
   Asma_Tos_Cronica                                      Int?
-  Asma_Tos_Cronica_Aclaraciones                         String?    @db.NVarChar(250)
+  Asma_Tos_Cronica_Aclaraciones                         String?       @db.NVarChar(250)
   Neumonia                                              Int?
-  Neumonia_Aclaraciones                                 String?    @db.NVarChar(250)
+  Neumonia_Aclaraciones                                 String?       @db.NVarChar(250)
   Sangre_al_Escupir                                     Int?
-  Sangre_al_Escupir_Aclaraciones                        String?    @db.NVarChar(250)
+  Sangre_al_Escupir_Aclaraciones                        String?       @db.NVarChar(250)
   Celiaquia                                             Int?
-  Celiaquia_Aclaraciones                                String?    @db.NVarChar(250)
+  Celiaquia_Aclaraciones                                String?       @db.NVarChar(250)
   Hernias                                               Int?
-  Hernias_Aclaraciones                                  String?    @db.NVarChar(250)
+  Hernias_Aclaraciones                                  String?       @db.NVarChar(250)
   Tratamiento_Psiquiatrico                              Int?
-  Tratamiento_Psiquiatrico_Aclaraciones                 String?    @db.NVarChar(250)
+  Tratamiento_Psiquiatrico_Aclaraciones                 String?       @db.NVarChar(250)
   Fracturas                                             Int?
-  Fracturas_Aclaraciones                                String?    @db.NVarChar(250)
+  Fracturas_Aclaraciones                                String?       @db.NVarChar(250)
   Lumbalgia                                             Int?
-  Lumbalgia_Aclaraciones                                String?    @db.NVarChar(250)
+  Lumbalgia_Aclaraciones                                String?       @db.NVarChar(250)
   Problema_Renal_Urinario                               Int?
-  Problema_Renal_Urinario_Aclaraciones                  String?    @db.NVarChar(250)
+  Problema_Renal_Urinario_Aclaraciones                  String?       @db.NVarChar(250)
   Amputaciones                                          Int?
-  Amputaciones_Aclaraciones                             String?    @db.NVarChar(250)
+  Amputaciones_Aclaraciones                             String?       @db.NVarChar(250)
   Limitaciones_Funcionales                              Int?
-  Limitaciones_Funcionales_Aclaraciones                 String?    @db.NVarChar(250)
+  Limitaciones_Funcionales_Aclaraciones                 String?       @db.NVarChar(250)
   Traumatismos_Lesiones                                 Int?
-  Traumatismos_Lesiones_Aclaraciones                    String?    @db.NVarChar(250)
+  Traumatismos_Lesiones_Aclaraciones                    String?       @db.NVarChar(250)
   Enfermedades_Oculares                                 Int?
-  Enfermedades_Oculares_Aclaraciones                    String?    @db.NVarChar(250)
+  Enfermedades_Oculares_Aclaraciones                    String?       @db.NVarChar(250)
   Uso_de_Lentes                                         Int?
-  Uso_de_Lentes_Aclaraciones                            String?    @db.NVarChar(250)
+  Uso_de_Lentes_Aclaraciones                            String?       @db.NVarChar(250)
   Ulcera_Gastrica_Nauseas_Vomitos                       Int?
-  Ulcera_Gastrica_Nauseas_Vomitos_Aclaraciones          String?    @db.NVarChar(250)
+  Ulcera_Gastrica_Nauseas_Vomitos_Aclaraciones          String?       @db.NVarChar(250)
   Cirugias                                              Int?
-  Cirugias_Aclaraciones                                 String?    @db.NVarChar(250)
+  Cirugias_Aclaraciones                                 String?       @db.NVarChar(250)
   Internaciones                                         Int?
-  Internaciones_Aclaraciones                            String?    @db.NVarChar(250)
+  Internaciones_Aclaraciones                            String?       @db.NVarChar(250)
   Vacunas_COVID                                         Int?
-  Vacunas_COVID_Aclaraciones                            String?    @db.NVarChar(250)
+  Vacunas_COVID_Aclaraciones                            String?       @db.NVarChar(250)
   Tuvo_Algun_Embarazo                                   Int?
-  Cuantos_Embarazos                                     String?    @db.NVarChar(250)
-  Fecha_Ultima_Menstruacion                             DateTime?  @db.Date
+  Cuantos_Embarazos                                     String?       @db.NVarChar(250)
+  Fecha_Ultima_Menstruacion                             DateTime?     @db.Date
   Abortos_Espontaneos                                   Int?
   Abortos_Espontaneos_Cuantos                           Int?
   Tratamientos_Hormonales                               Int?
-  Tratamientos_Hormonales_Aclaraciones                  String?    @db.NVarChar(250)
+  Tratamientos_Hormonales_Aclaraciones                  String?       @db.NVarChar(250)
   Consume_Marihuana                                     Int?
-  Consume_Marihuana_Aclaraciones                        String?    @db.NVarChar(250)
+  Consume_Marihuana_Aclaraciones                        String?       @db.NVarChar(250)
   Consume_Cocaina                                       Int?
-  Consume_Cocaina_Aclaraciones                          String?    @db.NVarChar(250)
-  Pacientes                                             Pacientes? @relation(fields: [Id_Paciente], references: [Id], onDelete: Cascade, map: "FK_Declaraciones_Juradas_Pacientes")
+  Consume_Cocaina_Aclaraciones                          String?       @db.NVarChar(250)
+  Pacientes                                             Pacientes?    @relation(fields: [Id_Paciente], references: [Id], onDelete: Cascade, map: "FK_Declaraciones_Juradas_Pacientes")
+  Prestatarias                                          Prestatarias? @relation(fields: [Id_empresa], references: [Id], onDelete: Cascade, map: "FK_Declaraciones_Juradas_Prestatarias")
 }
 
 model Dias_Muertos {
@@ -1156,6 +1157,7 @@ model Prestatarias {
   Prestatarias_Examenes              Prestatarias_Examenes[]
   ResumenDeCMxProfesional            ResumenDeCMxProfesional[]
   Valorizacion_Prestatarias          Valorizacion_Prestatarias[]
+  Declaraciones_Juradas              Declaraciones_Juradas[]
 }
 
 model Prestatarias_Examenes {

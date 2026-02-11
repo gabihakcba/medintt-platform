@@ -26,6 +26,7 @@
     "@medintt/mail": "workspace:*",
     "@medintt/types-auth": "workspace:*",
     "@medintt/utils": "workspace:*",
+    "@nestjs-modules/mailer": "2.0.2",
     "@nestjs/axios": "4.0.1",
     "@nestjs/common": "10.0.0",
     "@nestjs/config": "4.0.2",

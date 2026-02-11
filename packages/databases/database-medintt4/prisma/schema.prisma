@@ -826,9 +826,9 @@ model Interlocutores {
   Ausentismos           Int?
   Pagos                 Int?
   Examenes              Int?
+  CoordinadorSiniestros Int?
   UsuarioWeb            String?       @db.NVarChar(250)
   PasswordWeb           String?       @db.NVarChar(250)
-  CoordinadorSiniestros Int?
   Prestatarias          Prestatarias? @relation(fields: [Id_Prestataria], references: [Id], onDelete: Cascade, map: "FK_Interlocutores_Prestatarias")
 }
 
@@ -914,6 +914,8 @@ model Pacientes {
   Funcion                String?                 @db.NVarChar(250)
   ImagenFirma            Bytes?                  @db.Image
   Activo                 Int?
+  Nacionalidad           String?                 @db.NVarChar(50)
+  CUIL                   String?                 @db.NVarChar(50)
   Afiliacion_Pacientes   Afiliacion_Pacientes[]
   Cirugias               Cirugias[]
   Declaraciones_Juradas  Declaraciones_Juradas[]
@@ -980,15 +982,15 @@ model Pagos_Bancarios {
   Id_Beneficiario               Int?
   Id_Concepto                   Int?
   Id_Cuenta                     Int?
+  Id_Tipo_Pago_Bancario         Int?
+  Fecha_Obligacion              DateTime?                      @db.Date
+  Fecha_Vencimiento             DateTime?                      @db.Date
+  Fecha_Pago                    DateTime?                      @db.Date
   Importe                       Decimal?                       @db.Decimal(18, 6)
   Pagado                        Decimal?                       @db.Decimal(18, 6)
   Saldo                         Decimal?                       @db.Decimal(18, 6)
-  Fecha_Obligacion              DateTime?                      @db.Date
-  Fecha_Pago                    DateTime?                      @db.Date
-  Fecha_Vencimiento             DateTime?                      @db.Date
-  Id_Tipo_Pago_Bancario         Int?
-  Notas                         String?                        @db.NVarChar(250)
   Status                        String?                        @db.NVarChar(50)
+  Notas                         String?                        @db.NVarChar(250)
   Beneficiarios_Pagos_Bancarios Beneficiarios_Pagos_Bancarios? @relation(fields: [Id_Beneficiario], references: [Id], onDelete: Cascade, map: "FK_Pagos_Bancarios_Beneficiarios_Pagos_Bancarios")
   Conceptos_Pagos_Bancarios     Conceptos_Pagos_Bancarios?     @relation(fields: [Id_Concepto], references: [Id], onDelete: Cascade, map: "FK_Pagos_Bancarios_Conceptos_Pagos_Bancarios")
   Cuentas_Bancarias             Cuentas_Bancarias?             @relation(fields: [Id_Cuenta], references: [Id], onDelete: Cascade, map: "FK_Pagos_Bancarios_Cuentas_Bancarias")
@@ -998,13 +1000,13 @@ model Pagos_Bancarios {
 
 model Pagos_Bancarios_Attachs {
   Id                         Int                         @id(map: "PK_Pagos_Attachs") @default(autoincrement())
+  Id_Pago_Bancario_Realizado Int?
   Descripcion                String?                     @db.NVarChar(250)
   Observaciones              String?                     @db.NText
   FileName                   String?                     @db.NVarChar(250)
   FileSize                   Int?
   Extension                  String?                     @db.NVarChar(5)
   Archivo                    Bytes?                      @db.Image
-  Id_Pago_Bancario_Realizado Int?
   Pagos_Bancarios_Realizados Pagos_Bancarios_Realizados? @relation(fields: [Id_Pago_Bancario_Realizado], references: [Id], onDelete: Cascade, map: "FK_Pagos_Bancarios_Attachs_Pagos_Bancarios_Realizados")
 }
 

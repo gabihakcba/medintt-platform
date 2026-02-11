@@ -375,52 +375,56 @@ export class DeclaracionJuradaService {
 
     const nombreUsuario = 'SISTEMA_WEB';
 
-    return this.prisma.$transaction(async (tx) => {
-      const updatedDj = await tx.declaraciones_Juradas.update({
-        where: { Id: ddjjId },
-        data: updateData,
-        include: { Pacientes: true },
-      });
-
-      // Generate PDF Buffer
-      const pdfBuffer = await this.generatePdfBuffer(updatedDj, nombreEmpresa);
-
-      if (dj.Id_Practica) {
-        // Use shared date utilities
-        const nowMoment = now();
-        const formattedDate = nowMoment.format('YYYY-MM-DD_HHmmss');
-        const niceDate = nowMoment.format('DD/MM/YYYY HH:mm');
-
-        // Patient data for description
-        const pacienteNombre = `${updatedDj.Pacientes?.Apellido} ${updatedDj.Pacientes?.Nombre}`;
-        const pacienteDni = updatedDj.Pacientes?.NroDocumento || 'S/D';
-
-        // Save PDF to Practicas_Attachs
-        await tx.practicas_Attachs.create({
-          data: {
-            Id_Practica: dj.Id_Practica,
-            FileName: `DDJJ_${pacienteDni}_${formattedDate}`,
-            FileSize: Math.round(pdfBuffer.length / 1024), // Size in KB
-            Descripcion: `DECLARACIÓN JURADA DE: ${pacienteNombre.toUpperCase()} ${pacienteDni}`,
-            Observaciones: `Declaración Jurada digital generada el ${niceDate}, por el usuario ${nombreUsuario}, para la empresa ${nombreEmpresa.toUpperCase()}`,
-            Extension: '.pdf',
-            Archivo: pdfBuffer,
-          },
+    return this.prisma.$transaction(
+      async (tx) => {
+        const updatedDj = await tx.declaraciones_Juradas.update({
+          where: { Id: ddjjId },
+          data: updateData,
+          include: { Pacientes: true },
         });
 
-        await tx.practicas.update({
-          where: { Id: dj.Id_Practica },
-          data: {
-            Status: 'INFORMADA',
-            Fecha_Practica: new Date(),
-            InformeProfesional: `DECLARACION JURADA COMPLETADA EL ${formattedDate}`,
-            Notas: 'Declaración jurada registrada en web y PDF adjunto.',
-          },
-        });
+        // Generate PDF Buffer
+        const pdfBuffer = await this.generatePdfBuffer(
+          updatedDj,
+          nombreEmpresa,
+        );
 
-        // Update Labor Exam Status via SP
-        // Fetch ID using raw SQL as safely requested by user
-        const result: ExamenLaboralQueryResult[] = await tx.$queryRaw`
+        if (dj.Id_Practica) {
+          // Use shared date utilities
+          const nowMoment = now();
+          const formattedDate = nowMoment.format('YYYY-MM-DD_HHmmss');
+          const niceDate = nowMoment.format('DD/MM/YYYY HH:mm');
+
+          // Patient data for description
+          const pacienteNombre = `${updatedDj.Pacientes?.Apellido} ${updatedDj.Pacientes?.Nombre}`;
+          const pacienteDni = updatedDj.Pacientes?.NroDocumento || 'S/D';
+
+          // Save PDF to Practicas_Attachs
+          await tx.practicas_Attachs.create({
+            data: {
+              Id_Practica: dj.Id_Practica,
+              FileName: `DDJJ_${pacienteDni}_${formattedDate}`,
+              FileSize: Math.round(pdfBuffer.length / 1024), // Size in KB
+              Descripcion: `DECLARACIÓN JURADA DE: ${pacienteNombre.toUpperCase()} ${pacienteDni}`,
+              Observaciones: `Declaración Jurada digital generada el ${niceDate}, por el usuario ${nombreUsuario}, para la empresa ${nombreEmpresa.toUpperCase()}`,
+              Extension: '.pdf',
+              Archivo: pdfBuffer,
+            },
+          });
+
+          await tx.practicas.update({
+            where: { Id: dj.Id_Practica },
+            data: {
+              Status: 'INFORMADA',
+              Fecha_Practica: new Date(),
+              InformeProfesional: `DECLARACION JURADA COMPLETADA EL ${formattedDate}`,
+              Notas: 'Declaración jurada registrada en web y PDF adjunto.',
+            },
+          });
+
+          // Update Labor Exam Status via SP
+          // Fetch ID using raw SQL as safely requested by user
+          const result: ExamenLaboralQueryResult[] = await tx.$queryRaw`
           SELECT        dbo.Examenes_Laborales_Pacientes.Id_Examen_Laboral
           FROM            dbo.Practicas LEFT OUTER JOIN
                                    dbo.Examenes_Laborales_PacientesxPracticas ON dbo.Practicas.Id = dbo.Examenes_Laborales_PacientesxPracticas.Id_Practica LEFT OUTER JOIN
@@ -428,14 +432,16 @@ export class DeclaracionJuradaService {
           WHERE        (dbo.Practicas.Id = ${dj.Id_Practica})
         `;
 
-        if (result && result.length > 0 && result[0].Id_Examen_Laboral) {
-          const idExamenLaboral = result[0].Id_Examen_Laboral;
-          await tx.$executeRaw`EXEC usp_Actualizar_Status_Examen_Laboral @Id_Examen_Laboral=${idExamenLaboral}`;
+          if (result && result.length > 0 && result[0].Id_Examen_Laboral) {
+            const idExamenLaboral = result[0].Id_Examen_Laboral;
+            await tx.$executeRaw`EXEC usp_Actualizar_Status_Examen_Laboral @Id_Examen_Laboral=${idExamenLaboral}`;
+          }
         }
-      }
 
-      return updatedDj;
-    });
+        return updatedDj;
+      },
+      { maxWait: 100000, timeout: 100000 },
+    );
   }
 
   // --- PDF GENERATION LOGIC WITH PUPPETEER & HANDLEBARS ---

@@ -2,13 +2,15 @@
 
 import { usePendingDDJJ } from "@/hooks/usePendingDDJJ";
 import { useAuth } from "@/hooks/useAuth";
-import { MedinttTable } from "@medintt/ui";
+import { MedinttGuard, MedinttTable } from "@medintt/ui";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { useState } from "react";
+import { checkPermissions } from "@/services/permissions";
 
 export default function PendingDDJJPage() {
+  const { user } = useAuth();
   const { query, sendEmailsMutation, toastRef } = usePendingDDJJ();
   const [selectedDDJJs, setSelectedDDJJs] = useState<any[]>([]);
 
@@ -82,32 +84,45 @@ export default function PendingDDJJPage() {
   ];
 
   return (
-    <div className="card">
-      <Toast ref={toastRef} />
+    <MedinttGuard
+      data={user}
+      validator={(u) =>
+        checkPermissions(
+          u,
+          process.env.NEXT_PUBLIC_SELF_PROJECT!,
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        )
+      }
+    >
+      <div className="card">
+        <Toast ref={toastRef} />
 
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Declaraciones Pendientes</h1>
-        <Button
-          label="Enviar Links Seleccionados"
-          icon="pi pi-envelope"
-          onClick={handleSendEmails}
-          disabled={selectedDDJJs.length === 0 || sendEmailsMutation.isPending}
-          loading={sendEmailsMutation.isPending}
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">Declaraciones Pendientes</h1>
+          <Button
+            label="Enviar Links Seleccionados"
+            icon="pi pi-envelope"
+            onClick={handleSendEmails}
+            disabled={
+              selectedDDJJs.length === 0 || sendEmailsMutation.isPending
+            }
+            loading={sendEmailsMutation.isPending}
+          />
+        </div>
+
+        <MedinttTable
+          columns={columns}
+          data={query.data || []}
+          loading={query.isLoading}
+          selection={selectedDDJJs}
+          onSelectionChange={(e: any) => setSelectedDDJJs(e.value)}
+          dataKey="Id"
+          actions={actionBodyTemplate}
+          actionsHeader="Acciones"
+          paginator
+          rows={10}
         />
       </div>
-
-      <MedinttTable
-        columns={columns}
-        data={query.data || []}
-        loading={query.isLoading}
-        selection={selectedDDJJs}
-        onSelectionChange={(e: any) => setSelectedDDJJs(e.value)}
-        dataKey="Id"
-        actions={actionBodyTemplate}
-        actionsHeader="Acciones"
-        paginator
-        rows={10}
-      />
-    </div>
+    </MedinttGuard>
   );
 }

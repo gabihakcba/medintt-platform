@@ -12,4 +12,6 @@ export class PacienteResponse {
   Email?: string;
   firma?: string | null;
   firmaUrl?: string;
+  Nacionalidad?: string;
+  CUIL?: string;
 }

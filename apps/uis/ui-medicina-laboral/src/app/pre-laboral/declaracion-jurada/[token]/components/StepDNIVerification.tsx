@@ -21,7 +21,7 @@ export const StepDNIVerification = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: () => verifyUser(token, dni),
+    mutationFn: (dniToVerify: string) => verifyUser(token, dniToVerify),
     onSuccess: (data) => {
       onVerified(data);
     },
@@ -44,8 +44,9 @@ export const StepDNIVerification = ({
     e.preventDefault();
     if (!dni) return;
 
+    const cleanedDni = dni.trim().replace(/[.,]/g, "");
     setErrorMsg(null);
-    mutation.mutate();
+    mutation.mutate(cleanedDni);
   };
 
   return (
@@ -73,6 +74,9 @@ export const StepDNIVerification = ({
               className="p-3 w-full"
               keyfilter="int"
             />
+            <small className="text-gray-500">
+              Por favor, no ingresar puntos ni comas.
+            </small>
           </div>
 
           {(errorMsg || mutation.isError) && (

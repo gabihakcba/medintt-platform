@@ -71,6 +71,8 @@ export class PacientesService {
       Id_Localidad,
       Telefono,
       Email,
+      Nacionalidad,
+      CUIL,
     }: PacienteDataDto = dto.paciente;
 
     const updateData: Prisma.PacientesUpdateInput = {
@@ -83,6 +85,8 @@ export class PacientesService {
       Id_Localidad,
       Telefono,
       Email,
+      Nacionalidad,
+      CUIL,
     };
 
     // Remove undefined keys

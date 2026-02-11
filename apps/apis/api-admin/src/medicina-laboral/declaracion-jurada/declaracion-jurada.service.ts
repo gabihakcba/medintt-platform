@@ -133,7 +133,8 @@ export class DeclaracionJuradaService {
     }
 
     // DNI Check
-    if (dj.Pacientes.NroDocumento !== dto.dni) {
+    const normalize = (s: string) => s.trim();
+    if (normalize(dj.Pacientes.NroDocumento || '') !== normalize(dto.dni)) {
       throw genericError;
     }
 
@@ -211,6 +212,8 @@ export class DeclaracionJuradaService {
           Telefono: Pacientes.Telefono as string,
           Celular1: Pacientes.Celular1 as string,
           Email: Pacientes.Email as string,
+          Nacionalidad: Pacientes.Nacionalidad as string,
+          CUIL: Pacientes.CUIL as string,
           firma: hasFirma
             ? Buffer.from(Pacientes.ImagenFirma!).toString('base64')
             : null,
@@ -287,6 +290,11 @@ export class DeclaracionJuradaService {
         Genero: Pacientes.Genero as string,
         Barrio: Pacientes.Barrio as string,
         Id_Localidad: Pacientes.Id_Localidad as number,
+        Telefono: Pacientes.Telefono as string,
+        Celular1: Pacientes.Celular1 as string,
+        Email: Pacientes.Email as string,
+        Nacionalidad: Pacientes.Nacionalidad as string,
+        CUIL: Pacientes.CUIL as string,
       },
       empresa: empresaData,
     };
@@ -689,6 +697,7 @@ export class DeclaracionJuradaService {
         estadoCivil: '',
         localidad: localidad,
         provincia: provincia,
+        nacionalidad: paciente?.Nacionalidad || '',
         puestoTrabajo: dj.Ultima_Tarea_Trabajo_Puesto,
       },
       habitos: {

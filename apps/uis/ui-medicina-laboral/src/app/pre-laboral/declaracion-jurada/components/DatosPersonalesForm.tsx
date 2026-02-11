@@ -88,8 +88,8 @@ export default function DatosPersonalesForm({
       // Let's add Email, Celular1, Telefono to `declaracion-jurada.service.ts` return first.
 
       Email: initialData.Email || "",
-      Nacionalidad: "", // Not in DB
-      CUIL: "", // Not in DB
+      Nacionalidad: initialData.Nacionalidad || "",
+      CUIL: initialData.CUIL || "",
     };
   }, [initialData, localitiesQuery.data]);
 

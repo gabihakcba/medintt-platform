@@ -1,4 +1,13 @@
-import { Controller, Get, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Query,
+  Param,
+  ParseIntPipe,
+  Res,
+} from '@nestjs/common';
+import type { Response } from 'express';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -35,5 +44,45 @@ export class AusentismosController {
     @Query() filters: AusentismosFilterDto,
   ) {
     return this.ausentismosService.findAll(user, filters);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get ausentismo by id' })
+  @ApiResponse({ status: 200, description: 'Ausentismo details' })
+  async findOne(
+    @GetCurrentUser() user: JwtPayload,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.ausentismosService.findOne(id, user);
+  }
+
+  @Get('attachment/:id')
+  @ApiOperation({ summary: 'Get attachment content' })
+  async getAttachment(
+    @GetCurrentUser() user: JwtPayload,
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    const file = await this.ausentismosService.getAttachment(id);
+    res.set({
+      'Content-Type': file.mimeType,
+      'Content-Disposition': `inline; filename="${file.fileName}"`,
+    });
+    res.send(file.buffer);
+  }
+
+  @Get('certificate/:id')
+  @ApiOperation({ summary: 'Get certificate content' })
+  async getCertificate(
+    @GetCurrentUser() user: JwtPayload,
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    const file = await this.ausentismosService.getCertificate(id);
+    res.set({
+      'Content-Type': file.mimeType,
+      'Content-Disposition': `inline; filename="${file.fileName}"`,
+    });
+    res.send(file.buffer);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@medintt/database-medintt4';
 import { PrismaMedinttService } from '../../prisma-medintt/prisma-medintt.service';
 import type { JwtPayload } from '../../common/types/jwt-payload.type';
@@ -65,7 +65,9 @@ export class AusentismosService {
       const ausentismos = await this.prisma.ausentismos.findMany({
         where: dateFilter,
         select: {
+          Id: true,
           Id_Paciente: true,
+          Id_Prestataria: true,
           Fecha_Desde: true,
           Fecha_Hasta: true,
           Fecha_Reincoporacion: true,
@@ -76,76 +78,90 @@ export class AusentismosService {
               Categoria: true,
             },
           },
+          Ausentismos_Attachs: {
+            select: { Id: true, FileName: true, Extension: true },
+          },
+          Ausentismos_Certificados: {
+            select: { Id: true, FileName: true, Extension: true },
+          },
         },
       });
 
-      // Enrich with patient data
+      // Enrich with patient data & Prestataria
       const pacienteIds = ausentismos
         .map((a) => a.Id_Paciente)
         .filter((id): id is number => id !== null);
 
-      const pacientes = await this.prisma.pacientes.findMany({
-        where: {
-          Id: {
-            in: pacienteIds,
+      const prestatariaIds = ausentismos
+        .map((a) => a.Id_Prestataria)
+        .filter((id): id is number => id !== null);
+
+      const [pacientes, prestatarias] = await Promise.all([
+        this.prisma.pacientes.findMany({
+          where: { Id: { in: pacienteIds } },
+          select: {
+            Id: true,
+            Nombre: true,
+            Apellido: true,
+            NroDocumento: true,
           },
-        },
-        select: {
-          Id: true,
-          Nombre: true,
-          Apellido: true,
-          NroDocumento: true,
-        },
-      });
+        }),
+        this.prisma.prestatarias.findMany({
+          where: { Id: { in: prestatariaIds } },
+          select: { Id: true, Nombre: true },
+        }),
+      ]);
 
       const pacientesMap = new Map(pacientes.map((p) => [p.Id, p]));
+      const prestatariasMap = new Map(prestatarias.map((p) => [p.Id, p]));
 
       return ausentismos.map((a) => ({
         ...a,
         paciente: a.Id_Paciente ? pacientesMap.get(a.Id_Paciente) : null,
+        prestataria: a.Id_Prestataria
+          ? prestatariasMap.get(a.Id_Prestataria)
+          : null,
       }));
     }
 
     // If Interlocutor, return only ausentismos from their organization
-    // Get the organization code from the user's membership
     const organizationCode = membership?.organizationCode;
 
     if (!organizationCode) {
       return [];
     }
 
-    // Find the prestataria by code to get its numeric ID
     const prestataria = await this.prisma.prestatarias.findFirst({
-      where: {
-        Codigo: organizationCode,
-      },
-      select: {
-        Id: true,
-      },
+      where: { Codigo: organizationCode },
+      select: { Id: true, Nombre: true },
     });
 
     if (!prestataria) {
-      // Organization not found in Prestatarias table
       return [];
     }
 
-    // Return ausentismos that match this prestataria ID
     const ausentismos = await this.prisma.ausentismos.findMany({
       where: {
         Id_Prestataria: prestataria.Id,
         ...dateFilter,
       },
       select: {
+        Id: true,
         Id_Paciente: true,
+        Id_Prestataria: true,
         Fecha_Desde: true,
         Fecha_Hasta: true,
         Fecha_Reincoporacion: true,
         Diagnostico: true,
         Evolucion: true,
         Ausentismos_Categorias: {
-          select: {
-            Categoria: true,
-          },
+          select: { Categoria: true },
+        },
+        Ausentismos_Attachs: {
+          select: { Id: true, FileName: true, Extension: true },
+        },
+        Ausentismos_Certificados: {
+          select: { Id: true, FileName: true, Extension: true },
         },
       },
     });
@@ -156,11 +172,7 @@ export class AusentismosService {
       .filter((id): id is number => id !== null);
 
     const pacientes = await this.prisma.pacientes.findMany({
-      where: {
-        Id: {
-          in: pacienteIds,
-        },
-      },
+      where: { Id: { in: pacienteIds } },
       select: {
         Id: true,
         Nombre: true,
@@ -174,6 +186,123 @@ export class AusentismosService {
     return ausentismos.map((a) => ({
       ...a,
       paciente: a.Id_Paciente ? pacientesMap.get(a.Id_Paciente) : null,
+      prestataria: prestataria, // Already have this
     }));
+  }
+
+  async findOne(id: number, user: JwtPayload) {
+    const medLabProject = process.env.MED_LAB_PROJECT;
+    const roleAdmin = process.env.ROLE_ADMIN;
+    const orgM = process.env.ORG_M;
+
+    const membership = user.permissions?.[medLabProject!];
+    const isSuperAdminOrAdmin =
+      user.isSuperAdmin ||
+      (membership?.role === roleAdmin && membership?.organizationCode === orgM);
+
+    const ausentismo = await this.prisma.ausentismos.findUnique({
+      where: { Id: id },
+      include: {
+        Ausentismos_Categorias: { select: { Categoria: true } },
+        Ausentismos_Attachs: {
+          select: { Id: true, FileName: true, Extension: true },
+        },
+        Ausentismos_Certificados: {
+          select: { Id: true, FileName: true, Extension: true },
+        },
+      },
+    });
+
+    if (!ausentismo) {
+      return null;
+    }
+
+    // Security Check
+    if (!isSuperAdminOrAdmin) {
+      const organizationCode = membership?.organizationCode;
+      if (!organizationCode) return null;
+
+      const prestataria = await this.prisma.prestatarias.findFirst({
+        where: { Codigo: organizationCode },
+        select: { Id: true },
+      });
+
+      if (!prestataria || ausentismo.Id_Prestataria !== prestataria.Id) {
+        return null; // Not authorized
+      }
+    }
+
+    // Enrich
+    const paciente = ausentismo.Id_Paciente
+      ? await this.prisma.pacientes.findUnique({
+          where: { Id: ausentismo.Id_Paciente },
+          select: {
+            Id: true,
+            Nombre: true,
+            Apellido: true,
+            NroDocumento: true,
+            Direccion: true,
+            Email: true,
+            Telefono: true,
+            Celular1: true,
+            FechaNacimiento: true,
+          },
+        })
+      : null;
+
+    const prestataria = ausentismo.Id_Prestataria
+      ? await this.prisma.prestatarias.findUnique({
+          where: { Id: ausentismo.Id_Prestataria },
+          select: { Id: true, Nombre: true, Codigo: true },
+        })
+      : null;
+
+    return {
+      ...ausentismo,
+      paciente,
+      prestataria,
+    };
+  }
+
+  async getAttachment(id: number) {
+    const attachment = await this.prisma.ausentismos_Attachs.findUnique({
+      where: { Id: id },
+    });
+    if (!attachment || !attachment.Archivo)
+      throw new NotFoundException('Attachment not found');
+    return {
+      buffer: attachment.Archivo,
+      mimeType: this.getMimeType(attachment.Extension),
+      fileName: attachment.FileName,
+    };
+  }
+
+  async getCertificate(id: number) {
+    const certificate = await this.prisma.ausentismos_Certificados.findUnique({
+      where: { Id: id },
+    });
+    if (!certificate || !certificate.Archivo)
+      throw new NotFoundException('Certificate not found');
+    return {
+      buffer: certificate.Archivo,
+      mimeType: this.getMimeType(certificate.Extension),
+      fileName: certificate.FileName,
+    };
+  }
+
+  private getMimeType(extension: string | null): string {
+    if (!extension) return 'application/octet-stream';
+    const ext = extension.toLowerCase().replace('.', '');
+    switch (ext) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      default:
+        return 'application/octet-stream';
+    }
   }
 }

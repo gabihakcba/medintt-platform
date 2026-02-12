@@ -132,13 +132,13 @@ export const MedinttTable = <T extends object>({
           )}
 
           {enableGlobalFilter && (
-            <IconField iconPosition="left">
+            <IconField iconPosition="right">
               <InputIcon className="pi pi-search" />
               <InputText
                 value={globalFilterValue}
                 onChange={onGlobalFilterChange}
                 placeholder="Buscar..."
-                className="w-full p-2 pl-10"
+                className="w-full p-2"
               />
             </IconField>
           )}

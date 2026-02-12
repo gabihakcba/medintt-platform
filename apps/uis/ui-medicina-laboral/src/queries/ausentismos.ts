@@ -1,10 +1,12 @@
 import { api } from "@/lib/axios";
 
 export interface Ausentismo {
+  Id: number;
   Id_Paciente: number | null;
-  Fecha_Desde: Date | null;
-  Fecha_Hasta: Date | null;
-  Fecha_Reincoporacion: Date | null;
+  Id_Prestataria: number | null;
+  Fecha_Desde: string | null;
+  Fecha_Hasta: string | null;
+  Fecha_Reincoporacion: string | null;
   Diagnostico: string | null;
   Evolucion: string | null;
   Ausentismos_Categorias: {
@@ -15,7 +17,27 @@ export interface Ausentismo {
     Nombre: string | null;
     Apellido: string | null;
     NroDocumento: string | null;
+    Direccion?: string | null;
+    Email?: string | null;
+    Telefono?: string | null;
+    Celular1?: string | null;
+    FechaNacimiento?: string | null;
   } | null;
+  prestataria: {
+    Id: number;
+    Nombre: string | null;
+    Codigo?: string | null;
+  } | null;
+  Ausentismos_Attachs?: {
+    Id: number;
+    FileName: string | null;
+    Extension: string | null;
+  }[];
+  Ausentismos_Certificados?: {
+    Id: number;
+    FileName: string | null;
+    Extension: string | null;
+  }[];
 }
 
 export interface AusentismosFilters {
@@ -37,5 +59,12 @@ export const fetchAusentismos = async (
   const url = `/medicina-laboral/ausentismos${query ? `?${query}` : ""}`;
 
   const { data } = await api.get<Ausentismo[]>(url);
+  return data;
+};
+
+export const fetchAusentismoById = async (id: number): Promise<Ausentismo> => {
+  const { data } = await api.get<Ausentismo>(
+    `/medicina-laboral/ausentismos/${id}`,
+  );
   return data;
 };

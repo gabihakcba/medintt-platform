@@ -2,14 +2,12 @@
 
 import { usePendingData } from "@/hooks/usePendingData";
 import { useAuth } from "@/hooks/useAuth";
-import { MedinttGuard, MedinttTable } from "@medintt/ui";
+import { MedinttGuard, MedinttTable, MedinttFilePreview } from "@medintt/ui";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { useState, useRef } from "react";
 import { checkPermissions } from "@/services/permissions";
 import { Column } from "primereact/column";
-
-import { Dialog } from "primereact/dialog";
 
 export default function PendingDataPage() {
   const { user } = useAuth();
@@ -137,25 +135,12 @@ export default function PendingDataPage() {
           rows={10}
         />
 
-        <Dialog
-          header="Vista Previa de Documento"
+        <MedinttFilePreview
           visible={visible}
-          style={{ width: "80vw", height: "90vh" }}
           onHide={() => setVisible(false)}
-          maximizable
-          modal
-          contentStyle={{ height: "100%", padding: 0 }}
-        >
-          {pdfUrl && (
-            <iframe
-              src={pdfUrl}
-              width="100%"
-              height="100%"
-              style={{ border: "none", height: "100%", display: "block" }}
-              title="PDF Preview"
-            />
-          )}
-        </Dialog>
+          url={pdfUrl}
+          title="Vista Previa de Documento"
+        />
       </div>
     </MedinttGuard>
   );

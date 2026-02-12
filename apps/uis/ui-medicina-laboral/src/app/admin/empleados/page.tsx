@@ -9,10 +9,24 @@ export default function EmpleadosPage() {
   const { user } = useAuth();
   const { pacientes, isLoading } = usePacientes();
 
+  const patientsWithCompanies =
+    pacientes?.map((p: any) => ({
+      ...p,
+      prestatariasString:
+        p.prestatarias?.map((prep: any) => prep.Nombre).join(", ") || "",
+    })) || [];
+
   const columns = [
     { field: "Apellido", header: "Apellido" },
     { field: "Nombre", header: "Nombre" },
     { field: "NroDocumento", header: "Nro Doc" },
+    {
+      field: "prestatariasString",
+      header: "Empresa",
+      hidden: !checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+        process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+      ]),
+    },
     { field: "Email", header: "Email" },
     { field: "Cargo", header: "Cargo" },
     { field: "Puesto", header: "Puesto" },
@@ -32,10 +46,17 @@ export default function EmpleadosPage() {
         <h1 className="text-2xl font-bold mb-4">Empleados</h1>
 
         <MedinttTable
-          data={pacientes || []}
+          data={patientsWithCompanies}
           columns={columns}
           loading={isLoading}
-          globalFilterFields={["Apellido", "Nombre", "NroDocumento", "Email"]}
+          enableGlobalFilter={true}
+          globalFilterFields={[
+            "Apellido",
+            "Nombre",
+            "NroDocumento",
+            "Email",
+            "prestatariasString",
+          ]}
         />
       </div>
     </MedinttGuard>

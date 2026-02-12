@@ -15,4 +15,5 @@ export * from "./components/MedinttTable";
 export * from "./components/MedinttToast";
 export * from "./components/MedinttGuard";
 export * from "./types/form";
+export * from "./components/MedinttFilePreview";
 export * from "./components/TailwindGridSafelist";

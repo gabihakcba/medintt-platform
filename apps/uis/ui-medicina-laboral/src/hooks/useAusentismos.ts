@@ -1,5 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchAusentismos, AusentismosFilters } from "../queries/ausentismos";
+import {
+  fetchAusentismos,
+  fetchAusentismoById,
+  AusentismosFilters,
+} from "../queries/ausentismos";
 
 export const useAusentismos = (filters?: AusentismosFilters) => {
   const { data, isLoading, isError, error } = useQuery({
@@ -9,6 +13,21 @@ export const useAusentismos = (filters?: AusentismosFilters) => {
 
   return {
     ausentismos: data,
+    isLoading,
+    isError,
+    error,
+  };
+};
+
+export const useAusentismo = (id: number) => {
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["ausentismo", id],
+    queryFn: () => fetchAusentismoById(id),
+    enabled: !!id && !isNaN(id),
+  });
+
+  return {
+    ausentismo: data,
     isLoading,
     isError,
     error,

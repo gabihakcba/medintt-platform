@@ -18,7 +18,7 @@ export class PacientesService {
 
     if (user.isSuperAdmin || isAdmin) {
       // Return all patients
-      return this.prisma.pacientes.findMany({
+      const patients = await this.prisma.pacientes.findMany({
         select: {
           Id: true,
           Codigo: true,
@@ -36,6 +36,59 @@ export class PacientesService {
           Activo: true,
         },
       });
+
+      // Enrich with Prestatarias manually since relation might not exist in Prisma schema
+      const patientIds = patients.map((p) => p.Id);
+
+      const afiliaciones = await this.prisma.afiliacion_Pacientes.findMany({
+        where: { Id_Paciente: { in: patientIds } },
+        select: {
+          Id_Paciente: true,
+          Id_Prestataria: true,
+        },
+      });
+
+      // Get unique Prestataria IDs
+      const prestatariaIds = [
+        ...new Set(
+          afiliaciones
+            .map((a) => a.Id_Prestataria)
+            .filter((id): id is number => id !== null),
+        ),
+      ];
+
+      // Fetch Prestatarias details
+      const prestatariasInfos = await this.prisma.prestatarias.findMany({
+        where: { Id: { in: prestatariaIds } },
+        select: { Id: true, Nombre: true },
+      });
+
+      const prestatariaMap = new Map(prestatariasInfos.map((p) => [p.Id, p]));
+
+      // Map unique Prestatarias per patient
+      const patientPrestatariasMap = new Map<
+        number,
+        (typeof prestatariasInfos)[number][]
+      >();
+
+      afiliaciones.forEach((af) => {
+        if (af.Id_Paciente && af.Id_Prestataria) {
+          const pInfo = prestatariaMap.get(af.Id_Prestataria);
+          if (pInfo) {
+            const list = patientPrestatariasMap.get(af.Id_Paciente) || [];
+            // Avoid duplicates for same patient
+            if (!list.find((existing) => existing.Id === pInfo.Id)) {
+              list.push(pInfo);
+            }
+            patientPrestatariasMap.set(af.Id_Paciente, list);
+          }
+        }
+      });
+
+      return patients.map((p) => ({
+        ...p,
+        prestatarias: patientPrestatariasMap.get(p.Id) || [],
+      }));
     }
 
     // If Interlocutor, return only patients from their organization
@@ -53,6 +106,7 @@ export class PacientesService {
       },
       select: {
         Id: true,
+        Nombre: true,
       },
     });
 
@@ -75,7 +129,7 @@ export class PacientesService {
       .filter((id): id is number => id !== null);
 
     // Return patients that match these IDs
-    return this.prisma.pacientes.findMany({
+    const patients = await this.prisma.pacientes.findMany({
       where: {
         Id: {
           in: patientIds,
@@ -99,5 +153,10 @@ export class PacientesService {
         Activo: true,
       },
     });
+
+    return patients.map((p) => ({
+      ...p,
+      prestatarias: [prestataria], // We know they belong to this one
+    }));
   }
 }

@@ -42,6 +42,14 @@ export default function AusentismosPage() {
       body: (rowData: any) => rowData.paciente?.NroDocumento || "-",
     },
     {
+      field: "prestataria.Nombre",
+      header: "Empresa",
+      hidden: !checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+        process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+      ]),
+      body: (rowData: any) => rowData.prestataria?.Nombre || "-",
+    },
+    {
       field: "Fecha_Desde",
       header: "Desde",
       body: (rowData: any) => formatDate(rowData.Fecha_Desde),
@@ -63,6 +71,22 @@ export default function AusentismosPage() {
     },
     { field: "Diagnostico", header: "Diagnóstico" },
     { field: "Evolucion", header: "Evolución" },
+    {
+      field: "actions",
+      header: "Acciones",
+      hidden: !checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+        process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        process.env.NEXT_PUBLIC_ROLE_INTERLOCUTOR!,
+      ]),
+      body: (rowData: any) => (
+        <a
+          href={`/admin/ausentismos/${rowData.Id}`}
+          className="text-blue-600 hover:text-blue-800"
+        >
+          <i className="pi pi-eye text-xl"></i>
+        </a>
+      ),
+    },
   ];
 
   return (
@@ -127,11 +151,13 @@ export default function AusentismosPage() {
           data={ausentismos || []}
           columns={columns}
           loading={isLoading}
+          enableGlobalFilter={true}
           globalFilterFields={[
             "paciente.Apellido",
             "paciente.Nombre",
             "paciente.NroDocumento",
             "Diagnostico",
+            "prestataria.Nombre",
           ]}
         />
       </div>

@@ -52,8 +52,31 @@ export default function AdminLayout({
       },
       {
         label: "Cloud",
-        icon: "pi pi-cloud",
-        command: () => router.push("/admin/cloud"),
+        icon: "", // Dummy icon to satisfy type definition
+        template: (item, options) => {
+          return (
+            <a
+              href={process.env.NEXT_PUBLIC_CLOUD_MEDINTT!}
+              className={options.className}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent default anchor behavior and potential framework interference
+                options.onClick(e); // inform PrimeReact (might set active state, etc)
+                window.open(process.env.NEXT_PUBLIC_CLOUD_MEDINTT, "_blank");
+              }}
+            >
+              <span className={options.iconClassName}>
+                <Image
+                  src="/favicon_cropped1.png"
+                  alt="Cloud"
+                  width={20}
+                  height={20}
+                  className="w-5 h-5 object-contain"
+                />
+              </span>
+              <span className={options.labelClassName}>{item.label}</span>
+            </a>
+          );
+        },
       },
     ];
   }, [router, user]);

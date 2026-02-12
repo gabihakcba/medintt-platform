@@ -24,7 +24,7 @@ export default function Page() {
     },
   });
 
-  const onSubmit = (data: FormValues) => console.log(data);
+  const onSubmit = (data: FormValues) => console.warn(data);
 
   return (
     <div className="min-w-screen flex justify-center items-center">

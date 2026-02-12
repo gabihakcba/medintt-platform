@@ -38,6 +38,17 @@ export interface Ausentismo {
     FileName: string | null;
     Extension: string | null;
   }[];
+  Ausentismos_Bitacora?: {
+    Id: number;
+    Observaciones: string | null;
+    Fecha: string | null;
+  }[];
+  Ausentismos_Controles?: {
+    Id: number;
+    Instrucciones: string | null;
+    Evolucion: string | null;
+    Fecha_Control: string | null;
+  }[];
 }
 
 export interface AusentismosFilters {

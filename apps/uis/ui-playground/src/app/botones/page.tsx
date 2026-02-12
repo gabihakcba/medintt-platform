@@ -69,7 +69,7 @@ export default function Page(): ReactElement {
               icon="pi pi-check"
               severity="info"
               className="w-full mt-2"
-              onClick={() => console.log("hola")}
+              onClick={() => console.warn("hola")}
             />
           </div>
         </section>

@@ -210,6 +210,19 @@ export class AusentismosService {
         Ausentismos_Certificados: {
           select: { Id: true, FileName: true, Extension: true },
         },
+        Ausentismos_Bitacora: {
+          select: { Id: true, Observaciones: true, Fecha: true },
+          orderBy: { Fecha: 'desc' },
+        },
+        Ausentismos_Controles: {
+          select: {
+            Id: true,
+            Instrucciones: true,
+            Evolucion: true,
+            Fecha_Control: true,
+          },
+          orderBy: { Fecha_Control: 'desc' },
+        },
       },
     });
 

@@ -51,7 +51,7 @@ export const MyForm = () => {
   });
 
   return (
-    <form onSubmit={handleSubmit((data) => console.log(data))}>
+    <form onSubmit={handleSubmit((data) => console.warn(data))}>
       <MedinttInputText
         name="nombreUsuario"
         control={control}
@@ -110,15 +110,13 @@ Se pueden pasar clases de Tailwind para ajustar el ancho o el espaciado.
 1. Estado Normal: Muestra el label (si existe), el input y el helpText (si existe).
 
 2. Estado de Error (invalid):
+   - El label se vuelve rojo (text-red-500).
 
+   - El borde del input se vuelve rojo (p-invalid).
 
-    * El label se vuelve rojo (text-red-500).
+   - Aparece un ícono de exclamación dentro del input a la derecha.
 
-    * El borde del input se vuelve rojo (p-invalid).
-
-    * Aparece un ícono de exclamación dentro del input a la derecha.
-
-    * El helpText es reemplazado por el mensaje de error definido en rules.
+   - El helpText es reemplazado por el mensaje de error definido en rules.
 
 ## Dependencias
 

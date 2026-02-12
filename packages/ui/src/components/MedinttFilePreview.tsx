@@ -26,13 +26,24 @@ export const MedinttFilePreview = ({
       contentStyle={{ height: "100%", padding: 0 }}
     >
       {url && (
-        <iframe
-          src={url}
+        <object
+          data={url}
+          type="application/pdf"
           width="100%"
           height="100%"
-          style={{ border: "none", height: "100%", display: "block" }}
+          style={{ height: "100%", display: "block" }}
           title={title}
-        />
+        >
+          <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-600">
+            <i className="pi pi-exclamation-circle text-4xl mb-4 text-red-500"></i>
+            <p className="text-lg font-medium">
+              No se pudo previsualizar el archivo.
+            </p>
+            <p className="text-sm mt-2">
+              Por favor, utiliza el botón de "Descargar" abajo.
+            </p>
+          </div>
+        </object>
       )}
     </Dialog>
   );

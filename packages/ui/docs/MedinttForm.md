@@ -15,7 +15,7 @@ const MyPage = () => {
     <MedinttForm
       control={control}
       handleSubmit={handleSubmit}
-      onSubmit={(data) => console.log(data)}
+      onSubmit={(data) => console.warn(data)}
       sections={[
         {
           group: "Datos Básicos",

@@ -20,7 +20,7 @@ export default function Sidebar() {
         label: "Cerrar Sesión",
         icon: "pi pi-sign-out",
         command: () => {
-          console.log("Salir");
+          console.warn("Salir");
         },
       }}
     />

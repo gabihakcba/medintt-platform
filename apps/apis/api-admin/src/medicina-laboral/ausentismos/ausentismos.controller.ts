@@ -59,22 +59,21 @@ export class AusentismosController {
   @Get('attachment/:id')
   @ApiOperation({ summary: 'Get attachment content' })
   async getAttachment(
-    @GetCurrentUser() user: JwtPayload,
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
   ) {
     const file = await this.ausentismosService.getAttachment(id);
     res.set({
-      'Content-Type': file.mimeType,
+      'Content-Type': file.mimeType || 'application/pdf',
       'Content-Disposition': `inline; filename="${file.fileName}"`,
+      'Content-Length': file.buffer.length.toString(),
     });
-    res.send(file.buffer);
+    res.end(file.buffer);
   }
 
   @Get('certificate/:id')
   @ApiOperation({ summary: 'Get certificate content' })
   async getCertificate(
-    @GetCurrentUser() user: JwtPayload,
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
   ) {
@@ -82,7 +81,8 @@ export class AusentismosController {
     res.set({
       'Content-Type': file.mimeType,
       'Content-Disposition': `inline; filename="${file.fileName}"`,
+      'Content-Length': file.buffer.length.toString(),
     });
-    res.send(file.buffer);
+    res.end(file.buffer);
   }
 }

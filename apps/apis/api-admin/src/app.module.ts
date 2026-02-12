@@ -46,7 +46,7 @@ import { MedicinaLaboralModule } from './medicina-laboral/medicina-laboral.modul
       {
         name: 'short',
         ttl: 60000,
-        limit: 5,
+        limit: 100,
       },
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),

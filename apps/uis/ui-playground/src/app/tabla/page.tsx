@@ -65,14 +65,14 @@ export default function TablePage() {
               rounded
               text
               severity="warning"
-              onClick={() => console.log("Editar", row.id)}
+              onClick={() => console.warn("Editar", row.id)}
             />
             <MedinttButton
               icon="pi pi-trash"
               rounded
               text
               severity="danger"
-              onClick={() => console.log("Borrar", row.id)}
+              onClick={() => console.warn("Borrar", row.id)}
             />
           </div>
         )}

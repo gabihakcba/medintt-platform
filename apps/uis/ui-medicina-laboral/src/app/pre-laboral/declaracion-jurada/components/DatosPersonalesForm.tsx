@@ -90,6 +90,7 @@ export default function DatosPersonalesForm({
       Email: initialData.Email || "",
       Nacionalidad: initialData.Nacionalidad || "",
       CUIL: initialData.CUIL || "",
+      Genero: initialData.Genero || "",
     };
   }, [initialData, localitiesQuery.data]);
 
@@ -136,80 +137,95 @@ export default function DatosPersonalesForm({
         fields: [
           {
             type: "text",
-            colSpan: 3,
             props: {
               name: "Apellido",
               label: "Apellido",
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
           {
             type: "text",
-            colSpan: 3,
             props: {
               name: "Nombre",
               label: "Nombre",
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
           {
             type: "text",
-            colSpan: 3,
             props: {
               name: "NroDocumento",
               label: "DNI",
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
           {
             type: "text",
-            colSpan: 3,
             props: {
               name: "CUIL",
               label: "CUIL",
               // rules: { required: "Este campo es requerido" }, // User said "todos los campos son obligatorios"
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
           {
             type: "calendar",
-            colSpan: 3,
             props: {
               name: "FechaNacimiento",
               label: "Fecha de Nacimiento",
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
+          },
+          {
+            type: "dropdown",
+            props: {
+              name: "Genero",
+              label: "Género",
+              options: [
+                { label: "MASCULINO", value: "MASCULINO" },
+                { label: "FEMENINO", value: "FEMENINO" },
+              ],
+              optionLabel: "label",
+              optionValue: "value",
+              placeholder: "Seleccione género",
+              rules: { required: "Este campo es requerido" },
+            },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
           {
             type: "text",
-            colSpan: 3,
             props: {
               name: "Nacionalidad",
               label: "Nacionalidad",
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
           {
             type: "text",
-            colSpan: 6,
             props: {
               name: "Direccion",
               label: "Domicilio (Calle y Altura)",
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 12, lg: 6 },
           },
           {
             type: "text",
-            colSpan: 3,
             props: {
               name: "Barrio",
               label: "Barrio",
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
           {
             type: "dropdown", // Changed from select to dropdown
-            colSpan: 3,
             props: {
               name: "Id_Provincia",
               label: "Provincia",
@@ -219,10 +235,10 @@ export default function DatosPersonalesForm({
               placeholder: "Seleccione una provincia",
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
           {
             type: "dropdown",
-            colSpan: 3,
             props: {
               name: "Id_Localidad",
               label: "Localidad",
@@ -233,10 +249,10 @@ export default function DatosPersonalesForm({
               disabled: !selectedProvincia,
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
           {
             type: "text",
-            colSpan: 3,
             props: {
               name: "Telefono",
               label: "Teléfono",
@@ -246,10 +262,10 @@ export default function DatosPersonalesForm({
               // I will make it required as per "todos son obligatorios".
               rules: { required: "Este campo es requerido" },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
           {
             type: "text",
-            colSpan: 3,
             props: {
               name: "Email",
               label: "Email",
@@ -261,6 +277,7 @@ export default function DatosPersonalesForm({
                 },
               },
             },
+            colSpan: { xs: 12, md: 6, lg: 3 },
           },
         ],
       },
@@ -283,6 +300,7 @@ export default function DatosPersonalesForm({
       Email: data.Email,
       Nacionalidad: data.Nacionalidad, // Pass through
       CUIL: data.CUIL, // Pass through
+      Genero: data.Genero,
     };
     onSubmit(pacienteData);
   };

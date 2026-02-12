@@ -85,7 +85,7 @@ export class PacientesService {
       Id_Localidad,
       Telefono,
       Email,
-      Nacionalidad,
+      Nacionalidad: Nacionalidad ? Nacionalidad.toUpperCase() : undefined,
       CUIL,
     };
 

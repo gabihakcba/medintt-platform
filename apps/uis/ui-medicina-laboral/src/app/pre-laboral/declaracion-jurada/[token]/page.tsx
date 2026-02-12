@@ -11,6 +11,7 @@ import {
   VerifyResponseDto,
   getData,
   DeclaracionJurada,
+  verifyUser,
 } from "@/queries/declaracion-jurada";
 import { PacienteData, updatePaciente } from "@/queries/medintt4";
 import { StepDNIVerification } from "./components/StepDNIVerification";
@@ -310,7 +311,11 @@ export default function DeclaracionJuradaPage({ params }: PageProps) {
 
       {step === "dni" && (
         <div className="pt-20">
-          <StepDNIVerification token={token} onVerified={handleDNIVerified} />
+          <StepDNIVerification
+            token={token}
+            onVerified={handleDNIVerified}
+            verifyFn={verifyUser}
+          />
         </div>
       )}
 

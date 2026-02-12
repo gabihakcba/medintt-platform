@@ -1,4 +1,14 @@
-import { Controller, Post, Body, Put, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Put,
+  Get,
+  UseGuards,
+  Param,
+  Res,
+} from '@nestjs/common';
+import type { Response as ExpressResponse } from 'express';
 import { DeclaracionJuradaService } from './declaracion-jurada.service';
 import { InviteRequestDto } from './dto/invite-request.dto';
 import { VerifyRequestDto } from './dto/verify-request.dto';
@@ -21,6 +31,11 @@ export class DeclaracionJuradaController {
   @Post('verify')
   verifyIdentity(@Body() dto: VerifyRequestDto) {
     return this.declaracionJuradaService.verifyIdentity(dto);
+  }
+
+  @Post('datos-personales/verify')
+  verifyPersonalData(@Body() dto: VerifyRequestDto) {
+    return this.declaracionJuradaService.verifyPersonalDataIdentity(dto);
   }
 
   @Post('get')
@@ -51,5 +66,31 @@ export class DeclaracionJuradaController {
   @Post('send-ddjj-link')
   sendPendingEmails(@Body('ids') ids: number[]) {
     return this.declaracionJuradaService.sendPendingEmails(ids);
+  }
+
+  @UseGuards(AtGuard, Medintt4Guard)
+  @Get('datos-pendientes')
+  findPendingData() {
+    return this.declaracionJuradaService.findPendingData();
+  }
+
+  @Get('attachment/:id')
+  async getAttachment(@Param('id') id: string, @Res() res: ExpressResponse) {
+    const attachment = await this.declaracionJuradaService.getAttachment(+id);
+
+    // Set headers
+    res.set({
+      'Content-Type': 'application/pdf', // Assuming most are PDFs, or detect based on extension
+      'Content-Disposition': `inline; filename="${attachment.filename}${attachment.extension}"`,
+    });
+
+    // Send buffer
+    res.end(attachment.content);
+  }
+
+  @UseGuards(AtGuard, Medintt4Guard)
+  @Post('datos-pendientes-send')
+  sendPendingDataEmail(@Body('patients') patients: any[]) {
+    return this.declaracionJuradaService.sendPendingDataEmail(patients);
   }
 }

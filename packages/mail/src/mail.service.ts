@@ -120,6 +120,21 @@ export class MailService {
     });
   }
 
+  async sendPendingDataMail(to: string, name: string, link: string) {
+    await this.mailerService.sendMail({
+      to,
+      subject: "Confirmacion de datos",
+      html: `
+        <p>Estimado/a ${name},</p>
+        <p>Para poder brindarle un mejor servicio complete o confirme sus datos personales usando el siguiente link:</p>
+        <p>
+            <a href="${link}">${link}</a>
+        </p>
+        <p>Muchas gracias, MEDINTT S.R.L.</p>
+      `,
+    });
+  }
+
   // --- HELPERS PRIVADOS (Tu lógica de utils) ---
 
   private chunkArray<T>(items: T[], size: number): T[][] {

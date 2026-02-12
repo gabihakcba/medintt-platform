@@ -161,6 +161,22 @@ export const verifyUser = async (
   return data;
 };
 
+export const verifyPersonalData = async (
+  inviteToken: string,
+  dni: string,
+  fechaNacimiento?: string,
+): Promise<VerifyResponseDto> => {
+  const { data } = await api.post<VerifyResponseDto>(
+    "/medicina-laboral/declaracion-jurada/datos-personales/verify",
+    {
+      inviteToken,
+      dni,
+      fechaNacimiento,
+    },
+  );
+  return data;
+};
+
 export const getData = async (
   proof: string,
 ): Promise<GetDeclaracionResponse> => {

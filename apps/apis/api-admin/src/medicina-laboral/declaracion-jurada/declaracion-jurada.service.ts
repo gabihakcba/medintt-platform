@@ -6,7 +6,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Prisma } from '@medintt/database-medintt4';
+import { Pacientes, Prisma } from '@medintt/database-medintt4';
 import { PrismaMedinttService } from '../../prisma-medintt/prisma-medintt.service';
 import { FirmaPacienteService } from '../firma-paciente/firma-paciente.service';
 import { InviteRequestDto } from './dto/invite-request.dto';
@@ -104,6 +104,18 @@ export class DeclaracionJuradaService {
   }
 
   async verifyIdentity(dto: VerifyRequestDto): Promise<VerifyResponseDto> {
+    return this.verifyIdentityCommon(dto);
+  }
+
+  async verifyPersonalDataIdentity(
+    dto: VerifyRequestDto,
+  ): Promise<VerifyResponseDto> {
+    return this.verifyIdentityCommon(dto);
+  }
+
+  private async verifyIdentityCommon(
+    dto: VerifyRequestDto,
+  ): Promise<VerifyResponseDto> {
     // 1. Verify Invite Token
     const invitePayload = verifySignedToken<InvitePayload>(
       dto.inviteToken,
@@ -115,8 +127,7 @@ export class DeclaracionJuradaService {
     }
 
     const ddjjId = invitePayload.did;
-    // 2. Validate Identity against DB (Logic similar to legacy verifyDni)
-    // We do NOT trust the token blindly, we check DB state.
+    // 2. Validate Identity against DB
     const dj = await this.prisma.declaraciones_Juradas.findUnique({
       where: { Id: ddjjId },
       include: {
@@ -124,7 +135,6 @@ export class DeclaracionJuradaService {
       },
     });
 
-    // Generic error to avoid leaking data existence
     const genericError = new UnauthorizedException(
       'No pudimos validar los datos proporcionados.',
     );
@@ -134,20 +144,20 @@ export class DeclaracionJuradaService {
     }
 
     // DNI Check
-    const normalize = (s: string) => s.trim();
-    if (normalize(dj.Pacientes.NroDocumento || '') !== normalize(dto.dni)) {
+    // improved normalization to remove dots and spaces
+    const normalize = (s: string) => s.trim().replace(/[.,\s]/g, '');
+    const dbDni = normalize(dj.Pacientes.NroDocumento || '');
+    const inputDni = normalize(dto.dni);
+
+    // If DB has a DNI, it must match. If DB has no DNI, we trust the link (email possession).
+    if (dbDni && dbDni !== inputDni) {
       throw genericError;
     }
 
     // Optional Fecha Nacimiento Check
     if (dto.fechaNacimiento && dj.Pacientes.FechaNacimiento) {
-      // Check if dates match. Careful with format/timezones.
-      // Assuming DB stores Date or String 'YYYY-MM-DD'. Pacientes.FechaNacimiento type is likely Date or string.
-      // Let's assume generic check.
       const dbDate = new Date(dj.Pacientes.FechaNacimiento);
       const inputDate = new Date(dto.fechaNacimiento);
-      // Compare simple ISO string or just loose check?
-      // Better: strict check if provided.
       if (
         dbDate.toISOString().slice(0, 10) !==
         inputDate.toISOString().slice(0, 10)
@@ -155,6 +165,12 @@ export class DeclaracionJuradaService {
         throw genericError;
       }
     }
+
+    // if (!isPersonalData && dj.Status === 'TERMINADO') ....
+    // Actually, verifyIdentity doesn't block TERMINADO, it returns it and Frontend handles it.
+    // The user said "ese no corresponde a este flow".
+    // I will keep the logic shared for now but exposed separately.
+
     // 3. Generate Proof Token
     const now = nowUnix();
     const proofTtl = 15; // minutes
@@ -171,7 +187,7 @@ export class DeclaracionJuradaService {
 
     const proof = createSignedToken(proofPayload, this.proofSecret);
 
-    // 4. Return full data (GetDeclaracionResponse format)
+    // 4. Return full data
     let empresaData;
     if (dj.Id_empresa) {
       const empresa = await this.prisma.prestatarias.findUnique({
@@ -314,9 +330,9 @@ export class DeclaracionJuradaService {
       throw new NotFoundException('Declaracion Jurada not found');
     }
 
-    if (dj.Status === 'TERMINADO') {
-      throw new ConflictException('DDJJ already updated');
-    }
+    // if (dj.Status === 'TERMINADO') {
+    //   throw new ConflictException('DDJJ already updated');
+    // }
 
     // Validate required personal data
     if (
@@ -399,6 +415,16 @@ export class DeclaracionJuradaService {
           // Patient data for description
           const pacienteNombre = `${updatedDj.Pacientes?.Apellido} ${updatedDj.Pacientes?.Nombre}`;
           const pacienteDni = updatedDj.Pacientes?.NroDocumento || 'S/D';
+
+          // Clean up old DDJJ PDFs for this practice to avoid duplicates
+          await tx.practicas_Attachs.deleteMany({
+            where: {
+              Id_Practica: dj.Id_Practica,
+              FileName: { startsWith: 'DDJJ_' },
+              Extension: '.pdf',
+              Descripcion: { startsWith: 'DECLARACIÓN JURADA DE:' },
+            },
+          });
 
           // Save PDF to Practicas_Attachs
           await tx.practicas_Attachs.create({
@@ -797,7 +823,124 @@ export class DeclaracionJuradaService {
     return formatDate(dateString, 'DD/MM/YYYY');
   }
 
-  // --- Pending DDJJ Feature ---
+  // --- Missing Personal Data Feature ---
+
+  async findPendingData() {
+    // 1. Find DDJJs for specific dates
+    // Dates: 2026-02-09 and 2026-02-10
+    const start1 = new Date('2026-02-09T00:00:00.000Z');
+    // const end1 = new Date('2026-02-09T23:59:59.999Z');
+    // const start2 = new Date('2026-02-10T00:00:00.000Z');
+    const end2 = new Date('2026-02-10T23:59:59.999Z');
+
+    const ddjjs = await this.prisma.declaraciones_Juradas.findMany({
+      where: {
+        Fecha: {
+          gte: start1,
+          lte: end2,
+        },
+      },
+      include: {
+        Pacientes: true,
+      },
+    });
+    // 2. Filter by missing data
+    // Fields: Apellido, Nombre, NroDocumento, FechaNacimiento, Direccion, Barrio, Id_Localidad, Telefono, Email, Genero
+    const incompleteDDJJs = ddjjs.filter((dj) => {
+      const p = dj.Pacientes;
+      if (!p) return false;
+
+      const isInvalid = (val: any) =>
+        val === null ||
+        val === undefined ||
+        val === '' ||
+        val === '0' ||
+        val === 0;
+
+      return (
+        isInvalid(p.Apellido) ||
+        isInvalid(p.Nombre) ||
+        isInvalid(p.NroDocumento) ||
+        isInvalid(p.FechaNacimiento) ||
+        isInvalid(p.Direccion) ||
+        isInvalid(p.Barrio) ||
+        isInvalid(p.Id_Localidad) ||
+        isInvalid(p.Telefono) ||
+        isInvalid(p.Email) ||
+        isInvalid(p.Genero)
+      );
+    });
+
+    // 3. Fetch Practicas/Attachments manually since relation might be missing in Prisma Schema
+    const practicaIds = incompleteDDJJs
+      .map((dj) => dj.Id_Practica)
+      .filter((id) => id !== null);
+
+    const practicas = await this.prisma.practicas.findMany({
+      where: {
+        Id: { in: practicaIds },
+      },
+      select: {
+        Id: true,
+        Practicas_Attachs: {
+          select: {
+            Id: true,
+            FileName: true,
+            Descripcion: true,
+            Extension: true,
+          },
+        },
+      },
+    });
+
+    const practicasMap = new Map(practicas.map((p) => [p.Id, p]));
+
+    // 4. Map results
+    return incompleteDDJJs.map((dj) => {
+      const practica = dj.Id_Practica ? practicasMap.get(dj.Id_Practica) : null;
+      return {
+        ...dj,
+        Practicas: practica, // Attach the manually fetched practica
+      };
+    });
+  }
+
+  async sendPendingDataEmail(patients: Pacientes[]) {
+    // patients array expected to contain at least { Id, Email, Nombre, Apellido }
+    const frontUrl = process.env.FRONT_URL || '';
+    const datosPersonalesPath = process.env.DATOS_PERSONALES || '';
+
+    const results: { email: string; status: string; error?: any }[] = [];
+
+    for (const p of patients) {
+      if (!p.Email) continue;
+
+      try {
+        // Generate Token
+        // Assuming p.Id is the DDJJ Id.
+        if (!p.Id) {
+          throw new Error('Missing DDJJ Id');
+        }
+
+        const invite = await this.createInvite({
+          ddjjId: p.Id,
+          ttlMinutes: 10080,
+        }); // 7 Days
+        const link = `${frontUrl}${datosPersonalesPath}/${invite.token}`;
+
+        await this.mailService.sendPendingDataMail(
+          p.Email,
+          `${p.Apellido}, ${p.Nombre}`,
+          link,
+        );
+        results.push({ email: p.Email, status: 'sent' });
+      } catch (error) {
+        console.error(`Error sending email to ${p.Email}`, error);
+        results.push({ email: p.Email, status: 'error', error });
+      }
+    }
+    return results;
+  }
 
   async getPendientes() {
     return this.prisma.declaraciones_Juradas.findMany({
@@ -857,5 +1000,24 @@ export class DeclaracionJuradaService {
     }
 
     return results;
+  }
+
+  /* get attachment by id */
+  async getAttachment(id: number) {
+    const attachment = await this.prisma.practicas_Attachs.findUnique({
+      where: {
+        Id: id,
+      },
+    });
+
+    if (!attachment || !attachment.Archivo) {
+      throw new NotFoundException('Attachment not found');
+    }
+
+    return {
+      filename: attachment.FileName,
+      content: attachment.Archivo,
+      extension: attachment.Extension,
+    };
   }
 }

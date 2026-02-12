@@ -34,7 +34,7 @@ export default function AdminLayout({
 
     if (!hasAccess) return [];
 
-    return [
+    const menuItems: MedinttMenuItem[] = [
       {
         label: "Inicio",
         icon: "pi pi-home",
@@ -79,6 +79,7 @@ export default function AdminLayout({
         },
       },
     ];
+    return menuItems;
   }, [router, user]);
 
   const sidebarUser: SidebarUser = {

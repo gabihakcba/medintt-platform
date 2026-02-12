@@ -24,6 +24,7 @@ export interface PacienteData {
   Email: string;
   Nacionalidad?: string;
   CUIL?: string;
+  Genero?: string;
 }
 
 export const getProvincias = async (): Promise<Provincia[]> => {

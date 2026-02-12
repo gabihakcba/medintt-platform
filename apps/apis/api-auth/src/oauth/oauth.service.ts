@@ -191,7 +191,6 @@ export class OAuthService {
    * Validate access token and return user info
    */
   async getUserInfo(accessToken: string) {
-    console.log('accessToken', accessToken);
     const token = (await this.prisma.oAuthToken.findUnique({
       where: { accessToken },
       include: {
@@ -221,7 +220,6 @@ export class OAuthService {
       accessTokenExpiresAt: Date;
       isRevoked: boolean;
     } | null;
-    console.log('token', token);
     if (!token) {
       throw new UnauthorizedException('Invalid access token');
     }
@@ -236,7 +234,6 @@ export class OAuthService {
 
     // Extract user groups/roles
     const groups = token.user.memberships.map((m) => m.role.code);
-    console.log(token.user.id);
 
     return {
       sub: token.user.id,

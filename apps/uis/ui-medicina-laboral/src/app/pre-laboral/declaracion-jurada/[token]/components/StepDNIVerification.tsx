@@ -11,17 +11,23 @@ import { Message } from "primereact/message";
 interface StepDNIVerificationProps {
   token: string;
   onVerified: (data: VerifyResponseDto) => void;
+  verifyFn: (
+    token: string,
+    dni: string,
+    fechaNacimiento?: string,
+  ) => Promise<VerifyResponseDto>;
 }
 
 export const StepDNIVerification = ({
   token,
   onVerified,
+  verifyFn,
 }: StepDNIVerificationProps) => {
   const [dni, setDni] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: (dniToVerify: string) => verifyUser(token, dniToVerify),
+    mutationFn: (dniToVerify: string) => verifyFn(token, dniToVerify),
     onSuccess: (data) => {
       onVerified(data);
     },

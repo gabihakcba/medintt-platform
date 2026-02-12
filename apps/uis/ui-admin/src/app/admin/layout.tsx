@@ -51,6 +51,11 @@ export default function AdminLayout({
           command: () => router.push("/admin/declaraciones-pendientes"),
         },
         {
+          label: "Datos personales faltantes",
+          icon: "pi pi-exclamation-circle",
+          command: () => router.push("/admin/datos-pendientes"),
+        },
+        {
           label: "Membresías",
           icon: "pi pi-id-card",
           command: () => router.push("/admin/members"),

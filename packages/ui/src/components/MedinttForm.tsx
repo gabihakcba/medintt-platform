@@ -16,6 +16,8 @@ import { MedinttChips } from "./MedinttChips";
 import { MedinttRadioButton } from "./MedinttRadioButton";
 import { MedinttFormProps, FieldDefinition } from "../types/form";
 
+// Helper to safely construct tailwind classes
+// We need full class names for Tailwind compiler to pick them up
 const colSpanClasses: Record<number, string> = {
   1: "md:col-span-1",
   2: "md:col-span-2",
@@ -30,6 +32,7 @@ const colSpanClasses: Record<number, string> = {
   11: "md:col-span-11",
   12: "md:col-span-12",
 };
+
 const renderField = <T extends FieldValues>(
   field: FieldDefinition<T>,
   control: Control<T>,
@@ -63,6 +66,30 @@ const renderField = <T extends FieldValues>(
   }
 };
 
+const getColClasses = (
+  span:
+    | number
+    | { xs?: number; sm?: number; md?: number; lg?: number; xl?: number }
+    | undefined,
+) => {
+  if (typeof span === "number") {
+    // Default backward compatibility: mobile 12, md: span
+    return `col-span-12 md:col-span-${span}`;
+  }
+
+  if (typeof span === "object") {
+    const classes = ["col-span-12"]; // Default xs
+    if (span.xs) classes.push(`col-span-${span.xs}`);
+    if (span.sm) classes.push(`sm:col-span-${span.sm}`);
+    if (span.md) classes.push(`md:col-span-${span.md}`);
+    if (span.lg) classes.push(`lg:col-span-${span.lg}`);
+    if (span.xl) classes.push(`xl:col-span-${span.xl}`);
+    return classes.join(" ");
+  }
+
+  return "col-span-12"; // Default fallback
+};
+
 export const MedinttForm = <T extends FieldValues>({
   control,
   sections,
@@ -89,11 +116,7 @@ export const MedinttForm = <T extends FieldValues>({
           {/* Grid de 12 columnas */}
           <div className="grid grid-cols-12 gap-4">
             {section.fields.map((field) => {
-              const span = field.colSpan || 12;
-
-              // 2. Usamos el mapa en lugar de interpolación dinámica
-              // col-span-12 es el default para móvil, el mapa aplica desde 'md'
-              const colClass = `col-span-12 ${colSpanClasses[span]}`;
+              const colClass = getColClasses(field.colSpan);
 
               return (
                 <div key={field.props.name} className={colClass}>

@@ -8,8 +8,10 @@ import { useParams } from "next/navigation";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { Button } from "primereact/button";
 import { ProgressSpinner } from "primereact/progressspinner";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { formatDate } from "@/lib/date";
+import { api } from "@/lib/axios";
+import { Toast } from "primereact/toast";
 
 export default function AusentismoDetailPage() {
   const { user } = useAuth();
@@ -19,18 +21,46 @@ export default function AusentismoDetailPage() {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewTitle, setPreviewTitle] = useState("");
+  const toast = useRef<Toast>(null);
 
-  const handlePreview = (
+  const handlePreview = async (
     id: number,
     fileName: string,
     type: "attachment" | "certificate",
   ) => {
-    const endpoint = type === "certificate" ? "certificate" : "attachment";
-    setPreviewUrl(
-      `${process.env.NEXT_PUBLIC_API_URL}/medicina-laboral/ausentismos/${endpoint}/${id}`,
-    );
-    setPreviewTitle(fileName);
-    setPreviewVisible(true);
+    try {
+      const endpoint = type === "certificate" ? "certificate" : "attachment";
+      const response = await api.get(
+        `/medicina-laboral/ausentismos/${endpoint}/${id}`,
+        {
+          responseType: "blob",
+        },
+      );
+
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"] || "application/pdf",
+      });
+      const url = URL.createObjectURL(blob);
+
+      setPreviewUrl(url);
+      setPreviewTitle(fileName);
+      setPreviewVisible(true);
+    } catch (error) {
+      console.error("Error fetching file:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "No se pudo cargar el archivo.",
+      });
+    }
+  };
+
+  const handleHidePreview = () => {
+    setPreviewVisible(false);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
   };
 
   if (isLoading) {
@@ -195,7 +225,7 @@ export default function AusentismoDetailPage() {
 
         <MedinttFilePreview
           visible={previewVisible}
-          onHide={() => setPreviewVisible(false)}
+          onHide={handleHidePreview}
           url={previewUrl}
           title={previewTitle}
         />

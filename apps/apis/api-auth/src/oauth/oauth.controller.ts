@@ -12,8 +12,9 @@ import type { Response, Request } from 'express';
 import { OAuthService } from './oauth.service';
 import { AuthorizeDto } from './dto/authorize.dto';
 import { TokenDto } from './dto/token.dto';
-import { AtGuard } from '../auth/guards/at.guard';
+// import { AtGuard } from '../auth/guards/at.guard';
 import { OAuthGuard } from './guards/oauth.guard';
+import { OptionalAtGuard } from '../auth/guards/optional-at.guard';
 
 interface OAuthTokenPayload {
   accessToken: string;
@@ -30,13 +31,14 @@ export class OAuthController {
    * Authorization endpoint - requires user to be logged in
    */
   @Get('authorize')
-  @UseGuards(AtGuard)
+  @UseGuards(OptionalAtGuard)
   async authorize(
     @Query() query: AuthorizeDto,
-    @Req() req: Request & { user: { sub: string } },
+    @Req() req: Request & { user?: { sub: string } },
     @Res() res: Response,
   ) {
     const { response_type, client_id, redirect_uri, state, scope } = query;
+
     // Validate response_type
     if (response_type !== 'code') {
       return res.redirect(
@@ -45,18 +47,50 @@ export class OAuthController {
     }
 
     try {
-      // Validate client and redirect URI
+      // 1. Check if user is authenticated
+      if (!req.user) {
+        console.error(
+          `User not authenticated for OAuth flow (client_id: ${client_id})`,
+        );
+
+        // Redirect to login page with returnTo parameter
+        const loginUrl = new URL(
+          process.env.FRONTEND_URL_AUTH || 'https://auth.medintt.com/login',
+        );
+        const returnTo = new URL(
+          req.url,
+          `http://${req.headers.host}`,
+        ).toString();
+
+        loginUrl.searchParams.set('returnTo', returnTo);
+        return res.redirect(loginUrl.toString());
+      }
+
+      // 2. Validate client and redirect URI
       await this.oauthService.validateClient(client_id, redirect_uri);
 
-      // Validate user access
-      await this.oauthService.validateUserAccess(req.user.sub);
+      // 3. Validate user access permissions
+      try {
+        await this.oauthService.validateUserAccess(req.user.sub);
+      } catch {
+        console.warn(
+          `User ${req.user.sub} UNAUTHORIZED for OAuth client ${client_id}`,
+        );
+        // Redirect to IDP denied page
+        const deniedUrl = new URL(process.env.FRONTEND_URL_DENIED!);
+        deniedUrl.searchParams.set(
+          'message',
+          'No tienes permisos para esta aplicación, comunícate con nosotros.',
+        );
+        return res.redirect(deniedUrl.toString());
+      }
 
       // Parse scopes (default to openid if not specified)
       const scopes = scope ? scope.split(' ') : ['openid'];
 
       // Generate authorization code
       const code = await this.oauthService.generateAuthorizationCode(
-        req.user.sub, // User ID from JWT
+        req.user.sub,
         client_id,
         redirect_uri,
         scopes,
@@ -71,6 +105,7 @@ export class OAuthController {
 
       return res.redirect(redirectUrl.toString());
     } catch (error) {
+      console.error('OAuth Authorization Error:', error);
       // Redirect with error
       const redirectUrl = new URL(redirect_uri);
       redirectUrl.searchParams.set('error', 'server_error');

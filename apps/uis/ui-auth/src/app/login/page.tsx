@@ -105,7 +105,10 @@ export default function LoginPage(): ReactElement {
         { ...credentials, ...data },
         {
           onSuccess: (response: LoginResponseDto) => {
-            sendParentMessage(TYPE_LOGIN.SUCCESS, { user: response.user });
+            setLoginResponse(response);
+            setTimeout(() => {
+              sendParentMessage(TYPE_LOGIN.SUCCESS, { user: response.user });
+            }, 1500);
           },
           onError: () => {
             toast.current?.show({
@@ -121,7 +124,11 @@ export default function LoginPage(): ReactElement {
       setCredentials(data);
       loginHook(data, {
         onSuccess: (response: LoginResponseDto) => {
-          sendParentMessage(TYPE_LOGIN.SUCCESS, { user: response.user });
+          setLoginResponse(response);
+          // Retardo para que el usuario vea el mensaje de éxito
+          setTimeout(() => {
+            sendParentMessage(TYPE_LOGIN.SUCCESS, { user: response.user });
+          }, 1500);
         },
         onError: (error) => {
           // Si NO es 2FA required (ya que ese caso lo maneja el hook internamente sin llamar a onError prop si no lo pasamos explicitamente o si?)
@@ -280,6 +287,11 @@ export default function LoginPage(): ReactElement {
             className="mb-6 object-contain"
             priority
           />
+          {loginResponse && (
+            <div className="w-full max-w-sm mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded text-center">
+              <span className="font-medium">¡Login exitoso!</span>
+            </div>
+          )}
           <MedinttForm
             control={control}
             className="w-full max-w-sm"

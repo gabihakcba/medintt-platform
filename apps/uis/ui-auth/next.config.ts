@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   transpilePackages: ["@medintt/ui", "@medintt/utils", "@medintt/types-auth"],
+  env: {
+    CONTACT_NUMBER: process.env.CONTACT_NUMBER,
+  },
   turbopack: {},
 
   webpack: (config, { isServer, webpack }) => {

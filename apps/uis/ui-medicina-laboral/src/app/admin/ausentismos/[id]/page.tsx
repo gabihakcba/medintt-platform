@@ -125,7 +125,7 @@ export default function AusentismoDetailPage() {
           </div>
 
           {/* Attachments Accordions */}
-          <Accordion multiple activeIndex={[]}>
+          <Accordion multiple activeIndex={[0, 1, 2, 3, 4]}>
             <AccordionTab
               header={
                 <div className="flex items-center gap-2">
@@ -282,6 +282,40 @@ export default function AusentismoDetailPage() {
                   </div>
                 ) : (
                   <p className="text-gray-500">No hay controles registrados</p>
+                )}
+              </div>
+            </AccordionTab>
+
+            <AccordionTab
+              header={
+                <div className="flex items-center gap-2">
+                  <i className="pi pi-info-circle"></i>
+                  <span>
+                    Informes ({ausentismo.Ausentismos_Informes?.length || 0})
+                  </span>
+                </div>
+              }
+            >
+              <div className="max-h-[40vh] overflow-y-auto pr-2">
+                {ausentismo.Ausentismos_Informes &&
+                ausentismo.Ausentismos_Informes.length > 0 ? (
+                  <div className="flex flex-col gap-4">
+                    {ausentismo.Ausentismos_Informes.map((item) => (
+                      <div
+                        key={item.Id}
+                        className="p-3 bg-gray-50 rounded border border-gray-200"
+                      >
+                        <div className="text-sm text-gray-500 mb-1">
+                          {formatDate(item.Fecha)}
+                        </div>
+                        <div className="whitespace-pre-wrap">
+                          {item.Informe || "-"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500">No hay informes registrados</p>
                 )}
               </div>
             </AccordionTab>

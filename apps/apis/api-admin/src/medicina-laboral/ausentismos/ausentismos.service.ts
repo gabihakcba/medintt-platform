@@ -270,10 +270,31 @@ export class AusentismosService {
         })
       : null;
 
+    let informes: typeof informesRaw = [];
+    const informesRaw = await this.prisma.ausentismos_Informes.findMany({
+      where: { Id_Ausentismo: id },
+      select: {
+        Id: true,
+        Informe: true,
+        Fecha: true,
+        Status: true,
+      },
+      orderBy: { Fecha: 'desc' },
+    });
+
+    if (isSuperAdminOrAdmin) {
+      informes = informesRaw;
+    } else {
+      informes = informesRaw.filter(
+        (i) => i.Status === 'TERMINADO' || i.Status === 'HISTORICO',
+      );
+    }
+
     return {
       ...ausentismo,
       paciente,
       prestataria,
+      Ausentismos_Informes: informes,
     };
   }
 

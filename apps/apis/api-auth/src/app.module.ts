@@ -37,7 +37,7 @@ import { OAuthModule } from './oauth/oauth.module';
       {
         name: 'short',
         ttl: 60000,
-        limit: 5,
+        limit: 100,
       },
     ]),
     PrismaModule,

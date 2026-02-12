@@ -49,6 +49,11 @@ export interface Ausentismo {
     Evolucion: string | null;
     Fecha_Control: string | null;
   }[];
+  Ausentismos_Informes?: {
+    Id: number;
+    Informe: string | null;
+    Fecha: string | null;
+  }[];
 }
 
 export interface AusentismosFilters {

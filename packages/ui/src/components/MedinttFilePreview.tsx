@@ -1,6 +1,7 @@
 "use client";
 
 import { Dialog } from "primereact/dialog";
+import { Button } from "primereact/button";
 
 interface MedinttFilePreviewProps {
   visible: boolean;
@@ -35,13 +36,13 @@ export const MedinttFilePreview = ({
           title={title}
         >
           <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-600">
-            <i className="pi pi-exclamation-circle text-4xl mb-4 text-red-500"></i>
-            <p className="text-lg font-medium">
-              No se pudo previsualizar el archivo.
-            </p>
-            <p className="text-sm mt-2">
-              Por favor, utiliza el botón de "Descargar" abajo.
-            </p>
+            <i className="pi pi-file-pdf text-4xl mb-4 text-gray-400"></i>
+            <p className="text-lg font-medium mb-4">{title}</p>
+            <Button
+              label="Abrir"
+              icon="pi pi-external-link"
+              onClick={() => window.open(url, "_blank")}
+            />
           </div>
         </object>
       )}

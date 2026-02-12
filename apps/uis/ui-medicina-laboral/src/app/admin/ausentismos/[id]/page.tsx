@@ -20,25 +20,14 @@ export default function AusentismoDetailPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewTitle, setPreviewTitle] = useState("");
 
-  const handlePreview = (id: number, fileName: string) => {
-    // Assuming backend endpoint for serving files. If not, construct URL appropriately.
-    // Based on previous code in admin/datos-pendientes, url structure:
-    const url = `${process.env.NEXT_PUBLIC_ADMIN_API_URL || process.env.NEXT_PUBLIC_API_URL}/medicina-laboral/declaracion-jurada/attachment/${id}`;
-    // Wait, reusing DDJJ attachment endpoint might not work if logic is specific to ddjj.
-    // Ausentismos attachments are likely served differently or I need an endpoint for them.
-    // Typically: /storage/file/...? Or a specific controller method.
-    // CHECK: Does AusentismosController have an attachment endpoint?
-    // Not explicitly seen.
-    // However, usually there is a generic attachment endpoint or specific one.
-    // If not, I might need to add one.
-    // Let's assume there isn't one yet and I should probably create one or use a generic one if exists.
-    // Re-checking task: I didn't plan an attachment download/view endpoint.
-    // Pivot: I will assume I need to add one.
-    // For now, I'll put a placeholder URL or the one I think might work if I add it.
-    // Let's use /medicina-laboral/ausentismos/attachment/:id
-
+  const handlePreview = (
+    id: number,
+    fileName: string,
+    type: "attachment" | "certificate",
+  ) => {
+    const endpoint = type === "certificate" ? "certificate" : "attachment";
     setPreviewUrl(
-      `${process.env.NEXT_PUBLIC_API_URL}/medicina-laboral/ausentismos/attachment/${id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/medicina-laboral/ausentismos/${endpoint}/${id}`,
     );
     setPreviewTitle(fileName);
     setPreviewVisible(true);
@@ -115,7 +104,9 @@ export default function AusentismoDetailPage() {
               <span className="font-semibold">Diagnóstico:</span>
               <span>{ausentismo.Diagnostico || "-"}</span>
               <span className="font-semibold">Evolución:</span>
-              <span>{ausentismo.Evolucion || "-"}</span>
+              <div className="max-h-40 overflow-y-auto whitespace-pre-wrap">
+                {ausentismo.Evolucion || "-"}
+              </div>
             </div>
           </div>
         </div>
@@ -146,7 +137,11 @@ export default function AusentismoDetailPage() {
                       rounded
                       text
                       onClick={() =>
-                        handlePreview(att.Id, att.FileName || "Documento")
+                        handlePreview(
+                          att.Id,
+                          att.FileName || "Documento",
+                          "attachment",
+                        )
                       }
                     />
                   </div>
@@ -182,7 +177,11 @@ export default function AusentismoDetailPage() {
                       rounded
                       text
                       onClick={() =>
-                        handlePreview(cert.Id, cert.FileName || "Certificado")
+                        handlePreview(
+                          cert.Id,
+                          cert.FileName || "Certificado",
+                          "certificate",
+                        )
                       }
                     />
                   </div>

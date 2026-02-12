@@ -70,7 +70,18 @@ export default function AusentismosPage() {
       body: (rowData: any) => rowData.Ausentismos_Categorias?.Categoria || "-",
     },
     { field: "Diagnostico", header: "Diagnóstico" },
-    { field: "Evolucion", header: "Evolución" },
+    {
+      field: "Evolucion",
+      header: "Evolución",
+      body: (rowData: any) => (
+        <div
+          className="max-h-20 overflow-y-auto whitespace-pre-wrap text-sm"
+          style={{ minWidth: "200px" }}
+        >
+          {rowData.Evolucion || "-"}
+        </div>
+      ),
+    },
     {
       field: "actions",
       header: "Acciones",

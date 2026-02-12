@@ -246,4 +246,61 @@ export class OAuthService {
       groups,
     };
   }
+
+  /**
+   * Validate user access to cloud application
+   */
+  async validateUserAccess(userId: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        memberships: {
+          include: {
+            role: true,
+            project: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // 1. Super Admin check
+    if (user.isSuperAdmin) {
+      return true;
+    }
+
+    const cloudProjectCode = process.env.CLOUD_PROJECT;
+    const adminCloudRole = process.env.ADMIN_CLOUD_ROLE;
+    const memberCloudRole = process.env.MEMBER_CLOUD_ROLE;
+
+    if (!cloudProjectCode || !adminCloudRole || !memberCloudRole) {
+      console.error('Missing cloud project/role env vars');
+      throw new UnauthorizedException('System configuration error');
+    }
+
+    // 2. & 3. Check for specific project membership and roles
+    const hasAccess = user.memberships.some((membership) => {
+      // Ensure we are checking the correct project
+      if (membership.project.code !== cloudProjectCode) {
+        return false;
+      }
+
+      // Check for allowed roles
+      return (
+        membership.role.code === adminCloudRole ||
+        membership.role.code === memberCloudRole
+      );
+    });
+
+    if (hasAccess) {
+      return true;
+    }
+
+    throw new UnauthorizedException(
+      'User does not have required permissions for this application',
+    );
+  }
 }

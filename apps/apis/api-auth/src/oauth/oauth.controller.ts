@@ -36,7 +36,6 @@ export class OAuthController {
     @Req() req: Request & { user: { sub: string } },
     @Res() res: Response,
   ) {
-    console.log(query);
     const { response_type, client_id, redirect_uri, state, scope } = query;
     // Validate response_type
     if (response_type !== 'code') {
@@ -48,6 +47,9 @@ export class OAuthController {
     try {
       // Validate client and redirect URI
       await this.oauthService.validateClient(client_id, redirect_uri);
+
+      // Validate user access
+      await this.oauthService.validateUserAccess(req.user.sub);
 
       // Parse scopes (default to openid if not specified)
       const scopes = scope ? scope.split(' ') : ['openid'];

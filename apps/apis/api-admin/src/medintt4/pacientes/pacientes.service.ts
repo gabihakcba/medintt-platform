@@ -73,6 +73,7 @@ export class PacientesService {
       Email,
       Nacionalidad,
       CUIL,
+      Genero,
     }: PacienteDataDto = dto.paciente;
 
     const updateData: Prisma.PacientesUpdateInput = {
@@ -87,6 +88,7 @@ export class PacientesService {
       Email,
       Nacionalidad: Nacionalidad ? Nacionalidad.toUpperCase() : undefined,
       CUIL,
+      Genero,
     };
 
     // Remove undefined keys

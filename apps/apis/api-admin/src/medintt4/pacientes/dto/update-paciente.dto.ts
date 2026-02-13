@@ -52,6 +52,9 @@ export class PacienteDataDto {
   @IsOptional()
   @IsString()
   CUIL?: string;
+
+  @IsString()
+  Genero: string;
 }
 
 export class UpdatePacienteDto {

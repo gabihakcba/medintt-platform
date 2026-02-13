@@ -212,7 +212,7 @@ export class AusentismosService {
         },
         Ausentismos_Bitacora: {
           select: { Id: true, Observaciones: true, Fecha: true },
-          orderBy: { Fecha: 'desc' },
+          orderBy: { Fecha: 'asc' },
         },
         Ausentismos_Controles: {
           select: {
@@ -221,7 +221,7 @@ export class AusentismosService {
             Evolucion: true,
             Fecha_Control: true,
           },
-          orderBy: { Fecha_Control: 'desc' },
+          orderBy: { Fecha_Control: 'asc' },
         },
       },
     });
@@ -279,7 +279,7 @@ export class AusentismosService {
         Fecha: true,
         Status: true,
       },
-      orderBy: { Fecha: 'desc' },
+      orderBy: { Fecha: 'asc' },
     });
 
     if (isSuperAdminOrAdmin) {

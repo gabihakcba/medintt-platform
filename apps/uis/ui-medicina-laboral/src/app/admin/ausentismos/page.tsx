@@ -60,11 +60,6 @@ export default function AusentismosPage() {
       body: (rowData: any) => formatDate(rowData.Fecha_Hasta),
     },
     {
-      field: "Fecha_Reincoporacion",
-      header: "Reincorporación",
-      body: (rowData: any) => formatDate(rowData.Fecha_Reincoporacion),
-    },
-    {
       field: "Ausentismos_Categorias.Categoria",
       header: "Categoría",
       body: (rowData: any) => rowData.Ausentismos_Categorias?.Categoria || "-",

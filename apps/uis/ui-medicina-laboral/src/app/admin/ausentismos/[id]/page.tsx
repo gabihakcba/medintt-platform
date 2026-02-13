@@ -108,8 +108,6 @@ export default function AusentismoDetailPage() {
                 <span>{formatDate(ausentismo.Fecha_Desde)}</span>
                 <span className="font-semibold">Hasta:</span>
                 <span>{formatDate(ausentismo.Fecha_Hasta)}</span>
-                <span className="font-semibold">Reincorporación:</span>
-                <span>{formatDate(ausentismo.Fecha_Reincoporacion)}</span>
                 <span className="font-semibold">Categoría:</span>
                 <span>
                   {ausentismo.Ausentismos_Categorias?.Categoria || "-"}
@@ -125,7 +123,7 @@ export default function AusentismoDetailPage() {
           </div>
 
           {/* Attachments Accordions */}
-          <Accordion multiple activeIndex={[0, 1, 2, 3, 4]}>
+          <Accordion multiple activeIndex={[]}>
             <AccordionTab
               header={
                 <div className="flex items-center gap-2">

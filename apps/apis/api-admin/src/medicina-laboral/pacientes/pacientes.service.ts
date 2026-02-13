@@ -14,9 +14,10 @@ export class PacientesService {
 
     const membership = user.permissions?.[medLabProject!];
     const isAdmin =
-      membership?.role === roleAdmin && membership?.organizationCode === orgM;
+      user.isSuperAdmin ||
+      (membership?.role === roleAdmin && membership?.organizationCode === orgM);
 
-    if (user.isSuperAdmin || isAdmin) {
+    if (isAdmin) {
       // Return all patients
       const patients = await this.prisma.pacientes.findMany({
         select: {
@@ -39,6 +40,9 @@ export class PacientesService {
 
       // Enrich with Prestatarias manually since relation might not exist in Prisma schema
       const patientIds = patients.map((p) => p.Id);
+
+      // Fetch exams count for each patient (batched)
+      const examsCountMap = await this.batchExamsCount(patientIds);
 
       const afiliaciones = await this.prisma.afiliacion_Pacientes.findMany({
         where: { Id_Paciente: { in: patientIds } },
@@ -88,6 +92,7 @@ export class PacientesService {
       return patients.map((p) => ({
         ...p,
         prestatarias: patientPrestatariasMap.get(p.Id) || [],
+        examenesCount: examsCountMap.get(p.Id) || 0,
       }));
     }
 
@@ -154,9 +159,54 @@ export class PacientesService {
       },
     });
 
+    // Fetch exams count for each patient (filtered by Interlocutor's Prestataria) (batched)
+    const examsCountMap = await this.batchExamsCount(
+      patientIds,
+      prestataria.Id,
+    );
+
     return patients.map((p) => ({
       ...p,
       prestatarias: [prestataria], // We know they belong to this one
+      examenesCount: examsCountMap.get(p.Id) || 0,
     }));
+  }
+
+  private async batchExamsCount(
+    patientIds: number[],
+    prestatariaId?: number,
+  ): Promise<Map<number, number>> {
+    const CHUNK_SIZE = 1000;
+    const examsCountMap = new Map<number, number>();
+
+    for (let i = 0; i < patientIds.length; i += CHUNK_SIZE) {
+      const chunk = patientIds.slice(i, i + CHUNK_SIZE);
+      const where: any = {
+        Id_Paciente: { in: chunk },
+      };
+
+      if (prestatariaId) {
+        where.Examenes_Laborales = {
+          Id_Prestataria: prestatariaId,
+        };
+      }
+
+      const examsCounts =
+        await this.prisma.examenes_Laborales_Pacientes.groupBy({
+          by: ['Id_Paciente'],
+          _count: {
+            Id: true,
+          },
+          where,
+        });
+
+      examsCounts.forEach((e) => {
+        if (e.Id_Paciente) {
+          examsCountMap.set(e.Id_Paciente, e._count.Id);
+        }
+      });
+    }
+
+    return examsCountMap;
   }
 }

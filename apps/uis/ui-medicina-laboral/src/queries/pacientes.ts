@@ -15,6 +15,7 @@ export interface Paciente {
   Cargo: string | null;
   Puesto: string | null;
   Activo: number | null;
+  examenesCount?: number;
 }
 
 export const fetchPacientes = async (): Promise<Paciente[]> => {

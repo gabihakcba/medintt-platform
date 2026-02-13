@@ -6,6 +6,7 @@ import { AusentismosModule } from './ausentismos/ausentismos.module';
 import { InterlocutorModule } from './interlocutor/interlocutor.module';
 import { DeclaracionJuradaModule } from './declaracion-jurada/declaracion-jurada.module';
 import { FirmaPacienteModule } from './firma-paciente/firma-paciente.module';
+import { ExamenesLaboralesModule } from './examenes-laborales/examenes-laborales.module';
 
 @Module({
   imports: [
@@ -13,7 +14,10 @@ import { FirmaPacienteModule } from './firma-paciente/firma-paciente.module';
     AusentismosModule,
     InterlocutorModule,
     DeclaracionJuradaModule,
+    InterlocutorModule,
+    DeclaracionJuradaModule,
     FirmaPacienteModule,
+    ExamenesLaboralesModule,
   ],
   controllers: [MedicinaLaboralController],
   providers: [MedicinaLaboralService],

@@ -46,6 +46,11 @@ export default function AdminLayout({
         command: () => router.push("/admin/ausentismos"),
       },
       {
+        label: "Incidentes Laborales",
+        icon: "pi pi-exclamation-triangle",
+        command: () => router.push("/admin/incidentes-laborales"),
+      },
+      {
         label: "Empleados",
         icon: "pi pi-users",
         command: () => router.push("/admin/empleados"),

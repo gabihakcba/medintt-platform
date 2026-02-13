@@ -943,18 +943,38 @@ export class DeclaracionJuradaService {
   }
 
   async getPendientes() {
-    return this.prisma.declaraciones_Juradas.findMany({
+    const declaracionJuradas = await this.prisma.declaraciones_Juradas.findMany(
+      {
+        where: {
+          AND: [{ Status: { not: 'TERMINADO' } }],
+        },
+        include: {
+          Pacientes: true,
+        },
+        orderBy: {
+          Fecha: 'desc',
+        },
+      },
+    );
+
+    const prestatariaIds = declaracionJuradas
+      .map((dj) => dj.Id_empresa)
+      .filter((id): id is number => id !== null);
+
+    const uniquePrestatariaIds = [...new Set(prestatariaIds)];
+
+    const prestatarias = await this.prisma.prestatarias.findMany({
       where: {
-        AND: [{ Status: { not: 'TERMINADO' } }],
-      },
-      include: {
-        Pacientes: true,
-        Prestatarias: true,
-      },
-      orderBy: {
-        Fecha: 'desc',
+        Id: { in: uniquePrestatariaIds },
       },
     });
+
+    const prestatariaMap = new Map(prestatarias.map((p) => [p.Id, p]));
+
+    return declaracionJuradas.map((dj) => ({
+      ...dj,
+      Prestatarias: dj.Id_empresa ? prestatariaMap.get(dj.Id_empresa) : null,
+    }));
   }
 
   async sendPendingEmails(ids: number[]) {

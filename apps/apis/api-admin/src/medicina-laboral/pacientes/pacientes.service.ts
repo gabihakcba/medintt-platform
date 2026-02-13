@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@medintt/database-medintt4';
 import { PrismaMedinttService } from '../../prisma-medintt/prisma-medintt.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 
@@ -181,7 +182,7 @@ export class PacientesService {
 
     for (let i = 0; i < patientIds.length; i += CHUNK_SIZE) {
       const chunk = patientIds.slice(i, i + CHUNK_SIZE);
-      const where: any = {
+      const where: Prisma.Examenes_Laborales_PacientesWhereInput = {
         Id_Paciente: { in: chunk },
       };
 

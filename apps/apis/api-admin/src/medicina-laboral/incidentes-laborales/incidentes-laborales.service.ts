@@ -25,6 +25,9 @@ export class IncidentesLaboralesService {
       user.isSuperAdmin ||
       (membership?.role === roleAdmin && membership?.organizationCode === orgM);
     const organizationCode = membership?.organizationCode;
+    const prestataria = await this.prisma.prestatarias.findFirst({
+      where: { Codigo: organizationCode },
+    });
 
     let incidentes: rpt_Incidentes_de_Empresas[] = [];
     if (isAdmin) {
@@ -33,7 +36,7 @@ export class IncidentesLaboralesService {
       });
     } else if (organizationCode) {
       incidentes = await this.prisma.rpt_Incidentes_de_Empresas.findMany({
-        where: { Id_Prestataria: Number(organizationCode) },
+        where: { Id_Prestataria: prestataria?.Id },
         orderBy: { Fecha: 'desc' },
       });
     }

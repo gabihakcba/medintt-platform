@@ -108,7 +108,7 @@ export const MedinttSidebar = ({
         </div>
       </Sidebar>
       <MedinttButton
-        className="m-2"
+        className="fixed top-4 left-4 z-[100]"
         icon="pi pi-bars"
         severity="secondary"
         onClick={() => setVisible(true)}

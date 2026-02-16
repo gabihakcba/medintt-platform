@@ -280,11 +280,11 @@ export default function LoginPage(): ReactElement {
       ) : (
         <div className="w-full flex flex-col items-center">
           <Image
-            src="/logo_large.png"
+            src="/logo_no_bg.png"
             alt="Medintt Logo"
-            width={250}
-            height={80}
-            className="mb-6 object-contain"
+            width={400}
+            height={400}
+            className="object-contain"
             priority
           />
           {loginResponse && (

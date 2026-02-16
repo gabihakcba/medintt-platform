@@ -56,12 +56,12 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center gap-2">
         <Image
-          src="/logo_large.png"
+          src="/logo_no_bg.png"
           alt="Club Salud Logo"
-          width={300}
-          height={300}
+          width={400}
+          height={400}
           priority
         />
         <div className="text-center space-y-4">

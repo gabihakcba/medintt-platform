@@ -113,10 +113,10 @@ export default function AdminLayout({
         title={
           <div className="flex items-center gap-2">
             <Image
-              src="/logo_large.png"
+              src="/logo_no_bg.png"
               alt="Medintt Logo"
               width={120}
-              height={40}
+              height={120}
               className="object-contain"
             />
           </div>

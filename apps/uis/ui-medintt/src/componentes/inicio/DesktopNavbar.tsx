@@ -4,11 +4,13 @@ import { useState, type JSX } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PhoneIcon, QuestionIcon, type IconProps } from "../shared/Icons";
+import DirectAccessMenu from "./DirectAccessMenu";
 
 type NavLink = {
   href: string;
   label: string;
   showCaret?: boolean;
+  badge?: string;
 };
 
 type SubMenuItem = {
@@ -51,13 +53,13 @@ export default function DesktopNavbar({
       "hover:border-main-azul hover:text-main-azul hover:font-bold",
       isActive(href)
         ? "font-bold text-main-azul border-main-azul"
-        : "text-main-azul/80"
+        : "text-main-azul/80",
     );
 
   return (
     <nav className="hidden items-center justify-end md:flex">
       <ul className="flex flex-wrap items-center gap-4 text-sm font-secondary text-main-azul/80 md:gap-6 md:text-md lg:gap-8 lg:text-lg xl:gap-16">
-        {navLinks.map(({ href, label, showCaret }) => {
+        {navLinks.map(({ href, label, showCaret, badge }) => {
           if (href === "/medicina-laboral") {
             return (
               <li
@@ -76,7 +78,7 @@ export default function DesktopNavbar({
                 onBlur={(event) => {
                   if (
                     !event.currentTarget.contains(
-                      event.relatedTarget as Node | null
+                      event.relatedTarget as Node | null,
                     )
                   ) {
                     setIsMedicinaOpen(false);
@@ -98,7 +100,7 @@ export default function DesktopNavbar({
                       className={cn(
                         "h-3 w-3 transition",
                         isActive(href) ? "text-main-azul" : "text-main-azul/80",
-                        isMedicinaOpen && "rotate-180"
+                        isMedicinaOpen && "rotate-180",
                       )}
                       viewBox="0 0 12 12"
                       fill="none"
@@ -174,14 +176,22 @@ export default function DesktopNavbar({
                     <span className="sr-only xl:hidden">{label}</span>
                   </>
                 ) : (
-                  <span>{label}</span>
+                  <span className="relative">
+                    {label}
+                    {/* Badge */}
+                    {navLinks.find((l) => l.href === href)?.badge && (
+                      <span className="absolute -top-3 -right-6 flex h-4 items-center justify-center rounded bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm animate-pulse">
+                        {navLinks.find((l) => l.href === href)?.badge}
+                      </span>
+                    )}
+                  </span>
                 )}
                 {showCaret ? (
                   <svg
                     aria-hidden
                     className={cn(
                       "h-3 w-3 transition",
-                      isActive(href) ? "text-main-azul" : "text-main-azul/80"
+                      isActive(href) ? "text-main-azul" : "text-main-azul/80",
                     )}
                     viewBox="0 0 12 12"
                     fill="none"
@@ -200,6 +210,7 @@ export default function DesktopNavbar({
             </li>
           );
         })}
+        <DirectAccessMenu />
       </ul>
     </nav>
   );

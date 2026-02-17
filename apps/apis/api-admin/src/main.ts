@@ -23,10 +23,10 @@ async function bootstrap() {
   app.use(cookieParser());
   app.enableCors({
     origin: [
-      // Regex para producción (.medintt.com)
-      /^(http|https):\/\/.*\.medintt\.com$/,
-      // Regex para nuevo entorno local (.medintt.local)
-      /^(http|https):\/\/.*\.medintt\.local(:\d+)?$/,
+      // Acepta medintt.com y *.medintt.com
+      /^(https?:\/\/)(.+\.)?medintt\.com$/,
+      // Acepta medintt.local y *.medintt.local (con o sin puerto)
+      /^(https?:\/\/)(.+\.)?medintt\.local(:\d+)?$/,
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true, // <--- CRUCIAL para que pasen las Cookies

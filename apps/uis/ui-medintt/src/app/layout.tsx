@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import Navbar from "../componentes/inicio/Navbar";
 import Footer from "../componentes/shared/Footer";
 import JsonLd from "../componentes/shared/JsonLd";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -80,6 +81,7 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

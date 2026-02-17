@@ -9,7 +9,7 @@ const navLinks = [
   { href: "/servicios", label: "Servicios" },
   { href: "/medicina-laboral", label: "Medicina Laboral", showCaret: true },
   { href: "/clubsalud", label: "Club Salud" },
-  { href: "/campus-virtual", label: "Campus Virtual" },
+  { href: "/servicios-web", label: "Servicios Web", badge: "¡Nuevo!" },
   { href: "/contacto", label: "Contacto" },
   // { href: "/preguntas-frecuentes", label: "Preguntas frecuentes" },
 ];

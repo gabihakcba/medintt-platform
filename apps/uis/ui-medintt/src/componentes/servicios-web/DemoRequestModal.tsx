@@ -53,7 +53,7 @@ export default function DemoRequestModal({
     setIsSubmitting(true);
 
     try {
-      const mailingUrl = `${process.env.NEXT_PUBLIC_URL_ADMIN}/mailing/demo-request`;
+      const mailingUrl = `${process.env.NEXT_PUBLIC_URL_API_ADMIN}/mailing/demo-request`;
 
       const payload = {
         options: {

@@ -25,6 +25,7 @@ import {
   ExcelExportService,
   ExcelColumn,
 } from '../../common/services/excel-export.service';
+import { PdfExportService } from '../../common/services/pdf-export.service';
 
 @ApiTags('Medicina Laboral - Ausentismos')
 @Controller('medicina-laboral/ausentismos')
@@ -34,6 +35,7 @@ export class AusentismosController {
   constructor(
     private readonly ausentismosService: AusentismosService,
     private readonly excelExportService: ExcelExportService,
+    private readonly pdfExportService: PdfExportService,
   ) {}
 
   @Get()
@@ -122,6 +124,106 @@ export class AusentismosController {
       'Ausentismos',
       'ausentismos',
     );
+  }
+
+  @Get('export/pdf')
+  @ApiOperation({ summary: 'Export ausentismos to PDF' })
+  async exportPdf(
+    @GetCurrentUser() user: JwtPayload,
+    @Query() filters: AusentismosFilterDto,
+    @Res() res: Response,
+  ) {
+    const { data } = await this.ausentismosService.findAll(
+      user,
+      filters,
+      true,
+      true,
+    ); // bypassPagination=true, includeAttachments=true
+
+    // Prepare data directly, AusentismosService already calculates stats
+    type AusentismoPdfData = {
+      Id: number;
+      Fecha_Desde: Date | null;
+      Fecha_Hasta: Date | null;
+      Fecha_Reincoporacion: Date | null;
+      Diagnostico: string | null;
+      Evolucion: string | null;
+      paciente: {
+        Nombre: string | null;
+        Apellido: string | null;
+        NroDocumento: string | null;
+      } | null;
+      prestataria: { Nombre: string | null } | null;
+      Ausentismos_Categorias: { Categoria: string | null } | null;
+      Ausentismos_Certificados: {
+        Archivo?: Buffer;
+        Extension?: string;
+      }[];
+      Ausentismos_Bitacora?: any[]; // Allow any for now or define stricter if needed
+      Ausentismos_Controles?: any[];
+      Total_Dias?: number;
+      Dias_Restantes?: number;
+      Status?: string;
+      Indice_Recurrencia?: number;
+    };
+
+    const reportData = {
+      ausentismos: (data as unknown as AusentismoPdfData[]).map((a) => ({
+        ...a,
+        Paciente_Nombre: a.paciente
+          ? `${a.paciente.Apellido}, ${a.paciente.Nombre}`
+          : '',
+        Paciente_DNI: a.paciente?.NroDocumento || '',
+        Empresa_Nombre: a.prestataria?.Nombre || '',
+        Fecha_Informe: new Date().toLocaleDateString('es-AR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        }),
+        Categoria: a.Ausentismos_Categorias?.Categoria || '',
+        certificados:
+          a.Ausentismos_Certificados?.map((c) => {
+            const rawExt = c.Extension?.toLowerCase() || '';
+            let mimeType = '';
+            let isImage = false;
+
+            if (rawExt.includes('/')) {
+              // It is a mime type
+              mimeType = rawExt;
+              isImage = mimeType.startsWith('image/');
+            } else {
+              // It is an extension
+              const cleanExt = rawExt.replace('.', '');
+              if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(cleanExt)) {
+                isImage = true;
+                mimeType = `image/${cleanExt}`;
+              }
+            }
+
+            return {
+              ...c,
+              isImage,
+              base64:
+                isImage && c.Archivo
+                  ? `data:${mimeType};base64,${c.Archivo.toString('base64')}`
+                  : null,
+            };
+          }) || [],
+      })),
+    };
+
+    const pdfBuffer = await this.pdfExportService.generatePdf(
+      reportData,
+      'ausentismos/ausentismos-export',
+    );
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename=ausentismos.pdf',
+      'Content-Length': pdfBuffer.length.toString(),
+    });
+
+    res.end(pdfBuffer);
   }
 
   @Get(':id')

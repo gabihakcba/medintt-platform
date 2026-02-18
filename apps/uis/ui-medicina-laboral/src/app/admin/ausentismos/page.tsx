@@ -21,6 +21,7 @@ export default function AusentismosPage() {
   const [page, setPage] = useState(1);
   const limit = 10;
   const [exporting, setExporting] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   const { prestatarias } = usePrestatarias();
 
@@ -54,6 +55,23 @@ export default function AusentismosPage() {
       console.error("Failed to export excel", error);
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    try {
+      setExportingPdf(true);
+      const exportFilters = { ...filters };
+      delete exportFilters.page;
+      delete exportFilters.limit;
+
+      await import("@/queries/ausentismos").then((mod) =>
+        mod.exportAusentismosPdf(exportFilters),
+      );
+    } catch (error) {
+      console.error("Failed to export pdf", error);
+    } finally {
+      setExportingPdf(false);
     }
   };
 
@@ -230,16 +248,28 @@ export default function AusentismosPage() {
             {checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
               process.env.NEXT_PUBLIC_ROLE_ADMIN!,
             ]) && (
-              <Button
-                icon="pi pi-file-excel"
-                severity="success"
-                outlined
-                rounded
-                tooltip="Exportar Excel"
-                tooltipOptions={{ position: "bottom" }}
-                onClick={handleExport}
-                loading={exporting}
-              />
+              <>
+                <Button
+                  icon="pi pi-file-excel"
+                  severity="success"
+                  outlined
+                  rounded
+                  tooltip="Exportar Excel"
+                  tooltipOptions={{ position: "bottom" }}
+                  onClick={handleExport}
+                  loading={exporting}
+                />
+                <Button
+                  icon="pi pi-file-pdf"
+                  severity="danger"
+                  outlined
+                  rounded
+                  tooltip="Descargar Informe PDF"
+                  tooltipOptions={{ position: "bottom" }}
+                  onClick={handleExportPdf}
+                  loading={exportingPdf}
+                />
+              </>
             )}
           </div>
         </div>

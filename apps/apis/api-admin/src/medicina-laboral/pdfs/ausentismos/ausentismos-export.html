@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @page {
+        margin: 0;
+      }
+      body {
+        margin: 1cm;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          'Helvetica Neue',
+          Arial,
+          sans-serif;
+      }
+      .page-break {
+        page-break-after: always;
+        display: block;
+        min-height: 100vh;
+        position: relative;
+      }
+      .page-break:last-child {
+        page-break-after: avoid;
+      }
+      .footer-corner-logo {
+        position: fixed;
+        bottom: -1px;
+        right: -1px;
+        width: 400px;
+        height: auto;
+        z-index: 5;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    {{#each ausentismos}}
+    <div class="page-break">
+      <!-- Base Header & Info -->
+      {{> ausentismos/base}}
+
+      <!-- Dashboard Stats -->
+      <div class="max-w-4xl mx-auto px-8">{{> ausentismos/dashboard}}</div>
+
+      <!-- Additional Details -->
+      <div class="max-w-4xl mx-auto px-8 pb-8">
+        <div class="mb-6">
+          <h3
+            class="text-sm font-bold text-slate-500 uppercase border-b mb-2 pb-1"
+            style="color: #29296c"
+          >
+            Diagnóstico & Evolución
+          </h3>
+          <div class="grid grid-cols-1 gap-4 text-sm">
+            <div>
+              <span class="font-bold text-slate-700">Diagnóstico:</span>
+              <p class="mt-1 text-slate-600">{{Diagnostico}}</p>
+            </div>
+            <div>
+              <span class="font-bold text-slate-700">Evolución:</span>
+              <p class="mt-1 text-slate-600">{{Evolucion}}</p>
+            </div>
+          </div>
+        </div>
+
+        {{#if Ausentismos_Bitacora.length}}
+        <div class="mb-6">
+          <h3
+            class="text-sm font-bold text-slate-500 uppercase border-b mb-2 pb-1"
+            style="color: #29296c"
+          >
+            Bitácora
+          </h3>
+          <div class="space-y-2">
+            {{#each Ausentismos_Bitacora}}
+            <div class="bg-gray-50 p-3 rounded text-xs">
+              <p class="font-bold text-slate-700">{{formatDate Fecha}}</p>
+              <p class="text-slate-600">{{Observaciones}}</p>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        {{/if}} {{#if Ausentismos_Controles.length}}
+        <div class="mb-6">
+          <h3
+            class="text-sm font-bold text-slate-500 uppercase border-b mb-2 pb-1"
+            style="color: #29296c"
+          >
+            Controles Médicos
+          </h3>
+          <div class="space-y-2">
+            {{#each Ausentismos_Controles}}
+            <div
+              class="bg-blue-50 p-3 rounded text-xs border-l-4 border-blue-400"
+            >
+              <p class="font-bold text-blue-900">
+                {{formatDate Fecha_Control}}
+              </p>
+              <div class="grid grid-cols-2 gap-2 mt-1">
+                <div>
+                  <span class="font-semibold text-blue-800">Evolución:</span>
+                  <p class="text-slate-700">{{Evolucion}}</p>
+                </div>
+                <div>
+                  <span class="font-semibold text-blue-800"
+                    >Instrucciones:</span
+                  >
+                  <p class="text-slate-700">{{Instrucciones}}</p>
+                </div>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        {{/if}}
+
+        <!-- Certificates -->
+        {{#if certificados.length}}
+        <div class="mt-8">
+          <h3
+            class="text-sm font-bold text-slate-500 uppercase border-b mb-4 pb-1"
+            style="color: #29296c"
+          >
+            Certificados Adjuntos
+          </h3>
+          <div class="flex flex-col gap-6">
+            {{#each certificados}} {{#if isImage}}
+            <div class="border rounded-lg p-2 bg-slate-100 flex justify-center">
+              <img
+                src="{{base64}}"
+                class="max-w-full max-h-[500px] object-contain"
+              />
+            </div>
+            {{else}}
+            <div
+              class="border rounded-lg p-4 bg-slate-50 text-center text-slate-500"
+            >
+              <p class="font-bold text-sm">
+                Archivo no visualizable ({{Extension}})
+              </p>
+              <p class="text-xs">{{FileName}}</p>
+            </div>
+            {{/if}} {{/each}}
+          </div>
+        </div>
+        {{/if}}
+      </div>
+    </div>
+    {{/each}}
+
+    <img
+      src="{{Logo_Base64}}"
+      class="footer-corner-logo"
+      alt="Medintt Footer"
+    />
+  </body>
+</html>

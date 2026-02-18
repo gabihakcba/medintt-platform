@@ -60,27 +60,50 @@ export interface AusentismosFilters {
   desde?: string;
   hasta?: string;
   mesReferencia?: string;
+  page?: number;
+  limit?: number;
+  prestatariaId?: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    lastPage: number;
+  };
 }
 
 export const fetchAusentismos = async (
   filters?: AusentismosFilters,
-): Promise<Ausentismo[]> => {
+): Promise<PaginatedResponse<Ausentismo>> => {
   const params = new URLSearchParams();
   if (filters?.desde) params.append("desde", filters.desde);
   if (filters?.hasta) params.append("hasta", filters.hasta);
   if (filters?.mesReferencia)
     params.append("mesReferencia", filters.mesReferencia);
+  if (filters?.page) params.append("page", filters.page.toString());
+  if (filters?.limit) params.append("limit", filters.limit.toString());
+  if (filters?.prestatariaId)
+    params.append("prestatariaId", filters.prestatariaId.toString());
 
   const query = params.toString();
   const url = `/medicina-laboral/ausentismos${query ? `?${query}` : ""}`;
 
-  const { data } = await api.get<Ausentismo[]>(url);
+  const { data } = await api.get<PaginatedResponse<Ausentismo>>(url);
   return data;
 };
 
 export const fetchAusentismoById = async (id: number): Promise<Ausentismo> => {
   const { data } = await api.get<Ausentismo>(
     `/medicina-laboral/ausentismos/${id}`,
+  );
+  return data;
+};
+
+export const fetchPrestatarias = async () => {
+  const { data } = await api.get<{ Id: number; Nombre: string }[]>(
+    "/medicina-laboral/prestatarias",
   );
   return data;
 };

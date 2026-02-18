@@ -46,6 +46,11 @@ export default function AdminLayout({
         command: () => router.push("/admin/ausentismos"),
       },
       {
+        label: "Exámenes Laborales",
+        icon: "pi pi-fw pi-file-o", // Using a generic file icon or similar
+        command: () => router.push("/admin/examenes-laborales"),
+      },
+      {
         label: "Incidentes Laborales",
         icon: "pi pi-exclamation-triangle",
         command: () => router.push("/admin/incidentes-laborales"),

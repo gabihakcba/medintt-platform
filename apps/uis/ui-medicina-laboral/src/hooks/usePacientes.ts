@@ -1,14 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchPacientes } from "../queries/pacientes";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { fetchPacientes, PacientesFilters } from "../queries/pacientes";
 
-export const usePacientes = () => {
+export const usePacientes = (filters?: PacientesFilters) => {
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["pacientes"],
-    queryFn: fetchPacientes,
+    queryKey: ["pacientes", filters],
+    queryFn: () => fetchPacientes(filters),
+    placeholderData: keepPreviousData,
   });
 
   return {
-    pacientes: data,
+    pacientes: data?.data ?? [],
+    meta: data?.meta,
     isLoading,
     isError,
     error,

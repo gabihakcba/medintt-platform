@@ -1,21 +1,18 @@
 "use client";
 
-import {
-  useIncidentesLaborales,
-  IncidentesFilters,
-} from "@/hooks/useIncidentesLaborales";
-import { MedinttGuard, MedinttTable } from "@medintt/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { checkPermissions } from "@/services/permissions";
-import { formatDate } from "@/lib/date";
-import { ProgressSpinner } from "primereact/progressspinner";
+import { MedinttGuard, MedinttTable } from "@medintt/ui";
+import { usePacientes } from "@/hooks/usePacientes";
+
 import { useState } from "react";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { usePrestatarias } from "@/hooks/useAusentismos";
+import { PacientesFilters } from "@/queries/pacientes";
 
-export default function IncidentesLaboralesPage() {
+export default function ExamenesLaboralesPage() {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const limit = 10;
@@ -27,76 +24,67 @@ export default function IncidentesLaboralesPage() {
 
   const { prestatarias } = usePrestatarias();
 
-  const filters: IncidentesFilters = {
+  const filters: PacientesFilters = {
     page,
     limit,
     search,
     prestatariaId: selectedPrestataria || undefined,
+    includeExamsCount: true, // Specific to this page
   };
 
-  const { incidentes, meta, isLoading } = useIncidentesLaborales(filters);
+  const { pacientes, meta, isLoading } = usePacientes(filters);
 
-  const projectCode =
-    process.env.MED_LAB_PROJECT ||
-    process.env.NEXT_PUBLIC_SELF_PROJECT ||
-    "MED_LAB_PROJECT";
-  const requiredRoles = [
-    process.env.NEXT_PUBLIC_ROLE_ADMIN!,
-    process.env.NEXT_PUBLIC_ROLE_INTERLOCUTOR!,
-  ];
-
-  const isAdmin = checkPermissions(
-    user,
-    process.env.NEXT_PUBLIC_SELF_PROJECT || "MED_LAB_PROJECT",
-    [process.env.NEXT_PUBLIC_ROLE_ADMIN || "ADMIN"],
-  );
+  const patientsWithCompanies =
+    pacientes?.map((p: any) => ({
+      ...p,
+      prestatariasString:
+        p.prestatarias?.map((prep: any) => prep.Nombre).join(", ") || "",
+    })) || [];
 
   const columns = [
-    ...(isAdmin || user?.isSuperAdmin
-      ? [
-          {
-            field: "Prestataria.Nombre",
-            header: "Prestataria",
-            sortable: true,
-            body: (rowData: any) => rowData.Prestataria?.Nombre || "-",
-          },
-        ]
-      : []),
+    { field: "Apellido", header: "Apellido" },
+    { field: "Nombre", header: "Nombre" },
+    { field: "NroDocumento", header: "Nro Doc" },
     {
-      field: "Fecha",
-      header: "Fecha",
-      body: (rowData: any) => formatDate(rowData.Fecha),
-      sortable: true,
+      field: "prestatariasString",
+      header: "Empresa",
+      hidden: !checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+        process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+      ]),
     },
+    { field: "Email", header: "Email" },
+    { field: "Cargo", header: "Cargo" },
+    { field: "Puesto", header: "Puesto" },
     {
-      field: "Clase",
-      header: "Clase",
-      sortable: true,
-    },
-    {
-      field: "Paciente",
-      header: "Paciente",
-      sortable: true,
-    },
-    {
-      field: "DNI",
-      header: "DNI",
-      sortable: true,
-    },
-    {
-      field: "Profesional",
-      header: "Profesional",
-      sortable: true,
-    },
-    {
-      field: "Notas",
-      header: "Notas",
-      sortable: true,
-      body: (rowData: any) => (
-        <div className="whitespace-pre-wrap max-h-20 overflow-y-auto">
-          {rowData.Notas}
-        </div>
-      ),
+      field: "examenes",
+      header: "Examenes Laborales",
+      hidden: !checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+        process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        process.env.NEXT_PUBLIC_ROLE_INTERLOCUTOR!,
+      ]),
+      body: (rowData: any) => {
+        const hasExams = (rowData.examenesCount || 0) > 0;
+        return (
+          <a
+            href={
+              hasExams ? `/admin/examenes-laborales/${rowData.Id}` : undefined
+            }
+            className={`text-blue-600 hover:text-blue-800 ${
+              !hasExams
+                ? "opacity-50 cursor-not-allowed pointer-events-none"
+                : ""
+            }`}
+            title={
+              hasExams
+                ? "Ver Examenes Laborales"
+                : "No tiene examenes laborales"
+            }
+            aria-disabled={!hasExams}
+          >
+            <i className="pi pi-eye text-xl"></i>
+          </a>
+        );
+      },
     },
   ];
 
@@ -121,11 +109,17 @@ export default function IncidentesLaboralesPage() {
   return (
     <MedinttGuard
       data={user}
-      validator={(u) => checkPermissions(u, projectCode, requiredRoles)}
+      validator={(u) =>
+        checkPermissions(u, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+          process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+          process.env.NEXT_PUBLIC_ROLE_INTERLOCUTOR!,
+        ])
+      }
     >
-      <div className="card text-2xl font-bold mb-4">
-        <h1 className="mb-4">Incidentes Laborales</h1>
-        <div className="flex flex-col md:flex-row gap-4 mb-4 items-end font-normal text-base">
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Exámenes Laborales</h1>
+
+        <div className="flex flex-col md:flex-row gap-4 mb-4 items-end">
           <div className="flex flex-col gap-2 flex-1">
             <label htmlFor="search" className="font-semibold text-sm">
               Buscar
@@ -136,13 +130,15 @@ export default function IncidentesLaboralesPage() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Paciente, DNI, Profesional, Clase, Notas..."
+                placeholder="Nombre, Apellido, DNI, Email..."
               />
               <Button icon="pi pi-search" onClick={handleSearch} />
             </div>
           </div>
 
-          {isAdmin && (
+          {checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+            process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+          ]) && (
             <div className="flex flex-col gap-2 w-full md:w-64">
               <label htmlFor="prestataria" className="font-semibold text-sm">
                 Empresa (Prestataria)
@@ -176,10 +172,10 @@ export default function IncidentesLaboralesPage() {
         </div>
 
         <MedinttTable
+          data={patientsWithCompanies}
           columns={columns}
-          data={incidentes || []}
-          emptyMessage="No hay incidentes laborales registrados."
           loading={isLoading}
+          enableGlobalFilter={false} // Disabled client-side filter
           lazy
           paginator
           first={(page - 1) * limit}

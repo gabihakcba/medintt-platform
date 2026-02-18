@@ -1,4 +1,5 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query } from '@nestjs/common';
+import { IncidentesLaboralesFilterDto } from './dto/incidentes-laborales-filter.dto';
 import { IncidentesLaboralesService } from './incidentes-laborales.service';
 import { GetCurrentUser } from '../../common/decorators/get-current-user.decorator';
 import { AtGuard } from '../../common/guards/at.guard';
@@ -11,11 +12,10 @@ export class IncidentesLaboralesController {
   constructor(private readonly service: IncidentesLaboralesService) {}
 
   @Get()
-  findAll(@GetCurrentUser() user: JwtPayload) {
-    return this.service.findAll(user as any); // Cast to any because Service expects User but here we have JwtPayload which might differ slightly or be compatible.
-    // Actually Service expects User from @medintt/types-auth.
-    // Let's check compat. JwtPayload usually has enough info.
-    // Service uses `user.roles` and `user.organizationId`.
-    // JwtPayload should have these.
+  findAll(
+    @GetCurrentUser() user: JwtPayload,
+    @Query() filters: IncidentesLaboralesFilterDto,
+  ) {
+    return this.service.findAll(user, filters); // Passing user as JwtPayload directly
   }
 }

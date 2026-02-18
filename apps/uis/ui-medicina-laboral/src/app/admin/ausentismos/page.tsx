@@ -7,6 +7,7 @@ import { useAusentismos, usePrestatarias } from "@/hooks/useAusentismos";
 import { formatDate } from "@/lib/date";
 import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
+import { Button } from "primereact/button";
 import { useState } from "react";
 import { AusentismosFilters } from "@/queries/ausentismos";
 
@@ -192,7 +193,10 @@ export default function AusentismosPage() {
           )}
 
           <div className="flex items-end">
-            <button
+            <Button
+              label="Limpiar Filtros"
+              icon="pi pi-filter-slash"
+              outlined
               onClick={() =>
                 handleFilterChange(() => {
                   setDateRange(null);
@@ -200,10 +204,7 @@ export default function AusentismosPage() {
                   setSelectedPrestataria(null);
                 })
               }
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
-            >
-              Limpiar Filtros
-            </button>
+            />
           </div>
         </div>
 

@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@medintt/database-medintt4';
 import { PrismaMedinttService } from '../../prisma-medintt/prisma-medintt.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { PacientesFilterDto } from './dto/pacientes-filter.dto';
 
 @Injectable()
 export class PacientesService {
   constructor(private prisma: PrismaMedinttService) {}
 
-  async findAll(user: JwtPayload) {
-    // If SuperAdmin or Admin of medicina-laboral in medintt org, return all patients
+  async findAll(user: JwtPayload, filters: PacientesFilterDto) {
     const medLabProject = process.env.MED_LAB_PROJECT;
     const roleAdmin = process.env.ROLE_ADMIN;
     const orgM = process.env.ORG_M;
@@ -18,130 +18,68 @@ export class PacientesService {
       user.isSuperAdmin ||
       (membership?.role === roleAdmin && membership?.organizationCode === orgM);
 
-    if (isAdmin) {
-      // Return all patients
-      const patients = await this.prisma.pacientes.findMany({
-        select: {
-          Id: true,
-          Codigo: true,
-          Apellido: true,
-          Nombre: true,
-          TipoDocumento: true,
-          NroDocumento: true,
-          FechaNacimiento: true,
-          Direccion: true,
-          Telefono: true,
-          Celular1: true,
-          Email: true,
-          Cargo: true,
-          Puesto: true,
-          Activo: true,
-        },
-      });
+    const limit =
+      filters.limit && filters.limit > 0 ? Number(filters.limit) : 10;
+    const page = filters.page && filters.page > 0 ? Number(filters.page) : 1;
+    const skip = (page - 1) * limit;
 
-      // Enrich with Prestatarias manually since relation might not exist in Prisma schema
-      const patientIds = patients.map((p) => p.Id);
+    const where: Prisma.PacientesWhereInput = {
+      // Activo: 1, // Uncomment if we only want active patients
+    };
 
-      // Fetch exams count for each patient (batched)
-      const examsCountMap = await this.batchExamsCount(patientIds);
-
-      const afiliaciones = await this.prisma.afiliacion_Pacientes.findMany({
-        where: { Id_Paciente: { in: patientIds } },
-        select: {
-          Id_Paciente: true,
-          Id_Prestataria: true,
-        },
-      });
-
-      // Get unique Prestataria IDs
-      const prestatariaIds = [
-        ...new Set(
-          afiliaciones
-            .map((a) => a.Id_Prestataria)
-            .filter((id): id is number => id !== null),
-        ),
+    // Global Search Filter
+    if (filters.search) {
+      const search = filters.search.trim();
+      where.OR = [
+        { Nombre: { contains: search } }, // Case insensitive by default in MySQL/Postgres? Check collation. Prisma usually handles this depending on DB.
+        { Apellido: { contains: search } },
+        { NroDocumento: { contains: search } },
+        { Email: { contains: search } },
       ];
+    }
 
-      // Fetch Prestatarias details
-      const prestatariasInfos = await this.prisma.prestatarias.findMany({
-        where: { Id: { in: prestatariaIds } },
-        select: { Id: true, Nombre: true },
+    let prestatariaIdFilter: number | undefined = undefined;
+
+    if (isAdmin) {
+      if (filters.prestatariaId) {
+        prestatariaIdFilter = Number(filters.prestatariaId);
+      }
+    } else {
+      // Interlocutor logic
+      const organizationCode = membership?.organizationCode;
+      if (!organizationCode)
+        return { data: [], meta: { total: 0, page, lastPage: 0 } };
+
+      const prestataria = await this.prisma.prestatarias.findFirst({
+        where: { Codigo: organizationCode },
+        select: { Id: true },
       });
 
-      const prestatariaMap = new Map(prestatariasInfos.map((p) => [p.Id, p]));
+      if (!prestataria)
+        return { data: [], meta: { total: 0, page, lastPage: 0 } };
 
-      // Map unique Prestatarias per patient
-      const patientPrestatariasMap = new Map<
-        number,
-        (typeof prestatariasInfos)[number][]
-      >();
-
-      afiliaciones.forEach((af) => {
-        if (af.Id_Paciente && af.Id_Prestataria) {
-          const pInfo = prestatariaMap.get(af.Id_Prestataria);
-          if (pInfo) {
-            const list = patientPrestatariasMap.get(af.Id_Paciente) || [];
-            // Avoid duplicates for same patient
-            if (!list.find((existing) => existing.Id === pInfo.Id)) {
-              list.push(pInfo);
-            }
-            patientPrestatariasMap.set(af.Id_Paciente, list);
-          }
-        }
-      });
-
-      return patients.map((p) => ({
-        ...p,
-        prestatarias: patientPrestatariasMap.get(p.Id) || [],
-        examenesCount: examsCountMap.get(p.Id) || 0,
-      }));
+      prestatariaIdFilter = prestataria.Id;
     }
 
-    // If Interlocutor, return only patients from their organization
-    // Get the organization code from the user's membership
-    const organizationCode = membership?.organizationCode;
-
-    if (!organizationCode) {
-      return [];
-    }
-
-    // Find the prestataria by code to get its numeric ID
-    const prestataria = await this.prisma.prestatarias.findFirst({
-      where: {
-        Codigo: organizationCode,
-      },
-      select: {
-        Id: true,
-        Nombre: true,
-      },
-    });
-
-    if (!prestataria) {
-      // Organization not found in Prestatarias table
-      return [];
-    }
-    // Find patient IDs affiliated with this organization through Afiliacion_Pacientes
-    const afiliaciones = await this.prisma.afiliacion_Pacientes.findMany({
-      where: {
-        Id_Prestataria: prestataria.Id,
-      },
-      select: {
-        Id_Paciente: true,
-      },
-    });
-
-    const patientIds = afiliaciones
-      .map((a) => a.Id_Paciente)
-      .filter((id): id is number => id !== null);
-
-    // Return patients that match these IDs
-    const patients = await this.prisma.pacientes.findMany({
-      where: {
-        Id: {
-          in: patientIds,
+    // Apply Prestataria User Filter
+    // Since Prestataria is linked via Afiliacion_Pacientes, we need to filter patients who have an affiliation with this Prestataria
+    if (prestatariaIdFilter) {
+      where.Afiliacion_Pacientes = {
+        some: {
+          Id_Prestataria: prestatariaIdFilter,
         },
-        // Activo: -1,
-      },
+      };
+    }
+
+    // Get Total Count
+    const total = await this.prisma.pacientes.count({ where });
+
+    // Get Data
+    const patients = await this.prisma.pacientes.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { Apellido: 'asc' }, // Order by Apellido
       select: {
         Id: true,
         Codigo: true,
@@ -160,17 +98,97 @@ export class PacientesService {
       },
     });
 
-    // Fetch exams count for each patient (filtered by Interlocutor's Prestataria) (batched)
-    const examsCountMap = await this.batchExamsCount(
-      patientIds,
-      prestataria.Id,
-    );
+    // Enrich Data
+    const patientIds = patients.map((p) => p.Id);
 
-    return patients.map((p) => ({
+    // Fetch exams count for each patient (batched) ONLY if requested
+    const examsCountMap = filters.includeExamsCount
+      ? await this.batchExamsCount(patientIds, prestatariaIdFilter)
+      : new Map<number, number>();
+
+    // Enrich with Prestatarias
+    // We need to fetch affiliations for these patients to show their companies
+    const afiliaciones = await this.prisma.afiliacion_Pacientes.findMany({
+      where: { Id_Paciente: { in: patientIds } },
+      select: {
+        Id_Paciente: true,
+        Id_Prestataria: true,
+      },
+    });
+
+    // If we are filtering by a specific prestataria, we might still want to show ALL prestatarias the patient has,
+    // OR just the one we filtered by. Usually user wants to see all companies the employee belongs to.
+    // However, for Interlocutor, maybe they should only see their company?
+    // The requirement says: "interlocutores solo los de su prestataria".
+    // If an employee works for Company A and Company B, and I am Interlocutor for A.
+    // I should see the employee. Should I see that they also work for B?
+    // Usually Privacy says no. But current implementation showed all.
+    // Let's stick to showing all for now unless restricted, but for Interlocutor we can filter the list of prestatarias attached to the object if needed.
+    // Current implementation for Interlocutor was: "prestatarias: [prestataria], // We know they belong to this one".
+    // So for Interlocutor we force only their prestataria.
+
+    let patientPrestatariasMap = new Map<
+      number,
+      { Id: number; Nombre: string | null }[]
+    >();
+
+    if (!isAdmin && prestatariaIdFilter) {
+      // Interlocutor: we only show their company
+      // We need the name of the prestataria
+      const prestatariaInfo = await this.prisma.prestatarias.findUnique({
+        where: { Id: prestatariaIdFilter },
+        select: { Id: true, Nombre: true },
+      });
+      if (prestatariaInfo) {
+        patients.forEach((p) => {
+          patientPrestatariasMap.set(p.Id, [prestatariaInfo]);
+        });
+      }
+    } else {
+      // Admin or no filter: show all companies for these patients
+      const allPrestatariaIds = [
+        ...new Set(
+          afiliaciones
+            .map((a) => a.Id_Prestataria)
+            .filter((id): id is number => id !== null),
+        ),
+      ];
+
+      const prestatariasInfos = await this.prisma.prestatarias.findMany({
+        where: { Id: { in: allPrestatariaIds } },
+        select: { Id: true, Nombre: true },
+      });
+
+      const prestatariaMap = new Map(prestatariasInfos.map((p) => [p.Id, p]));
+
+      afiliaciones.forEach((af) => {
+        if (af.Id_Paciente && af.Id_Prestataria) {
+          const pInfo = prestatariaMap.get(af.Id_Prestataria);
+          if (pInfo) {
+            const list = patientPrestatariasMap.get(af.Id_Paciente) || [];
+            if (!list.find((existing) => existing.Id === pInfo.Id)) {
+              list.push(pInfo);
+            }
+            patientPrestatariasMap.set(af.Id_Paciente, list);
+          }
+        }
+      });
+    }
+
+    const data = patients.map((p) => ({
       ...p,
-      prestatarias: [prestataria], // We know they belong to this one
+      prestatarias: patientPrestatariasMap.get(p.Id) || [],
       examenesCount: examsCountMap.get(p.Id) || 0,
     }));
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 
   private async batchExamsCount(

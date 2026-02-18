@@ -52,6 +52,32 @@ const fetchIncidentesLaborales = async (
   return data;
 };
 
+export const exportIncidentesExcel = async (
+  filters?: IncidentesFilters,
+): Promise<void> => {
+  const params = new URLSearchParams();
+  if (filters?.search) params.append("search", filters.search);
+  if (filters?.prestatariaId)
+    params.append("prestatariaId", filters.prestatariaId.toString());
+
+  const query = params.toString();
+  const url = `/medicina-laboral/incidentes-laborales/export/excel${
+    query ? `?${query}` : ""
+  }`;
+
+  const response = await axios.get(url, {
+    responseType: "blob",
+  });
+
+  const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.setAttribute("download", "incidentes-laborales.xlsx");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+
 export const useIncidentesLaborales = (filters?: IncidentesFilters) => {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["incidentes-laborales", filters],

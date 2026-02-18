@@ -20,6 +20,7 @@ export default function AusentismosPage() {
   );
   const [page, setPage] = useState(1);
   const limit = 10;
+  const [exporting, setExporting] = useState(false);
 
   const { prestatarias } = usePrestatarias();
 
@@ -33,6 +34,27 @@ export default function AusentismosPage() {
   const filters: AusentismosFilters = {
     page,
     limit,
+  };
+
+  // ... (filter logic)
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      // Create export filters without pagination to match backend expectation roughly
+      // (though backend ignores pagination on export endpoint anyway)
+      const exportFilters = { ...filters };
+      delete exportFilters.page;
+      delete exportFilters.limit;
+
+      await import("@/queries/ausentismos").then((mod) =>
+        mod.exportAusentismosExcel(exportFilters),
+      );
+    } catch (error) {
+      console.error("Failed to export excel", error);
+    } finally {
+      setExporting(false);
+    }
   };
 
   if (dateRange && dateRange[0] && dateRange[1]) {
@@ -192,7 +214,7 @@ export default function AusentismosPage() {
             </div>
           )}
 
-          <div className="flex items-end">
+          <div className="flex items-end gap-2">
             <Button
               label="Limpiar Filtros"
               icon="pi pi-filter-slash"
@@ -205,6 +227,20 @@ export default function AusentismosPage() {
                 })
               }
             />
+            {checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+              process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+            ]) && (
+              <Button
+                icon="pi pi-file-excel"
+                severity="success"
+                outlined
+                rounded
+                tooltip="Exportar Excel"
+                tooltipOptions={{ position: "bottom" }}
+                onClick={handleExport}
+                loading={exporting}
+              />
+            )}
           </div>
         </div>
 

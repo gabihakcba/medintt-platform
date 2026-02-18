@@ -8,7 +8,11 @@ import { PacientesFilterDto } from './dto/pacientes-filter.dto';
 export class PacientesService {
   constructor(private prisma: PrismaMedinttService) {}
 
-  async findAll(user: JwtPayload, filters: PacientesFilterDto) {
+  async findAll(
+    user: JwtPayload,
+    filters: PacientesFilterDto,
+    bypassPagination: boolean = false,
+  ) {
     const medLabProject = process.env.MED_LAB_PROJECT;
     const roleAdmin = process.env.ROLE_ADMIN;
     const orgM = process.env.ORG_M;
@@ -21,7 +25,8 @@ export class PacientesService {
     const limit =
       filters.limit && filters.limit > 0 ? Number(filters.limit) : 10;
     const page = filters.page && filters.page > 0 ? Number(filters.page) : 1;
-    const skip = (page - 1) * limit;
+    const skip = bypassPagination ? undefined : (page - 1) * limit;
+    const take = bypassPagination ? undefined : limit;
 
     const where: Prisma.PacientesWhereInput = {
       // Activo: 1, // Uncomment if we only want active patients
@@ -78,7 +83,7 @@ export class PacientesService {
     const patients = await this.prisma.pacientes.findMany({
       where,
       skip,
-      take: limit,
+      take,
       orderBy: { Apellido: 'asc' }, // Order by Apellido
       select: {
         Id: true,
@@ -127,7 +132,7 @@ export class PacientesService {
     // Current implementation for Interlocutor was: "prestatarias: [prestataria], // We know they belong to this one".
     // So for Interlocutor we force only their prestataria.
 
-    let patientPrestatariasMap = new Map<
+    const patientPrestatariasMap = new Map<
       number,
       { Id: number; Nombre: string | null }[]
     >();

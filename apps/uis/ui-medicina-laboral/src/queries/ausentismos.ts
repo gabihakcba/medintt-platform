@@ -63,6 +63,7 @@ export interface AusentismosFilters {
   page?: number;
   limit?: number;
   prestatariaId?: number;
+  search?: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -106,4 +107,34 @@ export const fetchPrestatarias = async () => {
     "/medicina-laboral/prestatarias",
   );
   return data;
+};
+
+export const exportAusentismosExcel = async (
+  filters?: AusentismosFilters,
+): Promise<void> => {
+  const params = new URLSearchParams();
+  if (filters?.desde) params.append("desde", filters.desde);
+  if (filters?.hasta) params.append("hasta", filters.hasta);
+  if (filters?.mesReferencia)
+    params.append("mesReferencia", filters.mesReferencia);
+  if (filters?.search) params.append("search", filters.search);
+  if (filters?.prestatariaId)
+    params.append("prestatariaId", filters.prestatariaId.toString());
+
+  const query = params.toString();
+  const url = `/medicina-laboral/ausentismos/export/excel${
+    query ? `?${query}` : ""
+  }`;
+
+  const response = await api.get(url, {
+    responseType: "blob",
+  });
+
+  const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.setAttribute("download", "ausentismos.xlsx");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 };

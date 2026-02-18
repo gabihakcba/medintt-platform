@@ -21,8 +21,32 @@ export default function ExamenesLaboralesPage() {
   const [selectedPrestataria, setSelectedPrestataria] = useState<number | null>(
     null,
   );
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const exportFilters = { ...filters };
+      delete exportFilters.page;
+      delete exportFilters.limit;
+
+      await import("@/queries/pacientes").then((mod) =>
+        mod.exportPacientesExcel(exportFilters),
+      );
+    } catch (error) {
+      console.error("Failed to export excel", error);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const { prestatarias } = usePrestatarias();
+
+  // Reset page when filters change
+  const handleFilterChange = (updater: () => void) => {
+    updater();
+    setPage(1);
+  };
 
   const filters: PacientesFilters = {
     page,
@@ -99,13 +123,6 @@ export default function ExamenesLaboralesPage() {
     }
   };
 
-  const clearFilters = () => {
-    setSearch("");
-    setSearchInput("");
-    setSelectedPrestataria(null);
-    setPage(1);
-  };
-
   return (
     <MedinttGuard
       data={user}
@@ -146,10 +163,9 @@ export default function ExamenesLaboralesPage() {
               <Dropdown
                 id="prestataria"
                 value={selectedPrestataria}
-                onChange={(e) => {
-                  setSelectedPrestataria(e.value);
-                  setPage(1);
-                }}
+                onChange={(e) =>
+                  handleFilterChange(() => setSelectedPrestataria(e.value))
+                }
                 options={prestatarias}
                 optionLabel="Nombre"
                 optionValue="Id"
@@ -162,12 +178,35 @@ export default function ExamenesLaboralesPage() {
           )}
 
           <div className="flex flex-col justify-end">
-            <Button
-              label="Limpiar Filtros"
-              icon="pi pi-filter-slash"
-              outlined
-              onClick={clearFilters}
-            />
+            <div className="flex items-end gap-2">
+              <Button
+                label="Limpiar Filtros"
+                icon="pi pi-filter-slash"
+                outlined
+                onClick={() =>
+                  handleFilterChange(() => {
+                    setSearch("");
+                    setSearchInput("");
+                    setSelectedPrestataria(null);
+                  })
+                }
+              />
+              {checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+                process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+              ]) && (
+                <Button
+                  icon="pi pi-file-excel"
+                  severity="success"
+                  outlined
+                  rounded
+                  size="small"
+                  tooltip="Exportar Excel"
+                  tooltipOptions={{ position: "bottom" }}
+                  onClick={handleExport}
+                  loading={exporting}
+                />
+              )}
+            </div>
           </div>
         </div>
 

@@ -16,7 +16,11 @@ export type IncidenteLaboral = rpt_Incidentes_de_Empresas & {
 export class IncidentesLaboralesService {
   constructor(private prisma: PrismaMedinttService) {}
 
-  async findAll(user: JwtPayload, filters: IncidentesLaboralesFilterDto) {
+  async findAll(
+    user: JwtPayload,
+    filters: IncidentesLaboralesFilterDto,
+    bypassPagination: boolean = false,
+  ) {
     const medLabProject = process.env.MED_LAB_PROJECT;
     const roleAdmin = process.env.ROLE_ADMIN;
     const orgM = process.env.ORG_M;
@@ -30,7 +34,8 @@ export class IncidentesLaboralesService {
     const limit =
       filters.limit && filters.limit > 0 ? Number(filters.limit) : 10;
     const page = filters.page && filters.page > 0 ? Number(filters.page) : 1;
-    const skip = (page - 1) * limit;
+    const skip = bypassPagination ? undefined : (page - 1) * limit;
+    const take = bypassPagination ? undefined : limit;
 
     const where: any = {}; // Using any for Prisma WhereInput flexibility
 
@@ -73,7 +78,7 @@ export class IncidentesLaboralesService {
     const incidentes = await this.prisma.rpt_Incidentes_de_Empresas.findMany({
       where,
       skip,
-      take: limit,
+      take,
       orderBy: { Fecha: 'desc' },
     });
 
@@ -83,7 +88,7 @@ export class IncidentesLaboralesService {
         meta: {
           total,
           page,
-          lastPage: Math.ceil(total / limit),
+          lastPage: take ? Math.ceil(total / take) : 1,
         },
       };
     }
@@ -114,7 +119,7 @@ export class IncidentesLaboralesService {
       meta: {
         total,
         page,
-        lastPage: Math.ceil(total / limit),
+        lastPage: take ? Math.ceil(total / take) : 1,
       },
     };
   }

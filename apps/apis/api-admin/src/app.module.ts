@@ -23,6 +23,7 @@ import { PrismaMedinttModule } from './prisma-medintt/prisma-medintt.module';
 import { Medintt4Module } from './medintt4/medintt4.module';
 import { MailingModule } from './mailing/mailing.module';
 import { MedicinaLaboralModule } from './medicina-laboral/medicina-laboral.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { MedicinaLaboralModule } from './medicina-laboral/medicina-laboral.modul
     HealthModule,
     MailingModule,
     MedicinaLaboralModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [

@@ -8,10 +8,15 @@ import { AusentismosFilterDto } from './dto/ausentismos-filter.dto';
 export class AusentismosService {
   constructor(private prisma: PrismaMedinttService) {}
 
-  async findAll(user: JwtPayload, filters: AusentismosFilterDto = {}) {
-    const limit = 10; // Requirement: 10 items always
+  async findAll(
+    user: JwtPayload,
+    filters: AusentismosFilterDto = {},
+    bypassPagination: boolean = false,
+  ) {
+    const limit = filters.limit ? Number(filters.limit) : 10;
     const page = filters.page && filters.page > 0 ? Number(filters.page) : 1;
-    const skip = (page - 1) * limit;
+    const skip = bypassPagination ? undefined : (page - 1) * limit;
+    const take = bypassPagination ? undefined : limit;
 
     const medLabProject = process.env.MED_LAB_PROJECT;
     const roleAdmin = process.env.ROLE_ADMIN;
@@ -93,7 +98,7 @@ export class AusentismosService {
     const ausentismos = await this.prisma.ausentismos.findMany({
       where,
       skip,
-      take: limit,
+      take,
       orderBy: { Fecha_Desde: 'desc' }, // Good practice to have an order
       select: {
         Id: true,
@@ -159,7 +164,7 @@ export class AusentismosService {
       meta: {
         total,
         page,
-        lastPage: Math.ceil(total / limit),
+        lastPage: take ? Math.ceil(total / take) : 1,
       },
     };
   }

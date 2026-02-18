@@ -9,15 +9,15 @@ import { useState } from "react";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
-import { usePrestatarias } from "@/hooks/useAusentismos"; // Reusing this hook as it fetches prestatarias
+import { usePrestatarias } from "@/hooks/useAusentismos";
 import { PacientesFilters } from "@/queries/pacientes";
 
-export default function EmpleadosPage() {
+export default function ExamenesLaboralesPage() {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const limit = 10;
   const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState(""); // For input value control
+  const [searchInput, setSearchInput] = useState("");
   const [selectedPrestataria, setSelectedPrestataria] = useState<number | null>(
     null,
   );
@@ -53,7 +53,7 @@ export default function EmpleadosPage() {
     limit,
     search,
     prestatariaId: selectedPrestataria || undefined,
-    includeExamsCount: false,
+    includeExamsCount: true, // Specific to this page
   };
 
   const { pacientes, meta, isLoading } = usePacientes(filters);
@@ -79,6 +79,37 @@ export default function EmpleadosPage() {
     { field: "Email", header: "Email" },
     { field: "Cargo", header: "Cargo" },
     { field: "Puesto", header: "Puesto" },
+    {
+      field: "examenes",
+      header: "Examenes Laborales",
+      hidden: !checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+        process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+        process.env.NEXT_PUBLIC_ROLE_INTERLOCUTOR!,
+      ]),
+      body: (rowData: any) => {
+        const hasExams = (rowData.examenesCount || 0) > 0;
+        return (
+          <a
+            href={
+              hasExams ? `/admin/examenes-laborales/${rowData.Id}` : undefined
+            }
+            className={`text-blue-600 hover:text-blue-800 ${
+              !hasExams
+                ? "opacity-50 cursor-not-allowed pointer-events-none"
+                : ""
+            }`}
+            title={
+              hasExams
+                ? "Ver Examenes Laborales"
+                : "No tiene examenes laborales"
+            }
+            aria-disabled={!hasExams}
+          >
+            <i className="pi pi-eye text-xl"></i>
+          </a>
+        );
+      },
+    },
   ];
 
   const handleSearch = () => {
@@ -103,7 +134,7 @@ export default function EmpleadosPage() {
       }
     >
       <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Empleados</h1>
+        <h1 className="text-2xl font-bold mb-4">Exámenes Laborales</h1>
 
         <div className="flex flex-col md:flex-row gap-4 mb-4 items-end">
           <div className="flex flex-col gap-2 flex-1">

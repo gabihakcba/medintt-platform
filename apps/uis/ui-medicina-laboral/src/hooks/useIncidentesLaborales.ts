@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { api as axios } from "@/lib/axios";
 
 export interface IncidenteLaboral {
@@ -17,14 +17,79 @@ export interface IncidenteLaboral {
   } | null;
 }
 
-const fetchIncidentesLaborales = async (): Promise<IncidenteLaboral[]> => {
-  const { data } = await axios.get("/medicina-laboral/incidentes-laborales");
+export interface IncidentesFilters {
+  page?: number;
+  limit?: number;
+  search?: string;
+  prestatariaId?: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    lastPage: number;
+  };
+}
+
+const fetchIncidentesLaborales = async (
+  filters?: IncidentesFilters,
+): Promise<PaginatedResponse<IncidenteLaboral>> => {
+  const params = new URLSearchParams();
+  if (filters?.page) params.append("page", filters.page.toString());
+  if (filters?.limit) params.append("limit", filters.limit.toString());
+  if (filters?.search) params.append("search", filters.search);
+  if (filters?.prestatariaId)
+    params.append("prestatariaId", filters.prestatariaId.toString());
+
+  const query = params.toString();
+  const url = `/medicina-laboral/incidentes-laborales${
+    query ? `?${query}` : ""
+  }`;
+
+  const { data } = await axios.get<PaginatedResponse<IncidenteLaboral>>(url);
   return data;
 };
 
-export const useIncidentesLaborales = () => {
-  return useQuery({
-    queryKey: ["incidentes-laborales"],
-    queryFn: fetchIncidentesLaborales,
+export const exportIncidentesExcel = async (
+  filters?: IncidentesFilters,
+): Promise<void> => {
+  const params = new URLSearchParams();
+  if (filters?.search) params.append("search", filters.search);
+  if (filters?.prestatariaId)
+    params.append("prestatariaId", filters.prestatariaId.toString());
+
+  const query = params.toString();
+  const url = `/medicina-laboral/incidentes-laborales/export/excel${
+    query ? `?${query}` : ""
+  }`;
+
+  const response = await axios.get(url, {
+    responseType: "blob",
   });
+
+  const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.setAttribute("download", "incidentes-laborales.xlsx");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+
+export const useIncidentesLaborales = (filters?: IncidentesFilters) => {
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["incidentes-laborales", filters],
+    queryFn: () => fetchIncidentesLaborales(filters),
+    placeholderData: keepPreviousData,
+  });
+
+  return {
+    incidentes: data?.data ?? [],
+    meta: data?.meta,
+    isLoading,
+    isError,
+    error,
+  };
 };

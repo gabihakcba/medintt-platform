@@ -23,4 +23,11 @@ export class MedicinaLaboralController {
   getHealth() {
     return this.medicinaLaboralService.getHealth();
   }
+
+  @Get('prestatarias')
+  @ApiOperation({ summary: 'Get all Prestatarias for filters' })
+  @ApiResponse({ status: 200, description: 'List of all Prestatarias' })
+  getPrestatarias() {
+    return this.medicinaLaboralService.getPrestatarias();
+  }
 }

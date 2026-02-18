@@ -12,4 +12,13 @@ export class AusentismosFilterDto {
   @IsOptional()
   @IsISO8601()
   mesReferencia?: string;
+
+  @IsOptional()
+  page?: number;
+
+  @IsOptional()
+  limit?: number;
+
+  @IsOptional()
+  prestatariaId?: number;
 }

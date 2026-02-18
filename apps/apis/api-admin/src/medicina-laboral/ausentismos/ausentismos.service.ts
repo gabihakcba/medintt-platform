@@ -8,8 +8,16 @@ import { AusentismosFilterDto } from './dto/ausentismos-filter.dto';
 export class AusentismosService {
   constructor(private prisma: PrismaMedinttService) {}
 
-  async findAll(user: JwtPayload, filters: AusentismosFilterDto = {}) {
-    // If SuperAdmin or Admin of medicina-laboral in medintt org, return all ausentismos
+  async findAll(
+    user: JwtPayload,
+    filters: AusentismosFilterDto = {},
+    bypassPagination: boolean = false,
+  ) {
+    const limit = filters.limit ? Number(filters.limit) : 10;
+    const page = filters.page && filters.page > 0 ? Number(filters.page) : 1;
+    const skip = bypassPagination ? undefined : (page - 1) * limit;
+    const take = bypassPagination ? undefined : limit;
+
     const medLabProject = process.env.MED_LAB_PROJECT;
     const roleAdmin = process.env.ROLE_ADMIN;
     const orgM = process.env.ORG_M;
@@ -18,16 +26,14 @@ export class AusentismosService {
     const isAdmin =
       membership?.role === roleAdmin && membership?.organizationCode === orgM;
 
-    // Build date filters
-    const dateFilter: Prisma.AusentismosWhereInput = {};
+    // Build filters
+    const where: Prisma.AusentismosWhereInput = {};
 
+    // Date filters
     if (filters.desde && filters.hasta) {
-      // Range filter: Find ausentismos that overlap with the date range
-      // An ausentismo overlaps if: Fecha_Desde <= hasta AND Fecha_Hasta >= desde
-      dateFilter.Fecha_Desde = { lte: new Date(filters.hasta) };
-      dateFilter.Fecha_Hasta = { gte: new Date(filters.desde) };
+      where.Fecha_Desde = { lte: new Date(filters.hasta) };
+      where.Fecha_Hasta = { gte: new Date(filters.desde) };
     } else if (filters.mesReferencia) {
-      // Monthly filter: Fecha_Desde or Fecha_Hasta within the month
       const refDate = new Date(filters.mesReferencia);
       const startOfMonth = new Date(
         refDate.getFullYear(),
@@ -44,7 +50,7 @@ export class AusentismosService {
         999,
       );
 
-      dateFilter.OR = [
+      where.OR = [
         {
           Fecha_Desde: {
             gte: startOfMonth,
@@ -60,91 +66,40 @@ export class AusentismosService {
       ];
     }
 
+    // Role-based filtering
     if (user.isSuperAdmin || isAdmin) {
-      // Return all ausentismos
-      const ausentismos = await this.prisma.ausentismos.findMany({
-        where: dateFilter,
-        select: {
-          Id: true,
-          Id_Paciente: true,
-          Id_Prestataria: true,
-          Fecha_Desde: true,
-          Fecha_Hasta: true,
-          Fecha_Reincoporacion: true,
-          Diagnostico: true,
-          Evolucion: true,
-          Ausentismos_Categorias: {
-            select: {
-              Categoria: true,
-            },
-          },
-          Ausentismos_Attachs: {
-            select: { Id: true, FileName: true, Extension: true },
-          },
-          Ausentismos_Certificados: {
-            select: { Id: true, FileName: true, Extension: true },
-          },
-        },
+      // Admin can filter by prestataria
+      if (filters.prestatariaId) {
+        where.Id_Prestataria = Number(filters.prestatariaId);
+      }
+    } else {
+      // Interlocutor: specific organization only
+      const organizationCode = membership?.organizationCode;
+      if (!organizationCode) {
+        return { data: [], meta: { total: 0, page, lastPage: 0 } };
+      }
+
+      const prestataria = await this.prisma.prestatarias.findFirst({
+        where: { Codigo: organizationCode },
+        select: { Id: true },
       });
 
-      // Enrich with patient data & Prestataria
-      const pacienteIds = ausentismos
-        .map((a) => a.Id_Paciente)
-        .filter((id): id is number => id !== null);
+      if (!prestataria) {
+        return { data: [], meta: { total: 0, page, lastPage: 0 } };
+      }
 
-      const prestatariaIds = ausentismos
-        .map((a) => a.Id_Prestataria)
-        .filter((id): id is number => id !== null);
-
-      const [pacientes, prestatarias] = await Promise.all([
-        this.prisma.pacientes.findMany({
-          where: { Id: { in: pacienteIds } },
-          select: {
-            Id: true,
-            Nombre: true,
-            Apellido: true,
-            NroDocumento: true,
-          },
-        }),
-        this.prisma.prestatarias.findMany({
-          where: { Id: { in: prestatariaIds } },
-          select: { Id: true, Nombre: true },
-        }),
-      ]);
-
-      const pacientesMap = new Map(pacientes.map((p) => [p.Id, p]));
-      const prestatariasMap = new Map(prestatarias.map((p) => [p.Id, p]));
-
-      return ausentismos.map((a) => ({
-        ...a,
-        paciente: a.Id_Paciente ? pacientesMap.get(a.Id_Paciente) : null,
-        prestataria: a.Id_Prestataria
-          ? prestatariasMap.get(a.Id_Prestataria)
-          : null,
-      }));
+      where.Id_Prestataria = prestataria.Id;
     }
 
-    // If Interlocutor, return only ausentismos from their organization
-    const organizationCode = membership?.organizationCode;
+    // Get Total Count
+    const total = await this.prisma.ausentismos.count({ where });
 
-    if (!organizationCode) {
-      return [];
-    }
-
-    const prestataria = await this.prisma.prestatarias.findFirst({
-      where: { Codigo: organizationCode },
-      select: { Id: true, Nombre: true },
-    });
-
-    if (!prestataria) {
-      return [];
-    }
-
+    // Get Data
     const ausentismos = await this.prisma.ausentismos.findMany({
-      where: {
-        Id_Prestataria: prestataria.Id,
-        ...dateFilter,
-      },
+      where,
+      skip,
+      take,
+      orderBy: { Fecha_Desde: 'desc' }, // Good practice to have an order
       select: {
         Id: true,
         Id_Paciente: true,
@@ -155,7 +110,9 @@ export class AusentismosService {
         Diagnostico: true,
         Evolucion: true,
         Ausentismos_Categorias: {
-          select: { Categoria: true },
+          select: {
+            Categoria: true,
+          },
         },
         Ausentismos_Attachs: {
           select: { Id: true, FileName: true, Extension: true },
@@ -166,28 +123,50 @@ export class AusentismosService {
       },
     });
 
-    // Enrich with patient data
+    // Enrich Data
     const pacienteIds = ausentismos
       .map((a) => a.Id_Paciente)
       .filter((id): id is number => id !== null);
 
-    const pacientes = await this.prisma.pacientes.findMany({
-      where: { Id: { in: pacienteIds } },
-      select: {
-        Id: true,
-        Nombre: true,
-        Apellido: true,
-        NroDocumento: true,
-      },
-    });
+    const prestatariaIds = ausentismos
+      .map((a) => a.Id_Prestataria)
+      .filter((id): id is number => id !== null);
+
+    const [pacientes, prestatarias] = await Promise.all([
+      this.prisma.pacientes.findMany({
+        where: { Id: { in: pacienteIds } },
+        select: {
+          Id: true,
+          Nombre: true,
+          Apellido: true,
+          NroDocumento: true,
+        },
+      }),
+      this.prisma.prestatarias.findMany({
+        where: { Id: { in: prestatariaIds } },
+        select: { Id: true, Nombre: true },
+      }),
+    ]);
 
     const pacientesMap = new Map(pacientes.map((p) => [p.Id, p]));
+    const prestatariasMap = new Map(prestatarias.map((p) => [p.Id, p]));
 
-    return ausentismos.map((a) => ({
+    const data = ausentismos.map((a) => ({
       ...a,
       paciente: a.Id_Paciente ? pacientesMap.get(a.Id_Paciente) : null,
-      prestataria: prestataria, // Already have this
+      prestataria: a.Id_Prestataria
+        ? prestatariasMap.get(a.Id_Prestataria)
+        : null,
     }));
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: take ? Math.ceil(total / take) : 1,
+      },
+    };
   }
 
   async findOne(id: number, user: JwtPayload) {

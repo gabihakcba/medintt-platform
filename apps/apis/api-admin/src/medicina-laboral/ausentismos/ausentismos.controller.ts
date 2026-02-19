@@ -133,14 +133,8 @@ export class AusentismosController {
     @Query() filters: AusentismosFilterDto,
     @Res() res: Response,
   ) {
-    const { data } = await this.ausentismosService.findAll(
-      user,
-      filters,
-      true,
-      true,
-    ); // bypassPagination=true, includeAttachments=true
+    const { data } = await this.ausentismosService.findAll(user, filters, true); // bypassPagination=true
 
-    // Prepare data directly, AusentismosService already calculates stats
     type AusentismoPdfData = {
       Id: number;
       Fecha_Desde: Date | null;
@@ -155,66 +149,101 @@ export class AusentismosController {
       } | null;
       prestataria: { Nombre: string | null } | null;
       Ausentismos_Categorias: { Categoria: string | null } | null;
-      Ausentismos_Certificados: {
-        Archivo?: Buffer;
-        Extension?: string;
-      }[];
-      Ausentismos_Bitacora?: any[]; // Allow any for now or define stricter if needed
       Ausentismos_Controles?: any[];
       Total_Dias?: number;
       Dias_Restantes?: number;
       Status?: string;
       Indice_Recurrencia?: number;
+      Ausentismos_Certificados?: { Dias_de_Reposo: number | null }[];
     };
+
+    let totalDiasOtorgados = 0;
+    let totalDiasAhorrados = 0;
+    const categoriaCounts: Record<string, number> = {};
+
+    const ausentismosMapped = (data as unknown as AusentismoPdfData[]).map(
+      (a) => {
+        const diasOtorgados = a.Total_Dias || 0;
+        totalDiasOtorgados += diasOtorgados;
+
+        const diasCertificados =
+          a.Ausentismos_Certificados?.reduce(
+            (acc, cert) => acc + (cert.Dias_de_Reposo || 0),
+            0,
+          ) || 0;
+        const diasAhorrados = Math.max(0, diasCertificados - diasOtorgados);
+        totalDiasAhorrados += diasAhorrados;
+
+        const categoria =
+          a.Ausentismos_Categorias?.Categoria || 'Sin Categoría';
+        categoriaCounts[categoria] = (categoriaCounts[categoria] || 0) + 1;
+
+        return {
+          ...a,
+          Paciente_Nombre: a.paciente
+            ? `${a.paciente.Apellido}, ${a.paciente.Nombre}`
+            : '',
+          Paciente_DNI: a.paciente?.NroDocumento || '',
+          Empresa_Nombre: a.prestataria?.Nombre || '',
+          Fecha_Informe: new Date().toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          }),
+          Categoria: categoria,
+        };
+      },
+    );
+
+    // Cover Page Data
+    const headerLogoBase64 = this.pdfExportService.getHeaderLogo();
+    const nombreEmpresaCliente = ausentismosMapped[0]?.Empresa_Nombre || '';
 
     const reportData = {
-      ausentismos: (data as unknown as AusentismoPdfData[]).map((a) => ({
-        ...a,
-        Paciente_Nombre: a.paciente
-          ? `${a.paciente.Apellido}, ${a.paciente.Nombre}`
-          : '',
-        Paciente_DNI: a.paciente?.NroDocumento || '',
-        Empresa_Nombre: a.prestataria?.Nombre || '',
-        Fecha_Informe: new Date().toLocaleDateString('es-AR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        }),
-        Categoria: a.Ausentismos_Categorias?.Categoria || '',
-        certificados:
-          a.Ausentismos_Certificados?.map((c) => {
-            const rawExt = c.Extension?.toLowerCase() || '';
-            let mimeType = '';
-            let isImage = false;
-
-            if (rawExt.includes('/')) {
-              // It is a mime type
-              mimeType = rawExt;
-              isImage = mimeType.startsWith('image/');
-            } else {
-              // It is an extension
-              const cleanExt = rawExt.replace('.', '');
-              if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(cleanExt)) {
-                isImage = true;
-                mimeType = `image/${cleanExt}`;
-              }
-            }
-
-            return {
-              ...c,
-              isImage,
-              base64:
-                isImage && c.Archivo
-                  ? `data:${mimeType};base64,${c.Archivo.toString('base64')}`
-                  : null,
-            };
-          }) || [],
-      })),
+      ausentismos: ausentismosMapped,
+      Empresa_Logo_Base64: headerLogoBase64,
+      Nombre_Empresa_Cliente: nombreEmpresaCliente,
+      resumenGeneral: {
+        totalCasos: data.length,
+        totalDiasOtorgados,
+        totalDiasAhorrados,
+        distribucionCategorias: Object.entries(categoriaCounts).map(
+          ([k, v]) => ({ Categoria: k, Cantidad: v }),
+        ),
+        fechaDesde: filters.desde
+          ? new Date(filters.desde).toLocaleDateString('es-AR')
+          : null,
+        fechaHasta: filters.hasta
+          ? new Date(filters.hasta).toLocaleDateString('es-AR')
+          : null,
+        empresa: nombreEmpresaCliente,
+      },
     };
+
+    // Prepare Footer Template
+    const logoBase64 = this.pdfExportService.getBase64Logo();
+    const footerTemplate = `
+      <div style="width: 100%; text-align: right; font-size: 10px; margin: 0; padding: 0;">
+        <img src="${logoBase64}" style="width: 400px; height: auto;" />
+      </div>
+    `;
 
     const pdfBuffer = await this.pdfExportService.generatePdf(
       reportData,
       'ausentismos/ausentismos-export',
+      {
+        format: 'A4',
+        printBackground: true,
+        displayHeaderFooter: true,
+        headerTemplate: '<div></div>', // Required if displayHeaderFooter is true
+        footerTemplate: footerTemplate,
+        margin: {
+          top: '0cm',
+          bottom: '5cm', // Reserve space for the footer
+          left: '0cm',
+          right: '0cm',
+        },
+      },
     );
 
     res.set({

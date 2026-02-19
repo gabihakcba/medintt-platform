@@ -12,7 +12,6 @@ export class AusentismosService {
     user: JwtPayload,
     filters: AusentismosFilterDto = {},
     bypassPagination: boolean = false,
-    includeAttachments: boolean = false,
   ) {
     const limit = filters.limit ? Number(filters.limit) : 10;
 
@@ -119,12 +118,18 @@ export class AusentismosService {
         Ausentismos_Attachs: {
           select: { Id: true, FileName: true, Extension: true },
         },
-        Ausentismos_Certificados: {
+        Ausentismos_Controles: {
           select: {
             Id: true,
-            FileName: true,
-            Extension: true,
-            ...(includeAttachments ? { Archivo: true } : {}),
+            Instrucciones: true,
+            Evolucion: true,
+            Fecha_Control: true,
+          },
+          orderBy: { Fecha_Control: 'asc' },
+        },
+        Ausentismos_Certificados: {
+          select: {
+            Dias_de_Reposo: true,
           },
         },
       },

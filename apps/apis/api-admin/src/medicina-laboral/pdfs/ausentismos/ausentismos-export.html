@@ -3,11 +3,11 @@
   <head>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      @page {
-        margin: 0;
-      }
       body {
-        margin: 1cm;
+        margin-top: 1cm;
+        margin-left: 1cm;
+        margin-right: 1cm;
+        padding: 0;
         font-family:
           ui-sans-serif,
           system-ui,
@@ -20,26 +20,122 @@
           sans-serif;
       }
       .page-break {
-        page-break-after: always;
+        page-break-before: always;
         display: block;
-        min-height: 100vh;
         position: relative;
+        box-sizing: border-box;
       }
-      .page-break:last-child {
+      .page-break:first-child {
+        page-break-before: avoid;
+      }
+      .bg-gray-50,
+      .bg-blue-50,
+      .border {
+        page-break-inside: avoid;
+      }
+      h3 {
         page-break-after: avoid;
-      }
-      .footer-corner-logo {
-        position: fixed;
-        bottom: -1px;
-        right: -1px;
-        width: 400px;
-        height: auto;
-        z-index: 5;
-        display: block;
       }
     </style>
   </head>
   <body>
+    <!-- Cover Page: Executive Report -->
+    <div
+      class="page-break"
+      style="min-height: 90vh; display: flex; flex-direction: column; justify-content: center; padding: 2rem;"
+    >
+      <div class="text-center mb-12">
+        {{#if Empresa_Logo_Base64}}
+        <img
+          src="{{Empresa_Logo_Base64}}"
+          alt="Logo Empresa"
+          class="mx-auto mb-8 max-w-xs h-auto"
+        />
+        {{/if}}
+        <h1
+          class="text-4xl font-bold uppercase tracking-wide"
+          style="color: #29296c"
+        >
+          Informe Ejecutivo de Gestión de Ausentismo
+        </h1>
+        <h2 class="text-xl text-slate-500 mt-4">
+          Preparado para:
+          <span class="font-bold text-slate-700"
+            >{{Nombre_Empresa_Cliente}}</span
+          >
+        </h2>
+        <p class="text-md text-slate-400 mt-2">
+          Periodo: {{resumenGeneral.fechaDesde}} - {{resumenGeneral.fechaHasta}}
+        </p>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-3 gap-6 mb-16">
+        <div
+          class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center"
+        >
+          <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">
+            Casos Atendidos
+          </p>
+          <p class="text-5xl font-bold text-slate-700 mt-3">
+            {{resumenGeneral.totalCasos}}
+          </p>
+        </div>
+        <div
+          class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center"
+        >
+          <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">
+            Días de Reposo Totales
+          </p>
+          <p class="text-5xl font-bold text-slate-700 mt-3">
+            {{resumenGeneral.totalDiasOtorgados}}
+          </p>
+        </div>
+        <div
+          class="bg-green-50 p-6 rounded-xl shadow-sm border border-green-200 text-center"
+        >
+          <p class="text-xs text-green-600 uppercase font-bold tracking-wider">
+            Días Ahorrados
+          </p>
+          <p class="text-5xl font-bold text-green-600 mt-3">
+            {{resumenGeneral.totalDiasAhorrados}}
+          </p>
+          <p class="text-xs text-green-700 mt-1 font-medium">
+            Gestión Medintt
+          </p>
+        </div>
+      </div>
+
+      <!-- Category Table -->
+      <div class="max-w-2xl mx-auto w-full">
+        <h3
+          class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2"
+        >
+          Distribución por Categoría
+        </h3>
+        <table class="w-full text-sm text-left text-slate-600">
+          <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+            <tr>
+              <th class="px-6 py-3 rounded-l-lg">Categoría</th>
+              <th class="px-6 py-3 rounded-r-lg text-right">Cantidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each resumenGeneral.distribucionCategorias}}
+            <tr class="border-b border-slate-100 last:border-0">
+              <td class="px-6 py-3 font-medium text-slate-700">
+                {{Categoria}}
+              </td>
+              <td class="px-6 py-3 text-right font-bold text-slate-700">
+                {{Cantidad}}
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     {{#each ausentismos}}
     <div class="page-break">
       <!-- Base Header & Info -->
@@ -69,24 +165,7 @@
           </div>
         </div>
 
-        {{#if Ausentismos_Bitacora.length}}
-        <div class="mb-6">
-          <h3
-            class="text-sm font-bold text-slate-500 uppercase border-b mb-2 pb-1"
-            style="color: #29296c"
-          >
-            Bitácora
-          </h3>
-          <div class="space-y-2">
-            {{#each Ausentismos_Bitacora}}
-            <div class="bg-gray-50 p-3 rounded text-xs">
-              <p class="font-bold text-slate-700">{{formatDate Fecha}}</p>
-              <p class="text-slate-600">{{Observaciones}}</p>
-            </div>
-            {{/each}}
-          </div>
-        </div>
-        {{/if}} {{#if Ausentismos_Controles.length}}
+        {{#if Ausentismos_Controles.length}}
         <div class="mb-6">
           <h3
             class="text-sm font-bold text-slate-500 uppercase border-b mb-2 pb-1"
@@ -119,45 +198,7 @@
           </div>
         </div>
         {{/if}}
-
-        <!-- Certificates -->
-        {{#if certificados.length}}
-        <div class="mt-8">
-          <h3
-            class="text-sm font-bold text-slate-500 uppercase border-b mb-4 pb-1"
-            style="color: #29296c"
-          >
-            Certificados Adjuntos
-          </h3>
-          <div class="flex flex-col gap-6">
-            {{#each certificados}} {{#if isImage}}
-            <div class="border rounded-lg p-2 bg-slate-100 flex justify-center">
-              <img
-                src="{{base64}}"
-                class="max-w-full max-h-[500px] object-contain"
-              />
-            </div>
-            {{else}}
-            <div
-              class="border rounded-lg p-4 bg-slate-50 text-center text-slate-500"
-            >
-              <p class="font-bold text-sm">
-                Archivo no visualizable ({{Extension}})
-              </p>
-              <p class="text-xs">{{FileName}}</p>
-            </div>
-            {{/if}} {{/each}}
-          </div>
-        </div>
-        {{/if}}
       </div>
-    </div>
     {{/each}}
-
-    <img
-      src="{{Logo_Base64}}"
-      class="footer-corner-logo"
-      alt="Medintt Footer"
-    />
   </body>
 </html>

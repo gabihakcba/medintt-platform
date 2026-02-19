@@ -3,6 +3,7 @@ import * as puppeteer from 'puppeteer';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs';
 import * as path from 'path';
+import { PDFDocument } from 'pdf-lib';
 
 @Injectable()
 export class PdfExportService {
@@ -112,5 +113,60 @@ export class PdfExportService {
         handlebars.registerPartial(partialName, template);
       }
     });
+  }
+
+  async mergePdfs(mainPdf: Buffer, attachments: Buffer[]): Promise<Buffer> {
+    if (!attachments || attachments.length === 0) {
+      return mainPdf;
+    }
+
+    try {
+      const mergedPdf = await PDFDocument.load(mainPdf);
+
+      for (const attachment of attachments) {
+        try {
+          const attachmentPdf = await PDFDocument.load(attachment);
+          const copiedPages = await mergedPdf.copyPages(
+            attachmentPdf,
+            attachmentPdf.getPageIndices(),
+          );
+          copiedPages.forEach((page) => mergedPdf.addPage(page));
+        } catch (error) {
+          console.error('Error merging attachment PDF', error);
+          // Continue with other attachments even if one fails
+        }
+      }
+
+      const savedPdf = await mergedPdf.save();
+      return Buffer.from(savedPdf);
+    } catch (error) {
+      console.error('Error merging PDFs', error);
+      return mainPdf; // Return main PDF if merge fails totally
+    }
+  }
+
+  // Optional helper to get logo if needed explicitly
+  getBase64Logo(): string {
+    const logoPath = path.join(
+      process.cwd(),
+      'src/medicina-laboral/pdfs/footer-logo.png',
+    );
+    if (fs.existsSync(logoPath)) {
+      const logoBuffer = fs.readFileSync(logoPath);
+      return `data:image/png;base64,${logoBuffer.toString('base64')}`;
+    }
+    return '';
+  }
+
+  getHeaderLogo(): string {
+    const logoPath = path.join(
+      process.cwd(),
+      'src/medicina-laboral/pdfs/logo.png',
+    );
+    if (fs.existsSync(logoPath)) {
+      const logoBuffer = fs.readFileSync(logoPath);
+      return `data:image/png;base64,${logoBuffer.toString('base64')}`;
+    }
+    return '';
   }
 }

@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        margin-top: 1cm;
+        margin-left: 1cm;
+        margin-right: 1cm;
+        padding: 0;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          'Helvetica Neue',
+          Arial,
+          sans-serif;
+      }
+      .page-break {
+        page-break-before: always;
+        display: block;
+        position: relative;
+        box-sizing: border-box;
+      }
+      .page-break:first-child {
+        page-break-before: avoid;
+      }
+      .bg-gray-50,
+      .bg-blue-50,
+      .border {
+        page-break-inside: avoid;
+      }
+      h3 {
+        page-break-after: avoid;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Cover Page: Executive Report -->
+    <div
+      class="page-break"
+      style="min-height: 90vh; display: flex; flex-direction: column; justify-content: center; padding: 2rem;"
+    >
+      <div class="text-center mb-12">
+        {{#if Empresa_Logo_Base64}}
+        <img
+          src="{{Empresa_Logo_Base64}}"
+          alt="Logo Empresa"
+          class="mx-auto mb-8 max-w-xs h-auto"
+        />
+        {{/if}}
+        <h1
+          class="text-4xl font-bold uppercase tracking-wide"
+          style="color: #29296c"
+        >
+          Informe Ejecutivo de Gestión de Ausentismo
+        </h1>
+        <h2 class="text-xl text-slate-500 mt-4">
+          Preparado para:
+          <span class="font-bold text-slate-700"
+            >{{Nombre_Empresa_Cliente}}</span
+          >
+        </h2>
+        <p class="text-md text-slate-400 mt-2">
+          Periodo: {{resumenGeneral.fechaDesde}} - {{resumenGeneral.fechaHasta}}
+        </p>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-3 gap-6 mb-16">
+        <div
+          class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center"
+        >
+          <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">
+            Casos Atendidos
+          </p>
+          <p class="text-5xl font-bold text-slate-700 mt-3">
+            {{resumenGeneral.totalCasos}}
+          </p>
+        </div>
+        <div
+          class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center"
+        >
+          <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">
+            Días de Reposo Totales
+          </p>
+          <p class="text-5xl font-bold text-slate-700 mt-3">
+            {{resumenGeneral.totalDiasOtorgados}}
+          </p>
+        </div>
+        <div
+          class="bg-green-50 p-6 rounded-xl shadow-sm border border-green-200 text-center"
+        >
+          <p class="text-xs text-green-600 uppercase font-bold tracking-wider">
+            Días Ahorrados
+          </p>
+          <p class="text-5xl font-bold text-green-600 mt-3">
+            {{resumenGeneral.totalDiasAhorrados}}
+          </p>
+          <p class="text-xs text-green-700 mt-1 font-medium">
+            Gestión Medintt
+          </p>
+        </div>
+      </div>
+
+      <!-- Category Table -->
+      <div class="max-w-2xl mx-auto w-full">
+        <h3
+          class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2"
+        >
+          Distribución por Categoría
+        </h3>
+        <table class="w-full text-sm text-left text-slate-600">
+          <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+            <tr>
+              <th class="px-6 py-3 rounded-l-lg">Categoría</th>
+              <th class="px-6 py-3 rounded-r-lg text-right">Cantidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each resumenGeneral.distribucionCategorias}}
+            <tr class="border-b border-slate-100 last:border-0">
+              <td class="px-6 py-3 font-medium text-slate-700">
+                {{Categoria}}
+              </td>
+              <td class="px-6 py-3 text-right font-bold text-slate-700">
+                {{Cantidad}}
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {{#each ausentismos}}
+    <div class="page-break">
+      <!-- Base Header & Info -->
+      {{> ausentismos/base}}
+
+      <!-- Dashboard Stats -->
+      <div class="max-w-4xl mx-auto px-8">{{> ausentismos/dashboard}}</div>
+
+      <!-- Additional Details -->
+      <div class="max-w-4xl mx-auto px-8 pb-8">
+        <div class="mb-6">
+          <h3
+            class="text-sm font-bold text-slate-500 uppercase border-b mb-2 pb-1"
+            style="color: #29296c"
+          >
+            Diagnóstico & Evolución
+          </h3>
+          <div class="grid grid-cols-1 gap-4 text-sm">
+            <div>
+              <span class="font-bold text-slate-700">Diagnóstico:</span>
+              <p class="mt-1 text-slate-600">{{Diagnostico}}</p>
+            </div>
+            <div>
+              <span class="font-bold text-slate-700">Evolución:</span>
+              <p class="mt-1 text-slate-600">{{Evolucion}}</p>
+            </div>
+          </div>
+        </div>
+
+        {{#if Ausentismos_Controles.length}}
+        <div class="mb-6">
+          <h3
+            class="text-sm font-bold text-slate-500 uppercase border-b mb-2 pb-1"
+            style="color: #29296c"
+          >
+            Controles Médicos
+          </h3>
+          <div class="space-y-2">
+            {{#each Ausentismos_Controles}}
+            <div
+              class="bg-blue-50 p-3 rounded text-xs border-l-4 border-blue-400"
+            >
+              <p class="font-bold text-blue-900">
+                {{formatDate Fecha_Control}}
+              </p>
+              <div class="grid grid-cols-2 gap-2 mt-1">
+                <div>
+                  <span class="font-semibold text-blue-800">Evolución:</span>
+                  <p class="text-slate-700">{{Evolucion}}</p>
+                </div>
+                <div>
+                  <span class="font-semibold text-blue-800"
+                    >Instrucciones:</span
+                  >
+                  <p class="text-slate-700">{{Instrucciones}}</p>
+                </div>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        {{/if}}
+      </div>
+    {{/each}}
+  </body>
+</html>

@@ -20,7 +20,10 @@ model User {
 
   name     String
   lastName String
-  dni      String @unique
+  dni      String  @unique
+  cargo    String?
+  celular  String?
+  devLogs  String?
 
   isVerified Boolean @default(false)
   isActive   Boolean @default(true)

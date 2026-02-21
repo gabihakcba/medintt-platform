@@ -21,9 +21,9 @@ model User {
   name     String
   lastName String
   dni      String  @unique
-  cargo    String?
-  celular  String?
-  devLogs  String?
+  cargo    String? @default("")
+  celular  String? @default("")
+  devLogs  String? @default("")
 
   isVerified Boolean @default(false)
   isActive   Boolean @default(true)

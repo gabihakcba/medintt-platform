@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "users" ALTER COLUMN "cargo" SET DEFAULT '',
+ALTER COLUMN "celular" SET DEFAULT '',
+ALTER COLUMN "devLogs" SET DEFAULT '';

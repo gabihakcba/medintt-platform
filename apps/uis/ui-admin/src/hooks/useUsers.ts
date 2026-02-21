@@ -5,6 +5,8 @@ import {
   getUsers,
   updateUser,
   CreateUserData,
+  createInterlocutor,
+  CreateInterlocutorData,
 } from "@/queries/users";
 
 export const useUsers = () => {
@@ -17,6 +19,13 @@ export const useUsers = () => {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateUserData) => createUser(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+
+  const createInterlocutorMutation = useMutation({
+    mutationFn: (data: CreateInterlocutorData) => createInterlocutor(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
@@ -36,6 +45,8 @@ export const useUsers = () => {
     isError: usersQuery.isError,
     createUser: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
+    createInterlocutor: createInterlocutorMutation.mutateAsync,
+    isCreatingInterlocutor: createInterlocutorMutation.isPending,
     updateUser: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
   };

@@ -1,5 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsString, MinLength, MaxLength } from "class-validator";
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  MaxLength,
+  IsOptional,
+} from "class-validator";
 
 export class RegisterDto {
   @ApiProperty({
@@ -51,4 +57,22 @@ export class RegisterDto {
   @IsString()
   @MinLength(7, { message: "Debe tener la menos 7 caracteres" })
   dni: string;
+
+  @ApiProperty({
+    example: "Gerente",
+    description: "Cargo del usuario",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  cargo?: string;
+
+  @ApiProperty({
+    example: "1123456789",
+    description: "Número de celular",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  celular?: string;
 }

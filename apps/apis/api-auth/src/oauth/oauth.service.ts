@@ -270,8 +270,8 @@ export class OAuthService {
     }
 
     const cloudProjectCode = process.env.CLOUD_PROJECT;
-    const adminCloudRole = process.env.ADMIN_CLOUD_ROLE;
-    const memberCloudRole = process.env.MEMBER_CLOUD_ROLE;
+    const adminCloudRole = process.env.ROLE_ADMIN;
+    const memberCloudRole = process.env.ROLE_MEMBER;
 
     if (!cloudProjectCode || !adminCloudRole || !memberCloudRole) {
       console.error('Missing cloud project/role env vars');

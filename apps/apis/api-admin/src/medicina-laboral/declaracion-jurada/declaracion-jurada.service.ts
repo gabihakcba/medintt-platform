@@ -727,7 +727,7 @@ export class DeclaracionJuradaService {
         domicilio: paciente?.Direccion || '',
         email: paciente?.Email || '',
         barrio: paciente?.Barrio || '',
-        estadoCivil: '',
+
         localidad: localidad,
         provincia: provincia,
         nacionalidad: paciente?.Nacionalidad || '',

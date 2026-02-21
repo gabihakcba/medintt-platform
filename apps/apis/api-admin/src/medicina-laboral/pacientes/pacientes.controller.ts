@@ -1,5 +1,15 @@
-import { Controller, Get, UseGuards, Query, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Query,
+  Res,
+  Param,
+  ParseIntPipe,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Response } from 'express';
+import { Readable } from 'stream';
 import {
   ExcelColumn,
   ExcelExportService,
@@ -80,6 +90,7 @@ export class PacientesController {
         { header: 'Email', key: 'Email', width: 25 },
         { header: 'Cargo', key: 'Cargo', width: 20 },
         { header: 'Puesto', key: 'Puesto', width: 20 },
+        { header: 'Firma', key: 'Firma', width: 30 },
       ];
       fileName = 'empleados';
       sheetName = 'Empleados';
@@ -94,11 +105,21 @@ export class PacientesController {
       Puesto: string | null;
       prestatarias: { Nombre: string | null }[];
       examenesCount: number;
+      ImagenFirma?: Buffer;
     };
 
     const excelData = (data as unknown as PatientData[]).map((p) => {
       const empresas =
         p.prestatarias?.map((prep) => prep.Nombre).join(', ') || '';
+
+      let firmaPayload: string | { buffer: Buffer; extension: string } = '';
+      if (!isExamsExport && p.ImagenFirma && p.ImagenFirma.length > 0) {
+        firmaPayload = {
+          buffer: Buffer.from(p.ImagenFirma),
+          extension: 'png',
+        };
+      }
+
       return {
         Apellido: p.Apellido,
         Nombre: p.Nombre,
@@ -107,7 +128,9 @@ export class PacientesController {
         Email: p.Email,
         Cargo: p.Cargo,
         Puesto: p.Puesto,
-        ...(isExamsExport && { CantExamenes: p.examenesCount || 0 }),
+        ...(isExamsExport
+          ? { CantExamenes: p.examenesCount || 0 }
+          : { Firma: firmaPayload }),
       };
     });
 
@@ -118,5 +141,31 @@ export class PacientesController {
       sheetName,
       fileName,
     );
+  }
+
+  @Get(':id/firma')
+  @ApiOperation({ summary: 'Obtener firma del empleado (PNG)' })
+  @ApiResponse({ status: 200, description: 'PNG de la firma' })
+  @ApiResponse({ status: 404, description: 'Firma no encontrada' })
+  async getSignature(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    try {
+      const signature = await this.pacientesService.getSignature(id);
+
+      res.set({
+        'Content-Type': signature.mimeType,
+        'Content-Disposition': `inline; filename="${signature.fileName}"`,
+      });
+
+      const stream = new Readable();
+      stream.push(signature.buffer);
+      stream.push(null);
+
+      stream.pipe(res);
+    } catch (error) {
+      throw new NotFoundException((error as Error).message);
+    }
   }
 }

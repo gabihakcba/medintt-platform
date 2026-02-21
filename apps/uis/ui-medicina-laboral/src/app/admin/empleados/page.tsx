@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { checkPermissions } from "@/services/permissions";
-import { MedinttGuard, MedinttTable } from "@medintt/ui";
+import { MedinttGuard, MedinttTable, MedinttFilePreview } from "@medintt/ui";
 import { usePacientes } from "@/hooks/usePacientes";
 
 import { useState } from "react";
@@ -22,6 +22,30 @@ export default function EmpleadosPage() {
     null,
   );
   const [exporting, setExporting] = useState(false);
+
+  // Preview States
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState("");
+  const [previewExtension, setPreviewExtension] = useState<string | null>(null);
+
+  const handlePreview = (pacienteId: number, nombreCompleto: string) => {
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://apiadmin.medintt.local:4020/api/v1";
+    const fullUrl = `${apiUrl}/medicina-laboral/pacientes/${pacienteId}/firma`;
+
+    setPreviewUrl(fullUrl);
+    setPreviewTitle(`Firma de ${nombreCompleto}`);
+    setPreviewExtension(".png");
+    setPreviewVisible(true);
+  };
+
+  const handleHidePreview = () => {
+    setPreviewVisible(false);
+    setPreviewUrl(null);
+    setPreviewExtension(null);
+  };
 
   const handleExport = async () => {
     try {
@@ -79,6 +103,30 @@ export default function EmpleadosPage() {
     { field: "Email", header: "Email" },
     { field: "Cargo", header: "Cargo" },
     { field: "Puesto", header: "Puesto" },
+    {
+      field: "firma",
+      header: "Firma",
+      body: (rowData: any) => {
+        const hasFirma = !!rowData.hasFirma;
+        return (
+          <Button
+            icon="pi pi-eye"
+            rounded
+            text
+            disabled={!hasFirma}
+            className={hasFirma ? "text-blue-600 hover:text-blue-800" : ""}
+            tooltip={hasFirma ? "Ver Firma" : "No tiene firma registrada"}
+            tooltipOptions={{ position: "top" }}
+            onClick={() =>
+              handlePreview(
+                rowData.Id,
+                `${rowData.Apellido}, ${rowData.Nombre}`,
+              )
+            }
+          />
+        );
+      },
+    },
   ];
 
   const handleSearch = () => {
@@ -191,6 +239,14 @@ export default function EmpleadosPage() {
           totalRecords={meta?.total || 0}
           onPage={(e: any) => setPage((e.page || 0) + 1)}
           rowsPerPageOptions={[10]}
+        />
+
+        <MedinttFilePreview
+          visible={previewVisible}
+          onHide={handleHidePreview}
+          url={previewUrl}
+          title={previewTitle}
+          extension={previewExtension}
         />
       </div>
     </MedinttGuard>

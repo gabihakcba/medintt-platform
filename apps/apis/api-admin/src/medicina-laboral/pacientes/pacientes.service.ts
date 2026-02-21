@@ -100,6 +100,7 @@ export class PacientesService {
         Cargo: true,
         Puesto: true,
         Activo: true,
+        ImagenFirma: true,
       },
     });
 
@@ -180,11 +181,16 @@ export class PacientesService {
       });
     }
 
-    const data = patients.map((p) => ({
-      ...p,
-      prestatarias: patientPrestatariasMap.get(p.Id) || [],
-      examenesCount: examsCountMap.get(p.Id) || 0,
-    }));
+    const data = patients.map((p) => {
+      const { ImagenFirma, ...rest } = p;
+      return {
+        ...rest,
+        prestatarias: patientPrestatariasMap.get(p.Id) || [],
+        examenesCount: examsCountMap.get(p.Id) || 0,
+        hasFirma: !!ImagenFirma && ImagenFirma.length > 0,
+        ...(bypassPagination ? { ImagenFirma } : {}),
+      };
+    });
 
     return {
       data,
@@ -193,6 +199,40 @@ export class PacientesService {
         page,
         lastPage: Math.ceil(total / limit),
       },
+    };
+  }
+
+  async getSignature(
+    id: number,
+  ): Promise<{ buffer: Buffer; mimeType: string; fileName: string }> {
+    const paciente = await this.prisma.pacientes.findUnique({
+      where: { Id: id },
+      select: {
+        ImagenFirma: true,
+        NroDocumento: true,
+        Apellido: true,
+        Nombre: true,
+      },
+    });
+
+    if (
+      !paciente ||
+      !paciente.ImagenFirma ||
+      paciente.ImagenFirma.length === 0
+    ) {
+      throw new Error('Firma no encontrada para este paciente');
+    }
+
+    const dni = paciente.NroDocumento || 'SD';
+    const nombre = `${paciente.Apellido}_${paciente.Nombre}`.replace(
+      /[^a-zA-Z0-9_]/g,
+      '',
+    );
+
+    return {
+      buffer: Buffer.from(paciente.ImagenFirma),
+      mimeType: 'image/png',
+      fileName: `firma_${dni}_${nombre}.png`,
     };
   }
 

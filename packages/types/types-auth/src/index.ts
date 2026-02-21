@@ -11,3 +11,4 @@ export * from "./auth/user.type";
 export * from "./auth/role.type";
 export * from "./auth/permission.type";
 export * from "./auth/project.type";
+export * from "./auth/register-interlocutor.dto";

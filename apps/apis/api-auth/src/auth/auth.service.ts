@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
+import { RegisterInterlocutorDto } from './dto/register-interlocutor.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon2 from 'argon2';
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
@@ -60,6 +61,9 @@ export class AuthService {
         name: dto.name,
         lastName: dto.lastName,
         dni: dto.dni,
+        cargo: dto.cargo,
+        celular: dto.celular,
+        devLogs: 'Creacion Web',
         isVerified: false,
       },
     });
@@ -79,6 +83,94 @@ export class AuthService {
       message:
         'Usuario registrado. Por favor revisa tu email para confirmar la cuenta.',
       user,
+    };
+  }
+
+  async registerInterlocutor(dto: RegisterInterlocutorDto) {
+    const { user: userDto, member: memberDto } = dto;
+
+    const userExists = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: userDto.email }, { username: userDto.username }],
+      },
+    });
+
+    if (userExists) {
+      throw new BadRequestException('El usuario o email ya están registrados');
+    }
+
+    const hash = await argon2.hash(userDto.password);
+
+    // Get Role
+    const role = await this.prisma.role.findUnique({
+      where: { code: memberDto.roleCode },
+    });
+
+    if (!role) {
+      throw new BadRequestException('Rol no encontrado');
+    }
+
+    // Get Project
+    const project = await this.prisma.project.findUnique({
+      where: { code: memberDto.projectCode },
+    });
+
+    if (!project) {
+      throw new BadRequestException('Proyecto no encontrado');
+    }
+
+    // Get Organization
+    const organization = await this.prisma.organization.findUnique({
+      where: { id: memberDto.organizationId },
+    });
+
+    if (!organization) {
+      throw new BadRequestException('Organización no encontrada');
+    }
+
+    const result = await this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.create({
+        data: {
+          username: userDto.username,
+          email: userDto.email,
+          password: hash,
+          name: userDto.name,
+          lastName: userDto.lastName,
+          dni: userDto.dni,
+          cargo: userDto.cargo,
+          celular: userDto.celular,
+          devLogs: 'Creacion Web (Interlocutor)',
+          isVerified: false,
+        },
+      });
+
+      const member = await prisma.member.create({
+        data: {
+          userId: user.id,
+          roleId: role.id,
+          projectId: project.id,
+          organizationId: organization.id,
+        },
+      });
+
+      return { user, member };
+    });
+
+    const token = this.jwtService.sign(
+      { sub: result.user.id, email: result.user.email },
+      {
+        secret: this.config.get('JWT_CONFIRM'),
+        expiresIn: this.config.get('JWT_CONFIRM_EXPIRATION'),
+      },
+    );
+
+    const url = `${this.config.getOrThrow('FRONTEND_URL_AUTH')}${this.config.getOrThrow('FRONTEND_PATH_CONFIRM')}?token=${token}`;
+    await this.mailService.sendUserConfirmation(result.user.email, url);
+
+    return {
+      message:
+        'Usuario interlocutor registrado. Por favor revisa tu email para confirmar la cuenta.',
+      user: result.user,
     };
   }
 

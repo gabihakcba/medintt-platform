@@ -7,6 +7,8 @@ export interface User {
   name: string;
   lastName: string;
   dni: string;
+  cargo?: string;
+  celular?: string;
   isVerified: boolean;
   isActive: boolean;
   createdAt: string;

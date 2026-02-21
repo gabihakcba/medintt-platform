@@ -17,6 +17,7 @@ import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
+import { RegisterInterlocutorDto } from './dto/register-interlocutor.dto';
 import { LoginDto } from './dto/login.dto';
 import type { JwtPayload, JwtPayloadWithRt } from './types/jwt-payload.type';
 import { GetUser } from './decorators/get-user.decorator';
@@ -55,6 +56,18 @@ export class AuthController {
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @ApiOperation({ summary: 'Crear usuario interlocutor' })
+  @ApiResponse({
+    status: 201,
+    description: 'Usuario interlocutor creado exitosamente.',
+  })
+  @UseGuards(AtGuard)
+  @ApiResponse({ status: 400, description: 'Datos inválidos.' })
+  @Post('register/interlocutor')
+  registerInterlocutor(@Body() registerDto: RegisterInterlocutorDto) {
+    return this.authService.registerInterlocutor(registerDto);
   }
 
   @ApiOperation({ summary: 'Iniciar sesión' })

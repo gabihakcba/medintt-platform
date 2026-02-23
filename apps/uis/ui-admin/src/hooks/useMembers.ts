@@ -3,6 +3,7 @@ import {
   createMember,
   deleteMember,
   getMembersByOrg,
+  getMembersByUser,
   CreateMemberData,
 } from "@/queries/members";
 
@@ -14,10 +15,16 @@ export const useMembers = () => {
     queryFn: getMembersByOrg,
   });
 
+  const membersByUserQuery = useQuery({
+    queryKey: ["members-by-user"],
+    queryFn: getMembersByUser,
+  });
+
   const createMutation = useMutation({
     mutationFn: (data: CreateMemberData) => createMember(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["members-by-org"] });
+      queryClient.invalidateQueries({ queryKey: ["members-by-user"] });
     },
   });
 
@@ -25,13 +32,15 @@ export const useMembers = () => {
     mutationFn: (id: string) => deleteMember(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["members-by-org"] });
+      queryClient.invalidateQueries({ queryKey: ["members-by-user"] });
     },
   });
 
   return {
     organizations: membersQuery.data,
-    isLoading: membersQuery.isLoading,
-    isError: membersQuery.isError,
+    usersWithMemberships: membersByUserQuery.data,
+    isLoading: membersQuery.isLoading || membersByUserQuery.isLoading,
+    isError: membersQuery.isError || membersByUserQuery.isError,
     createMember: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
     deleteMember: deleteMutation.mutateAsync,

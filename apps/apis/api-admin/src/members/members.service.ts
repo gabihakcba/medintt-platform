@@ -42,6 +42,25 @@ export class MembersService {
     });
   }
 
+  async findAllByUser() {
+    return this.prisma.user.findMany({
+      where: {
+        memberships: {
+          some: {}, // Only return users that have at least one membership
+        },
+      },
+      include: {
+        memberships: {
+          include: {
+            project: true,
+            role: true,
+            organization: true,
+          },
+        },
+      },
+    });
+  }
+
   async findOne(id: string) {
     const member = await this.prisma.member.findUnique({
       where: { id },

@@ -57,6 +57,16 @@ export class MembersController {
     return this.membersService.findAllByOrg();
   }
 
+  @Get('by-user')
+  @ApiOperation({ summary: 'List all members grouped by user' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of users with their memberships',
+  })
+  findAllByUser() {
+    return this.membersService.findAllByUser();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get member by id' })
   @ApiResponse({ status: 200, description: 'Member details' })

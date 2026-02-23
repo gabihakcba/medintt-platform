@@ -17,12 +17,13 @@ import { useState, useMemo } from "react";
 import { Dialog } from "primereact/dialog";
 import { useToast } from "@/context/ToastContext";
 import { useForm } from "react-hook-form";
-import { CreateMemberData, Member } from "@/queries/members";
+import { CreateMemberData } from "@/queries/members";
+import { DataTableExpandedRows } from "primereact/datatable";
 
 export default function MembersPage() {
   const { user } = useAuth();
   const {
-    organizations,
+    usersWithMemberships,
     isLoading,
     deleteMember,
     isDeleting,
@@ -36,6 +37,9 @@ export default function MembersPage() {
   const toast = useToast();
 
   const [isDialogVisible, setIsDialogVisible] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<
+    DataTableExpandedRows | any[]
+  >([]);
 
   const { control, handleSubmit, reset } = useForm<CreateMemberData>({
     defaultValues: {
@@ -46,23 +50,13 @@ export default function MembersPage() {
     },
   });
 
-  const flattenMembers = useMemo(() => {
-    if (!organizations) return [];
-    return organizations.flatMap((org) =>
-      org.members.map((member) => ({
-        ...member,
-        organizationName: org.name,
-        organizationCode: org.code,
-        organizationCuit: org.cuit,
-        userFullName: `${member.user.lastName} ${member.user.name}`,
-        userDni: member.user.dni,
-        roleName: member.role.name,
-        roleCode: member.role.code,
-        projectName: member.project.name,
-        projectCode: member.project.code,
-      })),
-    );
-  }, [organizations]);
+  const usersData = useMemo(() => {
+    if (!usersWithMemberships) return [];
+    return usersWithMemberships.map((u) => ({
+      ...u,
+      userFullName: `${u.lastName} ${u.name}`,
+    }));
+  }, [usersWithMemberships]);
 
   const isAdmin = checkPermissions(
     user,
@@ -163,12 +157,40 @@ export default function MembersPage() {
   );
 
   const columns = [
-    { field: "organizationName", header: "Organización" },
+    { expander: true, style: { width: "4rem" }, header: "" },
     { field: "userFullName", header: "Usuario" },
-    { field: "userDni", header: "DNI" },
-    { field: "roleName", header: "Rol" },
-    { field: "projectName", header: "Proyecto" },
+    { field: "dni", header: "DNI" },
   ];
+
+  const rowExpansionTemplate = (data: any) => {
+    const memberSubColumns = [
+      { field: "organizationName", header: "Organización" },
+      { field: "roleName", header: "Rol" },
+      { field: "projectName", header: "Proyecto" },
+    ];
+
+    const memberData = data.memberships?.map((m: any) => ({
+      ...m,
+      organizationName: m.organization?.name || "-",
+      roleName: m.role?.name || "-",
+      projectName: m.project?.name || "-",
+    }));
+
+    return (
+      <div className="p-4">
+        <h5 className="font-semibold mb-3">
+          Membresías de {data.userFullName}
+        </h5>
+        <MedinttTable
+          data={memberData || []}
+          columns={memberSubColumns}
+          actions={isAdmin ? actionBodyTemplate : undefined}
+          paginator={false}
+          className="shadow-none"
+        />
+      </div>
+    );
+  };
 
   const userOptions = useMemo(() => {
     return (
@@ -291,11 +313,14 @@ export default function MembersPage() {
         <h1 className="text-2xl font-bold mb-4">Membresías</h1>
 
         <MedinttTable
-          data={flattenMembers}
+          data={usersData}
           columns={columns}
           loading={isLoading}
           headerActions={headerActions}
-          actions={isAdmin ? actionBodyTemplate : undefined}
+          expandedRows={expandedRows}
+          onRowToggle={(e) => setExpandedRows(e.data)}
+          rowExpansionTemplate={rowExpansionTemplate}
+          dataKey="id"
         />
 
         <Dialog

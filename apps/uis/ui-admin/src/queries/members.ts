@@ -19,6 +19,10 @@ export interface OrganizationWithMembers extends Organization {
   members: Member[];
 }
 
+export interface UserWithMembers extends User {
+  memberships: Member[];
+}
+
 export interface CreateMemberData {
   userId: string;
   projectId: string;
@@ -27,11 +31,20 @@ export interface CreateMemberData {
 }
 
 export const getMembersByOrg = async (): Promise<OrganizationWithMembers[]> => {
-  const { data } = await api.get<OrganizationWithMembers[]>("/admin/members/by-org");
+  const { data } = await api.get<OrganizationWithMembers[]>(
+    "/admin/members/by-org",
+  );
   return data;
 };
 
-export const createMember = async (member: CreateMemberData): Promise<Member> => {
+export const getMembersByUser = async (): Promise<UserWithMembers[]> => {
+  const { data } = await api.get<UserWithMembers[]>("/admin/members/by-user");
+  return data;
+};
+
+export const createMember = async (
+  member: CreateMemberData,
+): Promise<Member> => {
   const { data } = await api.post<Member>("/admin/members", member);
   return data;
 };

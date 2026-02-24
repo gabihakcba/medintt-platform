@@ -23,3 +23,8 @@ export const updateOrganization = async (
   const { data } = await apiAuth.patch(`/organizations/${id}`, body);
   return data;
 };
+
+// DELETE
+export const deleteOrganization = async (id: string): Promise<void> => {
+  await apiAuth.delete(`/organizations/${id}`);
+};

@@ -17,6 +17,7 @@ import { useForm } from "react-hook-form";
 import { usePrestatarias } from "@/hooks/usePrestatarias";
 import { Prestataria } from "@/queries/prestatarias";
 import { Dropdown } from "primereact/dropdown";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 export default function OrganizationsPage() {
   const { user } = useAuth();
@@ -25,8 +26,10 @@ export default function OrganizationsPage() {
     isLoading,
     createOrganization,
     updateOrganization,
+    deleteOrganization,
     isCreating,
     isUpdating,
+    isDeleting,
   } = useOrganizations();
 
   const [isDialogVisible, setIsDialogVisible] = useState(false);
@@ -116,6 +119,34 @@ export default function OrganizationsPage() {
     }
   };
 
+  const confirmDelete = (org: Organization) => {
+    confirmDialog({
+      message: `¿Estás seguro que deseas eliminar la organización "${org.name}"? Esta acción será destructiva.`,
+      header: "Confirmar Eliminación",
+      icon: "pi pi-exclamation-triangle",
+      acceptClassName: "p-button-danger",
+      acceptLabel: "Sí, Eliminar",
+      rejectLabel: "Cancelar",
+      accept: async () => {
+        try {
+          // Asumiendo que el ID es proveído siempre (Organization en listado)
+          await deleteOrganization(org.id as string);
+          toast.show({
+            severity: "success",
+            summary: "Éxito",
+            detail: "Organización eliminada",
+          });
+        } catch (error) {
+          toast.show({
+            severity: "error",
+            summary: "Error",
+            detail: "Error al eliminar la organización",
+          });
+        }
+      },
+    });
+  };
+
   // Header Actions (Create Button)
   const headerActions = (
     <MedinttGuard
@@ -149,13 +180,21 @@ export default function OrganizationsPage() {
         )
       }
     >
-      <MedinttButton
-        icon="pi pi-pencil"
-        rounded
-        text
-        severity="warning"
-        onClick={() => openEdit(rowData)}
-      />
+      <div className="flex justify-center gap-2">
+        <MedinttButton
+          icon="pi pi-pencil"
+          severity="warning"
+          onClick={() => openEdit(rowData)}
+          tooltip="Editar"
+        />
+        <MedinttButton
+          icon="pi pi-trash"
+          severity="danger"
+          onClick={() => confirmDelete(rowData)}
+          tooltip="Eliminar"
+          loading={isDeleting}
+        />
+      </div>
     </MedinttGuard>
   );
 
@@ -240,6 +279,7 @@ export default function OrganizationsPage() {
       }
     >
       <div className="p-4">
+        <ConfirmDialog />
         <h1 className="text-2xl font-bold mb-4">Organizaciones</h1>
 
         <MedinttTable

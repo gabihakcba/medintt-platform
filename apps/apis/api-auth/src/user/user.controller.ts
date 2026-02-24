@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Patch,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AtGuard } from 'src/auth/guards/at.guard';
@@ -53,5 +54,22 @@ export class UserController {
     }
 
     return this.userService.updateUser(id, updateUserDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a user' })
+  @ApiResponse({ status: 200, description: 'User deleted' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  remove(@Param('id') id: string, @GetCurrentUser() user: JwtPayload) {
+    const isAdminProjectAdmin =
+      user.permissions?.['admin']?.role === process.env.ROLE_ADMIN;
+
+    if (!user.isSuperAdmin && !isAdminProjectAdmin) {
+      throw new ForbiddenException(
+        'No tienes permisos para eliminar usuarios. Se requiere ser SuperAdmin o Admin del proyecto "admin".',
+      );
+    }
+
+    return this.userService.remove(id);
   }
 }

@@ -22,18 +22,18 @@ export class CloudMedinttListener {
     );
 
     try {
-      // 1. Sincronización de Identidad
-      await this.cloudMedinttService.syncUser(
-        event.userId,
-        event.nombreCompleto,
-      );
-
-      // 2. Lógica de Empresa (Idempotente) - AHORA ASÍNCRONA VÍA BULLMQ
       if (
-        event.projectCode === 'cloud-medintt' &&
-        event.roleCode === 'member' &&
+        event.projectCode === process.env.CLOUD_PROJECT &&
+        event.roleCode === process.env.ROLE_MEMBER &&
         event.organizationCode
       ) {
+        // 1. Sincronización de Identidad
+        await this.cloudMedinttService.syncUser(
+          event.userId,
+          event.nombreCompleto,
+        );
+
+        // 2. Lógica de Empresa (Idempotente) - AHORA ASÍNCRONA VÍA BULLMQ
         // Aseguramos almacenar y la identidad grupal
         await this.cloudMedinttService.initializeCompanyStorage(
           event.organizationCode,

@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@medintt/cloud-medintt": "workspace:*",
     "@medintt/database-auth": "workspace:*",
     "@medintt/mail": "workspace:*",
     "@medintt/types-auth": "workspace:*",
@@ -28,6 +29,7 @@
     "@nestjs/common": "10.0.0",
     "@nestjs/config": "4.0.2",
     "@nestjs/core": "10.0.0",
+    "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/jwt": "11.0.2",
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "11.0.5",

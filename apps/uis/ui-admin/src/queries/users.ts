@@ -33,13 +33,13 @@ export const createInterlocutor = async (data: CreateInterlocutorData) => {
 };
 
 export const updateUser = async (id: string, data: Partial<CreateUserData>) => {
-  const response = await api.patch(`/admin/users/${id}`, data);
+  const response = await apiAuth.patch(`/users/${id}`, data);
   return response.data;
 };
 
 import { User } from "@medintt/types-auth";
 
 export const getUsers = async (): Promise<User[]> => {
-  const response = await api.get<User[]>("/admin/users");
+  const response = await apiAuth.get<User[]>("/users");
   return response.data;
 };

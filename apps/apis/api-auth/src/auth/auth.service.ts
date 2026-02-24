@@ -20,6 +20,8 @@ import { UserService } from 'src/user/user.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { TwoFactorAuthService } from './two-factor-auth.service';
 import { Prisma } from '@medintt/database-auth';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserPermissionsUpdatedEvent } from './events/user-permissions-updated.event';
 
 type MemberWithContext = Prisma.MemberGetPayload<{
   include: {
@@ -38,6 +40,7 @@ export class AuthService {
     private mailService: MailService,
     private usersService: UserService,
     private twoFactorAuthService: TwoFactorAuthService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -78,6 +81,24 @@ export class AuthService {
 
     const url = `${this.config.getOrThrow('FRONTEND_URL_AUTH')}${this.config.getOrThrow('FRONTEND_PATH_CONFIRM')}?token=${token}`;
     await this.mailService.sendUserConfirmation(user.email, url);
+
+    // Emitir evento
+    this.eventEmitter.emit(
+      'user.permissions.updated',
+      new UserPermissionsUpdatedEvent(
+        user.id,
+        user.email,
+        '', // Sin empresaId por defecto
+        '', // Sin nombreEmpresa
+        `${user.lastName} ${user.name}`.trim(),
+        [], // Sin permisos
+        false,
+        user.name,
+        user.lastName,
+        user.dni,
+        'registered',
+      ),
+    );
 
     return {
       message:
@@ -166,6 +187,29 @@ export class AuthService {
 
     const url = `${this.config.getOrThrow('FRONTEND_URL_AUTH')}${this.config.getOrThrow('FRONTEND_PATH_CONFIRM')}?token=${token}`;
     await this.mailService.sendUserConfirmation(result.user.email, url);
+
+    // Emitir evento para interlocutor
+    this.eventEmitter.emit(
+      'user.permissions.updated',
+      new UserPermissionsUpdatedEvent(
+        result.user.id,
+        result.user.email,
+        organization.id,
+        organization.name,
+        `${result.user.lastName} ${result.user.name}`.trim(),
+        ['member'], // Asumimos que siendo interlocutor de una ORG obtiene 'member' implícito
+        false, // No es paciente en este contexto
+        result.user.name,
+        result.user.lastName,
+        result.user.dni,
+        'registered',
+        role.id,
+        role.code,
+        project.id,
+        project.code,
+        organization.code,
+      ),
+    );
 
     return {
       message:

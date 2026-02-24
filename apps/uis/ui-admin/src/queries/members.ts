@@ -1,4 +1,4 @@
-import { api } from "@/lib/axios";
+import { apiAuth } from "@/lib/axios";
 import { User, Role, Organization, Project } from "@medintt/types-auth";
 
 export interface Member {
@@ -31,24 +31,23 @@ export interface CreateMemberData {
 }
 
 export const getMembersByOrg = async (): Promise<OrganizationWithMembers[]> => {
-  const { data } = await api.get<OrganizationWithMembers[]>(
-    "/admin/members/by-org",
-  );
+  const { data } =
+    await apiAuth.get<OrganizationWithMembers[]>("/members/by-org");
   return data;
 };
 
 export const getMembersByUser = async (): Promise<UserWithMembers[]> => {
-  const { data } = await api.get<UserWithMembers[]>("/admin/members/by-user");
+  const { data } = await apiAuth.get<UserWithMembers[]>("/members/by-user");
   return data;
 };
 
 export const createMember = async (
   member: CreateMemberData,
 ): Promise<Member> => {
-  const { data } = await api.post<Member>("/admin/members", member);
+  const { data } = await apiAuth.post<Member>("/members", member);
   return data;
 };
 
 export const deleteMember = async (id: string): Promise<void> => {
-  await api.delete(`/admin/members/${id}`);
+  await apiAuth.delete(`/members/${id}`);
 };

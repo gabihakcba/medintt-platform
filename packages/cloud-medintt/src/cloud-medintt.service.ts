@@ -59,12 +59,15 @@ export class CloudMedinttService {
     displayName: string,
     email?: string,
   ): Promise<void> {
+    const nextcloudUserId = `Medintt-${userId}`;
     try {
-      this.logger.log(`Verificando/Creando usuario en Nextcloud: ${userId}`);
+      this.logger.log(
+        `Verificando/Creando usuario en Nextcloud: ${nextcloudUserId}`,
+      );
 
       try {
         // Verificar si existe
-        const response = await this.ocsClient.get(`/users/${userId}`);
+        const response = await this.ocsClient.get(`/users/${nextcloudUserId}`);
 
         const statusCode = response.data?.ocs?.meta?.statuscode;
         // Nextcloud devuelve HTTP 200 pero con status interno 404 o 996 si el usuario no existe.
@@ -72,7 +75,7 @@ export class CloudMedinttService {
           throw new Error("USER_NOT_FOUND");
         }
 
-        this.logger.log(`Usuario ${userId} ya existe.`);
+        this.logger.log(`Usuario ${nextcloudUserId} ya existe.`);
         // Podríamos actualizar el displayName aquí si hiciera falta usando PUT.
       } catch (error: any) {
         if (
@@ -82,7 +85,7 @@ export class CloudMedinttService {
         ) {
           // No existe, crear
           const payload: any = {
-            userid: userId,
+            userid: nextcloudUserId,
             password: Math.random().toString(36).substring(2, 15), // Contraseña aleatoria por defecto ya que Nextcloud debe validarlo por SSO idealmente, o lo forzamos.
             displayName: displayName.trim(),
           };
@@ -90,14 +93,14 @@ export class CloudMedinttService {
             payload.email = email.trim();
           }
           await this.ocsClient.post("/users", payload);
-          this.logger.log(`Usuario ${userId} creado exitosamente.`);
+          this.logger.log(`Usuario ${nextcloudUserId} creado exitosamente.`);
         } else {
           throw error;
         }
       }
     } catch (error: any) {
       this.logger.error(
-        `Error al sincronizar usuario ${userId}: ${error.message}`,
+        `Error al sincronizar usuario ${nextcloudUserId}: ${error.message}`,
       );
       throw error;
     }
@@ -107,19 +110,22 @@ export class CloudMedinttService {
    * Elimina al usuario de Nextcloud.
    */
   async deleteUser(userId: string): Promise<void> {
+    const nextcloudUserId = `Medintt-${userId}`;
     try {
-      this.logger.log(`Eliminando usuario ${userId} de Nextcloud.`);
-      await this.ocsClient.delete(`/users/${userId}`);
-      this.logger.log(`Usuario ${userId} eliminado.`);
+      this.logger.log(`Eliminando usuario ${nextcloudUserId} de Nextcloud.`);
+      await this.ocsClient.delete(`/users/${nextcloudUserId}`);
+      this.logger.log(`Usuario ${nextcloudUserId} eliminado.`);
     } catch (error: any) {
       if (
         error.response?.data?.ocs?.meta?.statuscode === 404 ||
         error.response?.status === 404
       ) {
-        this.logger.log(`Usuario ${userId} no encontrado para eliminar.`);
+        this.logger.log(
+          `Usuario ${nextcloudUserId} no encontrado para eliminar.`,
+        );
       } else {
         this.logger.error(
-          `Error al eliminar usuario ${userId}: ${error.message}`,
+          `Error al eliminar usuario ${nextcloudUserId}: ${error.message}`,
         );
         throw error;
       }
@@ -149,25 +155,28 @@ export class CloudMedinttService {
    * Crea el grupo si no existe y añade al usuario.
    */
   async addUserToGroup(userId: string, groupId: string): Promise<void> {
+    const nextcloudUserId = `Medintt-${userId}`;
     try {
       await this.createGroup(groupId);
 
-      this.logger.log(`Añadiendo usuario ${userId} al grupo ${groupId}`);
-      await this.ocsClient.post(`/users/${userId}/groups`, {
+      this.logger.log(
+        `Añadiendo usuario ${nextcloudUserId} al grupo ${groupId}`,
+      );
+      await this.ocsClient.post(`/users/${nextcloudUserId}/groups`, {
         groupid: groupId,
       });
       this.logger.log(
-        `Usuario ${userId} asignado al grupo ${groupId} exitosamente.`,
+        `Usuario ${nextcloudUserId} asignado al grupo ${groupId} exitosamente.`,
       );
     } catch (error: any) {
       if (error.response?.data?.ocs?.meta?.statuscode === 102) {
         this.logger.log(
-          `El usuario ${userId} ya pertenece al grupo ${groupId}.`,
+          `El usuario ${nextcloudUserId} ya pertenece al grupo ${groupId}.`,
         );
         return;
       }
       this.logger.error(
-        `Error al asignar usuario ${userId} al grupo ${groupId}: ${error.message}`,
+        `Error al asignar usuario ${nextcloudUserId} al grupo ${groupId}: ${error.message}`,
       );
       throw error;
     }
@@ -177,13 +186,16 @@ export class CloudMedinttService {
    * Elimina al usuario de un grupo en Nextcloud.
    */
   async removeUserFromGroup(userId: string, groupId: string): Promise<void> {
+    const nextcloudUserId = `Medintt-${userId}`;
     try {
-      this.logger.log(`Removiendo usuario ${userId} del grupo ${groupId}`);
-      await this.ocsClient.delete(`/users/${userId}/groups`, {
+      this.logger.log(
+        `Removiendo usuario ${nextcloudUserId} del grupo ${groupId}`,
+      );
+      await this.ocsClient.delete(`/users/${nextcloudUserId}/groups`, {
         data: { groupid: groupId },
       });
       this.logger.log(
-        `Usuario ${userId} removido del grupo ${groupId} exitosamente.`,
+        `Usuario ${nextcloudUserId} removido del grupo ${groupId} exitosamente.`,
       );
     } catch (error: any) {
       if (
@@ -191,11 +203,11 @@ export class CloudMedinttService {
         error.response?.status === 404
       ) {
         this.logger.log(
-          `Usuario o grupo no encontrado al intentar remover a ${userId} de ${groupId}.`,
+          `Usuario o grupo no encontrado al intentar remover a ${nextcloudUserId} de ${groupId}.`,
         );
       } else {
         this.logger.error(
-          `Error al remover usuario ${userId} del grupo ${groupId}: ${error.message}`,
+          `Error al remover usuario ${nextcloudUserId} del grupo ${groupId}: ${error.message}`,
         );
         throw error;
       }

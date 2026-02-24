@@ -74,7 +74,6 @@ export class CloudSyncWorkerProcessor extends WorkerHost {
           }
 
           try {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             await this.cloudMedinttService.createPatientLegajoStructure(
               orgCode,
               {

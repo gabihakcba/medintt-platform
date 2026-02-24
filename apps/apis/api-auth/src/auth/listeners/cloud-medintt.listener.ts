@@ -61,7 +61,13 @@ export class CloudMedinttListener {
   async handleUserDeletedEvent(event: UserDeletedEvent) {
     this.logger.log(`Handling user.deleted for user: ${event.userId}`);
     try {
-      await this.cloudMedinttService.deleteUser(event.userId);
+      if (event.isCloudMember) {
+        await this.cloudMedinttService.deleteUser(event.userId);
+      } else {
+        this.logger.log(
+          `User ${event.userId} was not a cloud-medintt member. Skipping WebDAV deletion.`,
+        );
+      }
     } catch (error) {
       this.logger.error(
         `Error in CloudMedinttListener (delete): ${error instanceof Error ? error.message : String(error)}`,

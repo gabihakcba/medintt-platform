@@ -9,6 +9,7 @@ import {
   getOrganizations,
   createOrganization,
   updateOrganization,
+  deleteOrganization,
 } from "@/queries/organizations";
 
 export const useOrganizations = () => {
@@ -37,6 +38,13 @@ export const useOrganizations = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: deleteOrganization,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+    },
+  });
+
   return {
     organizations,
     isLoading,
@@ -45,5 +53,7 @@ export const useOrganizations = () => {
     isCreating: createMutation.isPending,
     updateOrganization: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
+    deleteOrganization: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
   };
 };

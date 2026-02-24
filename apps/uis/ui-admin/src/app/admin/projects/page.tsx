@@ -5,6 +5,7 @@ import { checkPermissions } from "@/services/permissions";
 import { useState, useRef, useEffect } from "react";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -27,7 +28,9 @@ export default function ProjectsPage() {
     createProject,
     isCreating,
     updateProject,
+    deleteProject,
     isUpdating,
+    isDeleting,
   } = useProjects();
   const [visible, setVisible] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(
@@ -103,6 +106,36 @@ export default function ProjectsPage() {
     }
   };
 
+  const confirmDelete = (proj: ProjectData) => {
+    confirmDialog({
+      message: `¿Estás seguro que deseas eliminar el proyecto "${proj.name}"?`,
+      header: "Confirmar Eliminación",
+      icon: "pi pi-exclamation-triangle",
+      acceptClassName: "p-button-danger",
+      acceptLabel: "Sí, Eliminar",
+      rejectLabel: "Cancelar",
+      accept: async () => {
+        try {
+          await deleteProject(proj.id);
+          toast.current?.show({
+            severity: "success",
+            summary: "Éxito",
+            detail: "Proyecto eliminado permanentemente",
+            life: 3000,
+          });
+        } catch (error: any) {
+          toast.current?.show({
+            severity: "error",
+            summary: "Error",
+            detail:
+              error.response?.data?.message || "Error al eliminar el proyecto",
+            life: 3000,
+          });
+        }
+      },
+    });
+  };
+
   const actionBodyTemplate = (rowData: ProjectData) => {
     return (
       <MedinttGuard
@@ -124,6 +157,13 @@ export default function ProjectsPage() {
               setVisible(true);
             }}
             tooltip="Editar"
+          />
+          <MedinttButton
+            icon="pi pi-trash"
+            severity="danger"
+            onClick={() => confirmDelete(rowData)}
+            tooltip="Eliminar"
+            loading={isDeleting}
           />
         </div>
       </MedinttGuard>
@@ -171,6 +211,7 @@ export default function ProjectsPage() {
       }
     >
       <div className="p-4 h-full flex flex-col relative gap-4">
+        <ConfirmDialog />
         <MedinttToast ref={toast} />
 
         <MedinttTable

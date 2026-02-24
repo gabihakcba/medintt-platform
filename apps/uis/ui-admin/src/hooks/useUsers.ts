@@ -7,6 +7,7 @@ import {
   CreateUserData,
   createInterlocutor,
   CreateInterlocutorData,
+  deleteUser,
 } from "@/queries/users";
 
 export const useUsers = () => {
@@ -39,6 +40,13 @@ export const useUsers = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+
   return {
     users: usersQuery.data,
     isLoading: usersQuery.isLoading,
@@ -49,5 +57,7 @@ export const useUsers = () => {
     isCreatingInterlocutor: createInterlocutorMutation.isPending,
     updateUser: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
+    deleteUser: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
   };
 };

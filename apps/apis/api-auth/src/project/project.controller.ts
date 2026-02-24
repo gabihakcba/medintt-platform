@@ -7,6 +7,7 @@ import {
   ForbiddenException,
   Patch,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { AtGuard } from '../auth/guards/at.guard';
@@ -69,5 +70,14 @@ export class ProjectController {
   ) {
     this.checkAdminRights(user);
     return this.projectService.update(id, updateProjectDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a project' })
+  @ApiResponse({ status: 200, description: 'Project deleted' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  remove(@Param('id') id: string, @GetCurrentUser() user: JwtPayload) {
+    this.checkAdminRights(user);
+    return this.projectService.remove(id);
   }
 }

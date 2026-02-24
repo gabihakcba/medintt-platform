@@ -5,6 +5,7 @@ import { checkPermissions } from "@/services/permissions";
 import { useState, useRef, useEffect } from "react";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -58,7 +59,9 @@ export default function UsersPage() {
     createInterlocutor,
     isCreatingInterlocutor,
     updateUser,
+    deleteUser,
     isUpdating,
+    isDeleting,
   } = useUsers();
   const { organizations, isLoading: isLoadingOrgs } = useOrganizations();
   const [isInterlocutorMode, setIsInterlocutorMode] = useState(false);
@@ -181,6 +184,36 @@ export default function UsersPage() {
     }
   };
 
+  const confirmDelete = (userData: UserData) => {
+    confirmDialog({
+      message: `¿Estás seguro que deseas eliminar permanentemente al usuario "${userData.username}" (${userData.email})?`,
+      header: "Confirmar Eliminación",
+      icon: "pi pi-exclamation-triangle",
+      acceptClassName: "p-button-danger",
+      acceptLabel: "Sí, Eliminar",
+      rejectLabel: "Cancelar",
+      accept: async () => {
+        try {
+          await deleteUser(userData.id);
+          toast.current?.show({
+            severity: "success",
+            summary: "Éxito",
+            detail: "Usuario eliminado correctamente",
+            life: 3000,
+          });
+        } catch (error: any) {
+          toast.current?.show({
+            severity: "error",
+            summary: "Error",
+            detail:
+              error.response?.data?.message || "Error al eliminar usuario",
+            life: 3000,
+          });
+        }
+      },
+    });
+  };
+
   const booleanBodyTemplate = (rowData: UserData, field: keyof UserData) => {
     return (
       <i
@@ -202,6 +235,13 @@ export default function UsersPage() {
             setVisible(true);
           }}
           tooltip="Editar"
+        />
+        <MedinttButton
+          icon="pi pi-trash"
+          severity="danger"
+          onClick={() => confirmDelete(rowData)}
+          tooltip="Eliminar"
+          loading={isDeleting}
         />
       </div>
     );
@@ -416,6 +456,7 @@ export default function UsersPage() {
       }
     >
       <div className="p-4 h-full flex flex-col relative gap-4">
+        <ConfirmDialog />
         <MedinttToast ref={toast} />
 
         <MedinttTable

@@ -205,4 +205,16 @@ export class UserService {
       },
     });
   }
+
+  async remove(id: string) {
+    try {
+      return await this.prisma.user.delete({
+        where: { id },
+      });
+    } catch {
+      throw new BadRequestException(
+        'Usuario no encontrado o conflicto de llaves foráneas.',
+      );
+    }
+  }
 }

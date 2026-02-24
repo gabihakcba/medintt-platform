@@ -33,3 +33,8 @@ export const updateProject = async (
   const { data } = await apiAuth.patch(`/projects/${id}`, project);
   return data;
 };
+
+export const deleteProject = async (id: string) => {
+  const { data } = await apiAuth.delete(`/projects/${id}`);
+  return data;
+};

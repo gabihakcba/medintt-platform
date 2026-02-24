@@ -3,6 +3,7 @@ import {
   createProject,
   getProjects,
   updateProject,
+  deleteProject,
   CreateProjectData,
 } from "@/queries/projects";
 
@@ -34,6 +35,13 @@ export const useProjects = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteProject(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    },
+  });
+
   return {
     projects: projectsQuery.data,
     isLoading: projectsQuery.isLoading,
@@ -42,5 +50,7 @@ export const useProjects = () => {
     isCreating: createMutation.isPending,
     updateProject: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
+    deleteProject: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
   };
 };

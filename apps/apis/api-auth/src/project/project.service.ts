@@ -35,4 +35,14 @@ export class ProjectService {
       throw new NotFoundException(`Proyecto con ID ${id} no encontrado.`);
     }
   }
+
+  async remove(id: string) {
+    try {
+      return await this.prisma.project.delete({
+        where: { id },
+      });
+    } catch {
+      throw new NotFoundException(`Proyecto con ID ${id} no encontrado.`);
+    }
+  }
 }

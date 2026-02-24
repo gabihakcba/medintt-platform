@@ -43,3 +43,8 @@ export const getUsers = async (): Promise<User[]> => {
   const response = await apiAuth.get<User[]>("/users");
   return response.data;
 };
+
+export const deleteUser = async (id: string) => {
+  const response = await apiAuth.delete(`/users/${id}`);
+  return response.data;
+};

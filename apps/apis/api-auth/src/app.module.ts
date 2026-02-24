@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthModule } from './health/health.module';
@@ -14,6 +15,11 @@ import { MedinttThrottlerGuard } from './common/guards/throttler-behind-proxy.gu
 import { AuditModule } from './audit/audit.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { OAuthModule } from './oauth/oauth.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { CloudMedinttModule } from '@medintt/cloud-medintt';
+import { MemberModule } from './member/member.module';
+import { ProjectModule } from './project/project.module';
+import { OrganizationModule } from './organization/organization.module';
 
 @Module({
   imports: [
@@ -40,10 +46,25 @@ import { OAuthModule } from './oauth/oauth.module';
         limit: 100,
       },
     ]),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          host: config.get<string>('REDIS_HOST', 'localhost'),
+          port: config.get<number>('REDIS_PORT', 6379),
+        },
+      }),
+    }),
+    EventEmitterModule.forRoot(),
+    CloudMedinttModule,
     PrismaModule,
     HealthModule,
     AuthModule,
     UserModule,
+    MemberModule,
+    ProjectModule,
+    OrganizationModule,
     AuditModule,
     OAuthModule,
   ],

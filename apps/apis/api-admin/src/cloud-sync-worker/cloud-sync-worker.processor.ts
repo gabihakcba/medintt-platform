@@ -1,0 +1,96 @@
+import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Logger } from '@nestjs/common';
+import { Job } from 'bullmq';
+import { PrismaMedinttService } from '../prisma-medintt/prisma-medintt.service';
+import { CloudMedinttService, CLOUD_SYNC_QUEUE } from '@medintt/cloud-medintt';
+
+@Processor(CLOUD_SYNC_QUEUE, { concurrency: 5 })
+export class CloudSyncWorkerProcessor extends WorkerHost {
+  private readonly logger = new Logger(CloudSyncWorkerProcessor.name);
+
+  constructor(
+    private readonly prisma: PrismaMedinttService,
+    private readonly cloudMedinttService: CloudMedinttService,
+  ) {
+    super();
+  }
+
+  async process(job: Job<{ orgCode: string }>) {
+    const { orgCode } = job.data;
+    this.logger.log(
+      `Iniciando sincronización masiva para la empresa: ${orgCode}`,
+    );
+
+    try {
+      if (job.name === 'sync-organization-folders') {
+        // Buscar prestataria por orgCode
+        const prestataria = await this.prisma.prestatarias.findFirst({
+          where: { Codigo: orgCode },
+        });
+
+        if (!prestataria) {
+          this.logger.warn(
+            `No se encontró prestataria (Empresa) con Codigo: ${orgCode}`,
+          );
+          return;
+        }
+
+        // Buscar pacientes/empleados asociados a la prestataria (código orgCode)
+        const pacientes = await this.prisma.pacientes.findMany({
+          where: {
+            Afiliacion_Pacientes: {
+              some: {
+                Id_Prestataria: prestataria.Id,
+              },
+            },
+          },
+        });
+
+        this.logger.log(
+          `Encontrados ${pacientes.length} pacientes para ${orgCode}. Procesando...`,
+        );
+
+        for (const paciente of pacientes) {
+          if (
+            !paciente.Apellido ||
+            !paciente.Nombre ||
+            !paciente.NroDocumento
+          ) {
+            this.logger.warn(
+              `Paciente ID ${paciente.Id} ignorado (faltan datos clave).`,
+            );
+            continue;
+          }
+
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            await this.cloudMedinttService.createPatientLegajoStructure(
+              orgCode,
+              {
+                Nombre: paciente.Nombre,
+                Apellido: paciente.Apellido,
+                DNI: paciente.NroDocumento,
+              },
+            );
+          } catch (err: unknown) {
+            const errorMessage =
+              err instanceof Error ? err.message : String(err);
+            this.logger.error(
+              `Error creando estructura para paciente ${paciente.NroDocumento}: ${errorMessage}`,
+            );
+            // Permitimos que la iteración continúe si la creación de un paciente falla
+          }
+        }
+
+        this.logger.log(`Sincronización masiva finalizada para ${orgCode}.`);
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Error en job sync-organization-folders para ${orgCode}: ${errorMessage}`,
+      );
+      throw error; // Reintenta según configuración de attempts
+    }
+  }
+}

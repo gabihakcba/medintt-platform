@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthModule } from './health/health.module';
@@ -6,24 +7,22 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 
 import { MedinttMailModule } from '@medintt/mail';
-import { UserModule } from './user/user.module';
-import { ProjectsModule } from './projects/projects.module'; // Import ProjectsModule
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AtStrategy } from './common/strategies/at.strategy';
 import { PassportModule } from '@nestjs/passport';
 // import { APP_GUARD } from '@nestjs/core';
 // import { MedinttThrottlerGuard } from './common/guards/throttler-behind-proxy.guard';
 
-import { OrganizationsModule } from './organizations/organizations.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolePermissionsModule } from './role-permissions/role-permissions.module';
-import { MembersModule } from './members/members.module';
 import { PrismaMedinttModule } from './prisma-medintt/prisma-medintt.module';
 import { Medintt4Module } from './medintt4/medintt4.module';
 import { MailingModule } from './mailing/mailing.module';
 import { MedicinaLaboralModule } from './medicina-laboral/medicina-laboral.module';
 import { CommonModule } from './common/common.module';
+import { CloudSyncWorkerModule } from './cloud-sync-worker/cloud-sync-worker.module';
+import { AdminQueuesModule } from './admin-queues/admin-queues.module';
 
 @Module({
   imports: [
@@ -50,22 +49,30 @@ import { CommonModule } from './common/common.module';
         limit: 100,
       },
     ]),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          host: config.get<string>('REDIS_HOST', 'localhost'),
+          port: config.get<number>('REDIS_PORT', 6379),
+        },
+      }),
+    }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     // AdminModule,
     PrismaModule,
     PrismaMedinttModule,
     Medintt4Module,
-    UserModule,
-    ProjectsModule,
-    OrganizationsModule,
     RolesModule,
     PermissionsModule,
     RolePermissionsModule,
-    MembersModule,
     HealthModule,
     MailingModule,
     MedicinaLaboralModule,
     CommonModule,
+    CloudSyncWorkerModule,
+    AdminQueuesModule,
   ],
   controllers: [AppController],
   providers: [

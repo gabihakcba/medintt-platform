@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
-export class ProjectsService {
+export class ProjectService {
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
@@ -26,9 +26,13 @@ export class ProjectsService {
     id: string,
     data: { name?: string; code?: string; description?: string },
   ) {
-    return this.prisma.project.update({
-      where: { id },
-      data,
-    });
+    try {
+      return await this.prisma.project.update({
+        where: { id },
+        data,
+      });
+    } catch {
+      throw new NotFoundException(`Proyecto con ID ${id} no encontrado.`);
+    }
   }
 }

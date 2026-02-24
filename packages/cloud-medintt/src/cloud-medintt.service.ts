@@ -54,7 +54,11 @@ export class CloudMedinttService {
   /**
    * Verifica existencia y crea usuario si no existe.
    */
-  async syncUser(userId: string, displayName: string): Promise<void> {
+  async syncUser(
+    userId: string,
+    displayName: string,
+    email?: string,
+  ): Promise<void> {
     try {
       this.logger.log(`Verificando/Creando usuario en Nextcloud: ${userId}`);
 
@@ -77,11 +81,14 @@ export class CloudMedinttService {
           error.response?.status === 404
         ) {
           // No existe, crear
-          const payload = {
+          const payload: any = {
             userid: userId,
             password: Math.random().toString(36).substring(2, 15), // Contraseña aleatoria por defecto ya que Nextcloud debe validarlo por SSO idealmente, o lo forzamos.
             displayName: displayName.trim(),
           };
+          if (email) {
+            payload.email = email.trim();
+          }
           await this.ocsClient.post("/users", payload);
           this.logger.log(`Usuario ${userId} creado exitosamente.`);
         } else {

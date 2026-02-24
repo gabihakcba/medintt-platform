@@ -39,6 +39,7 @@ export class CloudMedinttListener {
           await this.cloudMedinttService.syncUser(
             event.userId,
             event.nombreCompleto,
+            event.email,
           );
 
           // 2. Lógica de Empresa (Idempotente) - AHORA ASÍNCRONA VÍA BULLMQ

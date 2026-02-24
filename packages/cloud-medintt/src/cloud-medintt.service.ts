@@ -60,11 +60,19 @@ export class CloudMedinttService {
 
       try {
         // Verificar si existe
-        await this.ocsClient.get(`/users/${userId}`);
+        const response = await this.ocsClient.get(`/users/${userId}`);
+
+        const statusCode = response.data?.ocs?.meta?.statuscode;
+        // Nextcloud devuelve HTTP 200 pero con status interno 404 o 996 si el usuario no existe.
+        if (statusCode === 404 || statusCode === 996) {
+          throw new Error("USER_NOT_FOUND");
+        }
+
         this.logger.log(`Usuario ${userId} ya existe.`);
         // Podríamos actualizar el displayName aquí si hiciera falta usando PUT.
       } catch (error: any) {
         if (
+          error.message === "USER_NOT_FOUND" ||
           error.response?.data?.ocs?.meta?.statuscode === 404 ||
           error.response?.status === 404
         ) {

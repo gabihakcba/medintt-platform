@@ -17,9 +17,9 @@ export class CloudSyncWorkerProcessor extends WorkerHost {
 
   async process(job: Job<{ orgCode: string }>) {
     const { orgCode } = job.data;
-    this.logger.log(
-      `Iniciando sincronización masiva para la empresa: ${orgCode}`,
-    );
+    const startLog = `Iniciando sincronización masiva para la empresa: ${orgCode}`;
+    this.logger.log(startLog);
+    await job.log(startLog);
 
     try {
       if (job.name === 'sync-organization-folders') {
@@ -46,11 +46,16 @@ export class CloudSyncWorkerProcessor extends WorkerHost {
           },
         });
 
+        const total = pacientes.length;
         this.logger.log(
-          `Encontrados ${pacientes.length} pacientes para ${orgCode}. Procesando...`,
+          `Encontrados ${total} pacientes para ${orgCode}. Procesando...`,
         );
+        await job.log(`Total a procesar: ${total} pacientes.`);
 
-        for (const paciente of pacientes) {
+        let successCount = 0;
+
+        for (let index = 0; index < total; index++) {
+          const paciente = pacientes[index];
           if (
             !paciente.Apellido ||
             !paciente.Nombre ||
@@ -59,6 +64,12 @@ export class CloudSyncWorkerProcessor extends WorkerHost {
             this.logger.warn(
               `Paciente ID ${paciente.Id} ignorado (faltan datos clave).`,
             );
+            await job.log(
+              `⚠️ Paciente ID ${paciente.Id} ignorado (faltan datos clave).`,
+            );
+
+            const progress = Math.round(((index + 1) / total) * 100);
+            await job.updateProgress(progress);
             continue;
           }
 
@@ -72,17 +83,29 @@ export class CloudSyncWorkerProcessor extends WorkerHost {
                 DNI: paciente.NroDocumento,
               },
             );
+            await job.log(
+              `✅ Legajo creado: ${paciente.Apellido} - ${paciente.NroDocumento}`,
+            );
+            successCount++;
           } catch (err: unknown) {
             const errorMessage =
               err instanceof Error ? err.message : String(err);
             this.logger.error(
               `Error creando estructura para paciente ${paciente.NroDocumento}: ${errorMessage}`,
             );
+            await job.log(
+              `❌ Error en legajo ${paciente.NroDocumento}: ${errorMessage}`,
+            );
             // Permitimos que la iteración continúe si la creación de un paciente falla
           }
+
+          const progress = Math.round(((index + 1) / total) * 100);
+          await job.updateProgress(progress);
         }
 
-        this.logger.log(`Sincronización masiva finalizada para ${orgCode}.`);
+        const successRatioMsg = `Sincronización masiva finalizada para ${orgCode}. Éxitos: ${successCount} de ${total} legajos.`;
+        this.logger.log(successRatioMsg);
+        await job.log(successRatioMsg);
       }
     } catch (error: unknown) {
       const errorMessage =

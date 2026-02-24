@@ -1,3 +1,6 @@
 export class UserDeletedEvent {
-  constructor(public readonly userId: string) {}
+  constructor(
+    public readonly userId: string,
+    public readonly isCloudMember: boolean,
+  ) {}
 }

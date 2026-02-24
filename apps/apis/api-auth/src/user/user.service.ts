@@ -8,6 +8,8 @@ import { Prisma, User } from '@medintt/database-auth';
 import { RegisterDto } from 'src/auth/dto/register.dto';
 import { JwtPayload } from 'src/auth/types/jwt-payload.type';
 import * as argon2 from 'argon2';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserDeletedEvent } from 'src/auth/events/user-deleted.event';
 
 export interface UpdateUserData {
   email?: string;
@@ -24,7 +26,10 @@ export interface UpdateUserData {
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async create(
     data: RegisterDto,
@@ -208,9 +213,35 @@ export class UserService {
 
   async remove(id: string) {
     try {
-      return await this.prisma.user.delete({
+      const userWithMemberships = await this.prisma.user.findUnique({
+        where: { id },
+        include: {
+          memberships: {
+            include: { role: true, project: true },
+          },
+        },
+      });
+
+      if (!userWithMemberships) {
+        throw new BadRequestException('Usuario no encontrado.');
+      }
+
+      const isCloudMember = userWithMemberships.memberships.some(
+        (m) =>
+          m.project.code === process.env.CLOUD_PROJECT &&
+          m.role.code === process.env.ROLE_MEMBER,
+      );
+
+      const deleted = await this.prisma.user.delete({
         where: { id },
       });
+
+      this.eventEmitter.emit(
+        'user.deleted',
+        new UserDeletedEvent(id, isCloudMember),
+      );
+
+      return deleted;
     } catch {
       throw new BadRequestException(
         'Usuario no encontrado o conflicto de llaves foráneas.',

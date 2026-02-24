@@ -1384,6 +1384,22 @@ model Version {
   Es_Opcional Int?
 }
 
+model Control_Documental_Salud {
+  Id                  Int       @id(map: "PK_Control_Documental_Salud") @default(autoincrement())
+  Id_Prestataria      Int?
+  Id_Paciente         Int?
+  Fecha_Alta          DateTime? @db.Date
+  Status              String?   @db.NVarChar(50)
+  Path_Cloud          String?   @db.NVarChar(250)
+  Id_Modulo_en_Legajo Int?
+  Documento           String?   @db.NVarChar(50)
+  Descripcion         String?   @db.NVarChar(250)
+  Observaciones       String?   @db.NVarChar(Max)
+  FileName            String?   @db.NVarChar(250)
+  Extension           String?   @db.NVarChar(5)
+  Archivo             Bytes?    @db.Image
+}
+
 /// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 view rpt_Facturas_COBRADAS {
   Id           Int

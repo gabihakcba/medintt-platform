@@ -158,6 +158,35 @@ export class CloudMedinttService {
     }
   }
 
+  /**
+   * Elimina al usuario de un grupo en Nextcloud.
+   */
+  async removeUserFromGroup(userId: string, groupId: string): Promise<void> {
+    try {
+      this.logger.log(`Removiendo usuario ${userId} del grupo ${groupId}`);
+      await this.ocsClient.delete(`/users/${userId}/groups`, {
+        data: { groupid: groupId },
+      });
+      this.logger.log(
+        `Usuario ${userId} removido del grupo ${groupId} exitosamente.`,
+      );
+    } catch (error: any) {
+      if (
+        error.response?.data?.ocs?.meta?.statuscode === 404 ||
+        error.response?.status === 404
+      ) {
+        this.logger.log(
+          `Usuario o grupo no encontrado al intentar remover a ${userId} de ${groupId}.`,
+        );
+      } else {
+        this.logger.error(
+          `Error al remover usuario ${userId} del grupo ${groupId}: ${error.message}`,
+        );
+        throw error;
+      }
+    }
+  }
+
   // ==========================================
   // WEBDAV - FILES API (Gestión de Carpetas)
   // ==========================================

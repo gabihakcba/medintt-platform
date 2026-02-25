@@ -6,6 +6,6 @@ export const refresh = async () => {
 };
 
 export const logout = async () => {
-  const { data } = await apiAuth.post("/auth/logout");
+  const { data } = await apiAuth.get("/auth/logout");
   return data;
 };

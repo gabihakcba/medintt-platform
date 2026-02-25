@@ -6,6 +6,6 @@ export const refresh = async () => {
 };
 
 export const logout = async () => {
-  const { data } = await apiAuth.get("/auth/logout");
-  return data;
+  window.location.href = `${process.env.NEXT_PUBLIC_AUTH_API_URL}/auth/logout`;
+  return { success: true };
 };

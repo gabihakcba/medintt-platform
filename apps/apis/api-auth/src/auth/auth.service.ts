@@ -463,6 +463,19 @@ export class AuthService {
     return await this.usersService.findOneById(id);
   }
 
+  async hasProjectAccess(
+    userId: string,
+    projectCode: string,
+  ): Promise<boolean> {
+    const member = await this.prisma.member.findFirst({
+      where: {
+        userId,
+        project: { code: projectCode },
+      },
+    });
+    return !!member;
+  }
+
   // --- HELPERS PRIVADOS ---
 
   /**

@@ -473,6 +473,7 @@ export class AuthService {
         project: { code: projectCode },
       },
     });
+    console.log(member);
     return !!member;
   }
 

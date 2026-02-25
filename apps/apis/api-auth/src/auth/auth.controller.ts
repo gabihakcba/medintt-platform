@@ -119,10 +119,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Get('logout')
   async logout(
-    @GetUser('sub') userId: string | undefined,
+    @GetUser() user: JwtPayload | undefined,
     @Res({ passthrough: true }) res: Response,
     @Query('redirect_uri') redirectUri?: string,
   ) {
+    const userId = user?.sub;
+    const isSuperAdmin = user?.isSuperAdmin;
+
     const isProd = this.configService.get<string>('NODE_ENV') === 'production';
     const cookieOptions = {
       httpOnly: true,
@@ -142,15 +145,16 @@ export class AuthController {
 
     if (userId && !redirectUri) {
       const cloudProjectCode = this.configService.get<string>('CLOUD_PROJECT');
+      console.log(cloudProjectCode);
       if (cloudProjectCode) {
         const hasAccess = await this.authService.hasProjectAccess(
           userId,
           cloudProjectCode,
         );
-        if (hasAccess) {
+        if (hasAccess || isSuperAdmin) {
           const nextcloudUrl = this.configService.get<string>('NEXTCLOUD_URL');
           if (nextcloudUrl) {
-            target = `${nextcloudUrl}/index.php/logout?redirect_uri=${encodeURIComponent(loginUrl)}`;
+            target = `${nextcloudUrl}/index.php/apps/sociallogin/logout?redirect_uri=${encodeURIComponent(loginUrl)}`;
           }
         }
       }

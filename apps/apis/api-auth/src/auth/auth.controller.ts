@@ -132,9 +132,6 @@ export class AuthController {
       path: '/',
     };
 
-    res.clearCookie('Authentication', cookieOptions);
-    res.clearCookie('Refresh', cookieOptions);
-
     if (userId) {
       await this.authService.logout(userId);
     }
@@ -153,12 +150,13 @@ export class AuthController {
         if (hasAccess) {
           const nextcloudUrl = this.configService.get<string>('NEXTCLOUD_URL');
           if (nextcloudUrl) {
-            target = `${nextcloudUrl}/logout?redirect_uri=${encodeURIComponent(loginUrl)}`;
+            target = `${nextcloudUrl}/index.php/logout?redirect_uri=${encodeURIComponent(loginUrl)}`;
           }
         }
       }
     }
-
+    res.clearCookie('Authentication', cookieOptions);
+    res.clearCookie('Refresh', cookieOptions);
     return res.redirect(target);
   }
 

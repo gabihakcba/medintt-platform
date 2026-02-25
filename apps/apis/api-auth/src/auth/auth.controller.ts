@@ -22,6 +22,7 @@ import { LoginDto } from './dto/login.dto';
 import type { JwtPayload, JwtPayloadWithRt } from './types/jwt-payload.type';
 import { GetUser } from './decorators/get-user.decorator';
 import { AtGuard } from './guards/at.guard';
+import { OptionalAtGuard } from './guards/optional-at.guard';
 import { RtGuard } from './guards/rt.guard';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -114,12 +115,13 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cerrar sesión' })
   @ApiResponse({ status: 200, description: 'Sesión cerrada exitosamente.' })
-  @UseGuards(AtGuard)
-  @Post('logout')
+  @UseGuards(OptionalAtGuard)
   @HttpCode(HttpStatus.OK)
-  logout(
-    @GetUser('sub') userId: string,
+  @Get('logout')
+  async logout(
+    @GetUser('sub') userId: string | undefined,
     @Res({ passthrough: true }) res: Response,
+    @Query('redirect_uri') redirectUri?: string,
   ) {
     const isProd = this.configService.get<string>('NODE_ENV') === 'production';
     const cookieOptions = {
@@ -133,7 +135,31 @@ export class AuthController {
     res.clearCookie('Authentication', cookieOptions);
     res.clearCookie('Refresh', cookieOptions);
 
-    return this.authService.logout(userId);
+    if (userId) {
+      await this.authService.logout(userId);
+    }
+
+    const loginUrl =
+      this.configService.get<string>('FRONTEND_URL_AUTH') + '/login';
+    let target = redirectUri || loginUrl;
+
+    if (userId && !redirectUri) {
+      const cloudProjectCode = this.configService.get<string>('CLOUD_PROJECT');
+      if (cloudProjectCode) {
+        const hasAccess = await this.authService.hasProjectAccess(
+          userId,
+          cloudProjectCode,
+        );
+        if (hasAccess) {
+          const nextcloudUrl = this.configService.get<string>('NEXTCLOUD_URL');
+          if (nextcloudUrl) {
+            target = `${nextcloudUrl}/logout?redirect_uri=${encodeURIComponent(loginUrl)}`;
+          }
+        }
+      }
+    }
+
+    return res.redirect(target);
   }
 
   @ApiBearerAuth()

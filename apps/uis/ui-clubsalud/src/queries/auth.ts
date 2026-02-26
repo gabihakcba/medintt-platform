@@ -6,6 +6,11 @@ export const refresh = async () => {
 };
 
 export const logout = async () => {
-  const { data } = await apiAuth.post("/auth/logout");
+  const { data } = await apiAuth.get("/auth/logout");
+  if (data?.success) {
+    if (data.action === "EXTERNAL_LOGOUT" || data.action === "LOCAL_LOGOUT") {
+      window.location.href = data.url;
+    }
+  }
   return data;
 };

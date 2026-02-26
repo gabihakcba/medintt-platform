@@ -142,6 +142,7 @@ export class AuthController {
     const loginUrl =
       this.configService.get<string>('FRONTEND_URL_AUTH') + '/login';
     let target = redirectUri || loginUrl;
+    let action = 'LOCAL_LOGOUT';
 
     if (userId && !redirectUri) {
       const cloudProjectCode = this.configService.get<string>('CLOUD_PROJECT');
@@ -154,14 +155,15 @@ export class AuthController {
         if (hasAccess || isSuperAdmin) {
           const nextcloudUrl = this.configService.get<string>('NEXTCLOUD_URL');
           if (nextcloudUrl) {
-            target = `${nextcloudUrl}/index.php/apps/sociallogin/logout?redirect_uri=${encodeURIComponent(loginUrl)}`;
+            target = `${nextcloudUrl}/index.php/apps/sociallogin/logout/Medintt?redirect_uri=${encodeURIComponent(loginUrl)}`;
+            action = 'EXTERNAL_LOGOUT';
           }
         }
       }
     }
     res.clearCookie('Authentication', cookieOptions);
     res.clearCookie('Refresh', cookieOptions);
-    return res.redirect(target);
+    return { success: true, action, url: target };
   }
 
   @ApiBearerAuth()

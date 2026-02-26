@@ -203,86 +203,109 @@ export default function AusentismoDetailPage() {
               )}
             </AccordionTab>
 
-            <AccordionTab
-              header={
-                <div className="flex items-center gap-2">
-                  <i className="pi pi-book"></i>
-                  <span>
-                    Bitácora ({ausentismo.Ausentismos_Bitacora?.length || 0})
-                  </span>
-                </div>
+            <MedinttGuard
+              data={user}
+              validator={(u) =>
+                checkPermissions(u, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+                  process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+                ])
               }
             >
-              <div className="max-h-[40vh] overflow-y-auto pr-2">
-                {ausentismo.Ausentismos_Bitacora &&
-                ausentismo.Ausentismos_Bitacora.length > 0 ? (
-                  <div className="flex flex-col gap-4">
-                    {ausentismo.Ausentismos_Bitacora.map((item) => (
-                      <div
-                        key={item.Id}
-                        className="p-3 bg-gray-50 rounded border border-gray-200"
-                      >
-                        <div className="text-sm text-gray-500 mb-1">
-                          {formatDate(item.Fecha)}
-                        </div>
-                        <div className="whitespace-pre-wrap">
-                          {item.Observaciones || "-"}
-                        </div>
-                      </div>
-                    ))}
+              <AccordionTab
+                header={
+                  <div className="flex items-center gap-2">
+                    <i className="pi pi-book"></i>
+                    <span>
+                      Bitácora ({ausentismo.Ausentismos_Bitacora?.length || 0})
+                    </span>
                   </div>
-                ) : (
-                  <p className="text-gray-500">No hay registros en bitácora</p>
-                )}
-              </div>
-            </AccordionTab>
+                }
+              >
+                <div className="max-h-[40vh] overflow-y-auto pr-2">
+                  {ausentismo.Ausentismos_Bitacora &&
+                  ausentismo.Ausentismos_Bitacora.length > 0 ? (
+                    <div className="flex flex-col gap-4">
+                      {ausentismo.Ausentismos_Bitacora.map((item) => (
+                        <div
+                          key={item.Id}
+                          className="p-3 bg-gray-50 rounded border border-gray-200"
+                        >
+                          <div className="text-sm text-gray-500 mb-1">
+                            {formatDate(item.Fecha)}
+                          </div>
+                          <div className="whitespace-pre-wrap">
+                            {item.Observaciones || "-"}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">
+                      No hay registros en bitácora
+                    </p>
+                  )}
+                </div>
+              </AccordionTab>
+            </MedinttGuard>
 
-            <AccordionTab
-              header={
-                <div className="flex items-center gap-2">
-                  <i className="pi pi-check-square"></i>
-                  <span>
-                    Controles ({ausentismo.Ausentismos_Controles?.length || 0})
-                  </span>
-                </div>
+            <MedinttGuard
+              data={user}
+              validator={(u) =>
+                checkPermissions(u, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+                  process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+                ])
               }
             >
-              <div className="max-h-[40vh] overflow-y-auto pr-2">
-                {ausentismo.Ausentismos_Controles &&
-                ausentismo.Ausentismos_Controles.length > 0 ? (
-                  <div className="flex flex-col gap-4">
-                    {ausentismo.Ausentismos_Controles.map((control) => (
-                      <div
-                        key={control.Id}
-                        className="p-3 bg-gray-50 rounded border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4"
-                      >
-                        <div className="col-span-1 md:col-span-2 text-sm text-gray-500 border-b pb-2 mb-2">
-                          Fecha Control: {formatDate(control.Fecha_Control)}
-                        </div>
-                        <div>
-                          <span className="font-semibold block mb-1">
-                            Instrucciones:
-                          </span>
-                          <div className="whitespace-pre-wrap text-sm">
-                            {control.Instrucciones || "-"}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="font-semibold block mb-1">
-                            Evolución:
-                          </span>
-                          <div className="whitespace-pre-wrap text-sm">
-                            {control.Evolucion || "-"}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+              <AccordionTab
+                header={
+                  <div className="flex items-center gap-2">
+                    <i className="pi pi-check-square"></i>
+                    <span>
+                      Controles ({ausentismo.Ausentismos_Controles?.length || 0}
+                      )
+                    </span>
                   </div>
-                ) : (
-                  <p className="text-gray-500">No hay controles registrados</p>
-                )}
-              </div>
-            </AccordionTab>
+                }
+              >
+                <div className="max-h-[40vh] overflow-y-auto pr-2">
+                  {ausentismo.Ausentismos_Controles &&
+                  ausentismo.Ausentismos_Controles.length > 0 ? (
+                    <div className="flex flex-col gap-4">
+                      {ausentismo.Ausentismos_Controles.map((control) => (
+                        <div
+                          key={control.Id}
+                          className="p-3 bg-gray-50 rounded border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4"
+                        >
+                          <div className="col-span-1 md:col-span-2 text-sm text-gray-500 border-b pb-2 mb-2">
+                            Fecha Control: {formatDate(control.Fecha_Control)}
+                          </div>
+                          <div>
+                            <span className="font-semibold block mb-1">
+                              Instrucciones:
+                            </span>
+                            <div className="whitespace-pre-wrap text-sm">
+                              {control.Instrucciones || "-"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="font-semibold block mb-1">
+                              Evolución:
+                            </span>
+                            <div className="whitespace-pre-wrap text-sm">
+                              {control.Evolucion || "-"}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">
+                      No hay controles registrados
+                    </p>
+                  )}
+                </div>
+              </AccordionTab>
+            </MedinttGuard>
 
             <AccordionTab
               header={

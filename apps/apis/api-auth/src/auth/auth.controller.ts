@@ -120,7 +120,7 @@ export class AuthController {
   @Get('logout')
   async logout(
     @GetUser() user: JwtPayload | undefined,
-    @Res({ passthrough: true }) res: Response,
+    @Res() res: Response,
     @Query('redirect_uri') redirectUri?: string,
   ) {
     const userId = user?.sub;
@@ -142,11 +142,9 @@ export class AuthController {
     const loginUrl =
       this.configService.get<string>('FRONTEND_URL_AUTH') + '/login';
     let target = redirectUri || loginUrl;
-    let nextStep = 'LOCAL_LOGIN';
 
     if (userId && !redirectUri) {
       const cloudProjectCode = this.configService.get<string>('CLOUD_PROJECT');
-      console.log(cloudProjectCode);
       if (cloudProjectCode) {
         const hasAccess = await this.authService.hasProjectAccess(
           userId,
@@ -156,14 +154,15 @@ export class AuthController {
           const nextcloudUrl = this.configService.get<string>('NEXTCLOUD_URL');
           if (nextcloudUrl) {
             target = `${nextcloudUrl}/index.php/apps/sociallogin/logout/Medintt?redirect_uri=${encodeURIComponent(loginUrl)}`;
-            nextStep = 'REDIRECT_TO_CLOUD';
           }
         }
       }
     }
+
     res.clearCookie('Authentication', cookieOptions);
     res.clearCookie('Refresh', cookieOptions);
-    return { success: true, nextStep, url: target };
+
+    return res.redirect(target);
   }
 
   @ApiBearerAuth()

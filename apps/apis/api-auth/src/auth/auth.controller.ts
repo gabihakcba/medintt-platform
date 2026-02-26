@@ -142,7 +142,7 @@ export class AuthController {
     const loginUrl =
       this.configService.get<string>('FRONTEND_URL_AUTH') + '/login';
     let target = redirectUri || loginUrl;
-    let action = 'LOCAL_LOGOUT';
+    let nextStep = 'LOCAL_LOGIN';
 
     if (userId && !redirectUri) {
       const cloudProjectCode = this.configService.get<string>('CLOUD_PROJECT');
@@ -156,14 +156,14 @@ export class AuthController {
           const nextcloudUrl = this.configService.get<string>('NEXTCLOUD_URL');
           if (nextcloudUrl) {
             target = `${nextcloudUrl}/index.php/apps/sociallogin/logout/Medintt?redirect_uri=${encodeURIComponent(loginUrl)}`;
-            action = 'EXTERNAL_LOGOUT';
+            nextStep = 'REDIRECT_TO_CLOUD';
           }
         }
       }
     }
     res.clearCookie('Authentication', cookieOptions);
     res.clearCookie('Refresh', cookieOptions);
-    return { success: true, action, url: target };
+    return { success: true, nextStep, url: target };
   }
 
   @ApiBearerAuth()

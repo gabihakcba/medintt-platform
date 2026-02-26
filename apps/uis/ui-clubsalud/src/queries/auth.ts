@@ -8,7 +8,10 @@ export const refresh = async () => {
 export const logout = async () => {
   const { data } = await apiAuth.get("/auth/logout");
   if (data?.success) {
-    if (data.action === "EXTERNAL_LOGOUT" || data.action === "LOCAL_LOGOUT") {
+    if (
+      data.nextStep === "REDIRECT_TO_CLOUD" ||
+      data.nextStep === "LOCAL_LOGIN"
+    ) {
       window.location.href = data.url;
     }
   }

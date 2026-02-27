@@ -127,19 +127,14 @@ export default function ExamenesLaboralesPage() {
                 header={
                   <div className="flex justify-between items-center w-full pr-4">
                     <span className="font-semibold">
-                      {examen.Examenes_Laborales?.Examenes?.Codigo ||
-                        "Sin Código"}
+                      Exámen Laboral{" "}
+                      {examen.Fecha_Alta ? formatDate(examen.Fecha_Alta) : ""}
                     </span>
                     <div className="flex gap-2">
                       <Tag
                         value={examen.Status || "Sin Estado"}
                         severity={getStatusSeverity(examen.Status)}
                       />
-                      {examen.Fecha_Alta && (
-                        <span className="text-sm text-color-secondary">
-                          {formatDate(examen.Fecha_Alta)}
-                        </span>
-                      )}
                     </div>
                   </div>
                 }

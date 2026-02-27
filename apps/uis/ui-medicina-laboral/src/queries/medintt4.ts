@@ -25,6 +25,9 @@ export interface PacienteData {
   Nacionalidad?: string;
   CUIL?: string;
   Genero?: string;
+  Cargo?: string;
+  Puesto?: string;
+  Funcion?: string;
 }
 
 export const getProvincias = async (): Promise<Provincia[]> => {

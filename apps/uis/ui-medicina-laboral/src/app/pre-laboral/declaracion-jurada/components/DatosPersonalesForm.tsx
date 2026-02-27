@@ -22,13 +22,19 @@ import { Divider } from "primereact/divider";
 interface DatosPersonalesFormProps {
   initialData: PacienteResponse;
   onSubmit: (data: PacienteData) => void;
+  onCancel?: () => void;
   isLoading?: boolean;
+  showLaboralData?: boolean;
+  isModal?: boolean;
 }
 
 export default function DatosPersonalesForm({
   initialData,
   onSubmit,
+  onCancel,
   isLoading = false,
+  showLaboralData = false,
+  isModal = false,
 }: DatosPersonalesFormProps): ReactElement {
   // Queries
   const provinciasQuery = useQuery({
@@ -91,6 +97,9 @@ export default function DatosPersonalesForm({
       Nacionalidad: initialData.Nacionalidad || "",
       CUIL: initialData.CUIL || "",
       Genero: initialData.Genero || "",
+      Cargo: initialData.Cargo || "",
+      Puesto: initialData.Puesto || "",
+      Funcion: initialData.Funcion || "",
     };
   }, [initialData, localitiesQuery.data]);
 
@@ -116,7 +125,7 @@ export default function DatosPersonalesForm({
 
   const selectedProvincia = watch("Id_Provincia");
 
-  const sections: FormSection<FieldValues>[] = useMemo(() => {
+  const baseSections: FormSection<FieldValues>[] = useMemo(() => {
     const provinciasOptions =
       provinciasQuery.data?.map((p) => ({
         label: p.Provincia,
@@ -131,7 +140,7 @@ export default function DatosPersonalesForm({
           value: l.Id,
         })) || [];
 
-    return [
+    const builtSections: FormSection<FieldValues>[] = [
       {
         group: "Datos Personales",
         fields: [
@@ -282,7 +291,43 @@ export default function DatosPersonalesForm({
         ],
       },
     ];
-  }, [provinciasQuery.data, localitiesQuery.data, selectedProvincia]);
+
+    if (showLaboralData) {
+      builtSections[0].fields.push(
+        {
+          type: "text",
+          props: {
+            name: "Cargo",
+            label: "Cargo",
+          },
+          colSpan: { xs: 12, md: 6, lg: 4 },
+        },
+        {
+          type: "text",
+          props: {
+            name: "Puesto",
+            label: "Puesto",
+          },
+          colSpan: { xs: 12, md: 6, lg: 4 },
+        },
+        {
+          type: "text",
+          props: {
+            name: "Funcion",
+            label: "Función",
+          },
+          colSpan: { xs: 12, md: 6, lg: 4 },
+        },
+      );
+    }
+
+    return builtSections;
+  }, [
+    provinciasQuery.data,
+    localitiesQuery.data,
+    selectedProvincia,
+    showLaboralData,
+  ]);
 
   const handleLocalSubmit = (data: FieldValues) => {
     // Transform data to PacienteData
@@ -301,6 +346,9 @@ export default function DatosPersonalesForm({
       Nacionalidad: data.Nacionalidad, // Pass through
       CUIL: data.CUIL, // Pass through
       Genero: data.Genero,
+      Cargo: data.Cargo,
+      Puesto: data.Puesto,
+      Funcion: data.Funcion,
     };
     onSubmit(pacienteData);
   };
@@ -310,24 +358,53 @@ export default function DatosPersonalesForm({
   }
 
   return (
-    <div className="mx-9 sm:mx-14 md:mx-20 lg:mx-70 xl:mx-76 my-10 space-y-6">
-      <h1 className="text-2xl font-bold mb-4">Datos Personales</h1>
-      <p className="mb-4 text-gray-600">
-        Por favor verifique y complete sus datos personales.
-      </p>
+    <div
+      className={
+        isModal
+          ? "space-y-6"
+          : "mx-9 sm:mx-14 md:mx-20 lg:mx-70 xl:mx-76 my-10 space-y-6"
+      }
+    >
+      {!isModal && (
+        <>
+          <h1 className="text-2xl font-bold mb-4">Datos Personales</h1>
+          <p className="mb-4 text-gray-600">
+            Por favor verifique y complete sus datos personales.
+          </p>
+        </>
+      )}
 
       <MedinttForm
         control={control as any}
-        sections={sections as any}
+        sections={baseSections as any}
         onSubmit={handleLocalSubmit}
         handleSubmit={handleSubmit}
         footer={
-          <MedinttButton
-            label="Continuar"
-            type="submit"
-            icon="pi pi-arrow-right"
-            loading={isLoading}
-          />
+          isModal ? (
+            <div className="flex justify-end gap-2 mt-4">
+              {onCancel && (
+                <MedinttButton
+                  type="button"
+                  label="Cancelar"
+                  severity="secondary"
+                  outlined
+                  onClick={onCancel}
+                />
+              )}
+              <MedinttButton
+                label="Guardar Cambios"
+                type="submit"
+                loading={isLoading}
+              />
+            </div>
+          ) : (
+            <MedinttButton
+              label="Continuar"
+              type="submit"
+              icon="pi pi-arrow-right"
+              loading={isLoading}
+            />
+          )
         }
       />
     </div>

@@ -203,14 +203,9 @@ export default function AusentismoDetailPage() {
               )}
             </AccordionTab>
 
-            <MedinttGuard
-              data={user}
-              validator={(u) =>
-                checkPermissions(u, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
-                  process.env.NEXT_PUBLIC_ROLE_ADMIN!,
-                ])
-              }
-            >
+            {checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+              process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+            ]) && (
               <AccordionTab
                 header={
                   <div className="flex items-center gap-2">
@@ -246,16 +241,11 @@ export default function AusentismoDetailPage() {
                   )}
                 </div>
               </AccordionTab>
-            </MedinttGuard>
+            )}
 
-            <MedinttGuard
-              data={user}
-              validator={(u) =>
-                checkPermissions(u, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
-                  process.env.NEXT_PUBLIC_ROLE_ADMIN!,
-                ])
-              }
-            >
+            {checkPermissions(user, process.env.NEXT_PUBLIC_SELF_PROJECT!, [
+              process.env.NEXT_PUBLIC_ROLE_ADMIN!,
+            ]) && (
               <AccordionTab
                 header={
                   <div className="flex items-center gap-2">
@@ -305,7 +295,7 @@ export default function AusentismoDetailPage() {
                   )}
                 </div>
               </AccordionTab>
-            </MedinttGuard>
+            )}
 
             <AccordionTab
               header={

@@ -1,5 +1,15 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchPacientes, PacientesFilters } from "../queries/pacientes";
+import {
+  useQuery,
+  keepPreviousData,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  fetchPacientes,
+  PacientesFilters,
+  updatePaciente,
+  Paciente,
+} from "../queries/pacientes";
 
 export const usePacientes = (filters?: PacientesFilters) => {
   const { data, isLoading, isError, error } = useQuery({
@@ -15,4 +25,16 @@ export const usePacientes = (filters?: PacientesFilters) => {
     isError,
     error,
   };
+};
+
+export const useUpdatePaciente = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: Partial<Paciente> }) =>
+      updatePaciente(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pacientes"] });
+    },
+  });
 };

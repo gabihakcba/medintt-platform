@@ -337,4 +337,79 @@ export class PacientesService {
       },
     });
   }
+
+  async updateSignature(
+    id: number,
+    dto: import('./dto/update-firma-admin.dto').UpdateFirmaAdminDto,
+    user: JwtPayload,
+  ) {
+    const medLabProject = process.env.MED_LAB_PROJECT;
+    const roleAdmin = process.env.ROLE_ADMIN;
+    const orgM = process.env.ORG_M;
+
+    const membership = user.permissions?.[medLabProject!];
+    const isAdmin =
+      user.isSuperAdmin ||
+      (membership?.role === roleAdmin && membership?.organizationCode === orgM);
+
+    const isInterlocutor = membership?.role === process.env.ROLE_INTERLOCUTOR;
+
+    if (!isAdmin && !isInterlocutor) {
+      throw new ForbiddenException(
+        'No tienes permisos para editar la firma de empleados.',
+      );
+    }
+
+    if (isInterlocutor && !isAdmin) {
+      const organizationCode = membership?.organizationCode;
+      if (!organizationCode) {
+        throw new ForbiddenException('Organización no válida.');
+      }
+
+      const prestataria = await this.prisma.prestatarias.findFirst({
+        where: { Codigo: organizationCode },
+        select: { Id: true },
+      });
+
+      if (!prestataria) {
+        throw new ForbiddenException(
+          'Prestataria no encontrada para su organización.',
+        );
+      }
+
+      const affiliation = await this.prisma.afiliacion_Pacientes.findFirst({
+        where: {
+          Id_Paciente: id,
+          Id_Prestataria: prestataria.Id,
+        },
+      });
+
+      if (!affiliation) {
+        throw new ForbiddenException(
+          'El paciente no pertenece a tu prestataria. No puedes editar su firma.',
+        );
+      }
+    }
+
+    let firmaBuffer: Buffer | null = null;
+    if (dto.firma) {
+      const base64Data = dto.firma.replace(/^data:image\/\w+;base64,/, '');
+      firmaBuffer = Buffer.from(base64Data, 'base64');
+    }
+
+    const updatedPaciente = await this.prisma.pacientes.update({
+      where: { Id: id },
+      data: {
+        ImagenFirma: firmaBuffer,
+      },
+      select: {
+        Id: true,
+      },
+    });
+
+    return {
+      message: 'Firma actualizada exitosamente',
+      pacienteId: updatedPaciente.Id,
+    };
+  }
 }

@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaMedinttService } from 'src/prisma-medintt/prisma-medintt.service';
+import { MailService } from '@medintt/mail';
 import { InviteRequestDto } from './dto/invite-request.dto';
 import {
   createSignedToken,
@@ -37,7 +38,10 @@ interface ProofPayload {
 
 @Injectable()
 export class FirmaPacienteService {
-  constructor(private prisma: PrismaMedinttService) {}
+  constructor(
+    private prisma: PrismaMedinttService,
+    private readonly mailService: MailService,
+  ) {}
 
   private get inviteSecret(): string {
     const secret = process.env.INVITE_SECRET;
@@ -109,6 +113,29 @@ export class FirmaPacienteService {
     const token = createSignedToken(payload, this.inviteSecret);
     const baseUrl = process.env.FRONT_URL;
     return `${baseUrl}/${process.env.FIRMA_URL}/${token}`;
+  }
+
+  async sendInviteEmail(pacienteId: number) {
+    const paciente = await this.prisma.pacientes.findUnique({
+      where: { Id: pacienteId },
+    });
+
+    if (!paciente) {
+      throw new NotFoundException(`Paciente with ID ${pacienteId} not found`);
+    }
+
+    if (!paciente.Email) {
+      throw new Error('El paciente no tiene un correo electrónico registrado.');
+    }
+
+    const inviteUrl = this.getOrCreateInviteUrl(paciente.Id);
+    await this.mailService.sendSignatureLinkMail(
+      paciente.Email,
+      `${paciente.Apellido}, ${paciente.Nombre}`,
+      inviteUrl,
+    );
+
+    return { success: true };
   }
 
   async verifyIdentity(dto: VerifyRequestDto) {

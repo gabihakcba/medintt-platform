@@ -1,9 +1,12 @@
-import { Body, Controller, Post, Put } from '@nestjs/common';
+import { Body, Controller, Post, Put, UseGuards } from '@nestjs/common';
 import { FirmaPacienteService } from './firma-paciente.service';
 import { InviteRequestDto } from './dto/invite-request.dto';
 import { VerifyRequestDto } from './dto/verify-request.dto';
 import { GetFirmaDto } from './dto/get-firma.dto';
 import { UpdateFirmaDto } from './dto/update-firma.dto';
+import { SendInviteRequestDto } from './dto/send-invite-request.dto';
+import { AtGuard } from '../../common/guards/at.guard';
+import { MedicinaLaboralGuard } from '../guards/medicina-laboral.guard';
 
 @Controller('medicina-laboral/firma-paciente')
 export class FirmaPacienteController {
@@ -12,6 +15,12 @@ export class FirmaPacienteController {
   @Post('invite')
   createInvite(@Body() dto: InviteRequestDto) {
     return this.service.createInvite(dto);
+  }
+
+  @Post('invite/send')
+  @UseGuards(AtGuard, MedicinaLaboralGuard)
+  sendInviteEmail(@Body() dto: SendInviteRequestDto) {
+    return this.service.sendInviteEmail(dto.pacienteId);
   }
 
   @Post('verify')

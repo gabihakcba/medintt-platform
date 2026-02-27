@@ -184,4 +184,20 @@ export class PacientesController {
   ) {
     return this.pacientesService.update(id, updateDto, user);
   }
+
+  @Patch(':id/firma')
+  @UseGuards(AtGuard, MedicinaLaboralGuard)
+  @ApiOperation({ summary: 'Actualizar firma del empleado' })
+  @ApiResponse({ status: 200, description: 'Firma actualizada exitosamente' })
+  @ApiResponse({
+    status: 403,
+    description: 'No tiene permisos para modificar este paciente',
+  })
+  async updateSignature(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: import('./dto/update-firma-admin.dto').UpdateFirmaAdminDto,
+    @GetCurrentUser() user: JwtPayload,
+  ) {
+    return await this.pacientesService.updateSignature(id, dto, user);
+  }
 }

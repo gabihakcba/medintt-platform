@@ -3,8 +3,13 @@
 import { useAuth } from "@/hooks/useAuth";
 import { checkPermissions } from "@/services/permissions";
 import { MedinttGuard, MedinttTable, MedinttFilePreview } from "@medintt/ui";
-import { usePacientes, useUpdatePaciente } from "@/hooks/usePacientes";
+import {
+  usePacientes,
+  useUpdatePaciente,
+  useSendSignatureInvite,
+} from "@/hooks/usePacientes";
 import DatosPersonalesForm from "../../pre-laboral/declaracion-jurada/components/DatosPersonalesForm";
+import { SignatureModal } from "./components/SignatureModal";
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -14,6 +19,8 @@ import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { usePrestatarias } from "@/hooks/useAusentismos"; // Reusing this hook as it fetches prestatarias
 import { PacientesFilters } from "@/queries/pacientes";
+import { Toast } from "primereact/toast";
+import { useRef } from "react";
 
 export default function EmpleadosPage() {
   const { user } = useAuth();
@@ -31,8 +38,16 @@ export default function EmpleadosPage() {
   const [selectedEmpleadoToEdit, setSelectedEmpleadoToEdit] =
     useState<any>(null);
 
+  // Signature Modal States
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+  const [selectedEmpleadoSignature, setSelectedEmpleadoSignature] =
+    useState<any>(null);
+
   const { mutate: updateEmpleado, isPending: isUpdatingEmpleado } =
     useUpdatePaciente();
+
+  const sendInviteMutation = useSendSignatureInvite();
+  const toast = useRef<Toast>(null);
 
   const handleEditClick = (empleado: any) => {
     setSelectedEmpleadoToEdit(empleado);
@@ -125,21 +140,70 @@ export default function EmpleadosPage() {
       body: (rowData: any) => {
         const hasFirma = !!rowData.hasFirma;
         return (
-          <Button
-            icon="pi pi-eye"
-            rounded
-            text
-            disabled={!hasFirma}
-            className={hasFirma ? "text-blue-600 hover:text-blue-800" : ""}
-            tooltip={hasFirma ? "Ver Firma" : "No tiene firma registrada"}
-            tooltipOptions={{ position: "top" }}
-            onClick={() =>
-              handlePreview(
-                rowData.Id,
-                `${rowData.Apellido}, ${rowData.Nombre}`,
-              )
-            }
-          />
+          <div className="flex gap-2 items-center justify-center">
+            <Button
+              icon="pi pi-eye"
+              rounded
+              text
+              disabled={!hasFirma}
+              className={hasFirma ? "text-blue-600 hover:text-blue-800" : ""}
+              tooltip={hasFirma ? "Ver Firma" : "No tiene firma registrada"}
+              tooltipOptions={{ position: "top" }}
+              onClick={() =>
+                handlePreview(
+                  rowData.Id,
+                  `${rowData.Apellido}, ${rowData.Nombre}`,
+                )
+              }
+            />
+            <Button
+              icon="pi pi-pencil"
+              rounded
+              text
+              severity="warning"
+              tooltip={hasFirma ? "Editar Firma" : "Cargar Firma"}
+              tooltipOptions={{ position: "top" }}
+              onClick={() => {
+                setSelectedEmpleadoSignature(rowData);
+                setIsSignatureModalOpen(true);
+              }}
+            />
+            <Button
+              icon="pi pi-envelope"
+              rounded
+              text
+              severity="info"
+              tooltip={
+                rowData.Email
+                  ? "Enviar invitación por email"
+                  : "El empleado no tiene email cargado"
+              }
+              tooltipOptions={{ position: "top" }}
+              disabled={sendInviteMutation.isPending || !rowData.Email}
+              onClick={() => {
+                sendInviteMutation.mutate(rowData.Id, {
+                  onSuccess: () => {
+                    toast.current?.show({
+                      severity: "success",
+                      summary: "Éxito",
+                      detail: "Invitación de firma enviada al correo.",
+                      life: 3000,
+                    });
+                  },
+                  onError: (error: any) => {
+                    toast.current?.show({
+                      severity: "error",
+                      summary: "Error",
+                      detail:
+                        error?.message ||
+                        "Ocurrió un error al enviar el correo.",
+                      life: 3000,
+                    });
+                  },
+                });
+              }}
+            />
+          </div>
         );
       },
     },
@@ -272,6 +336,8 @@ export default function EmpleadosPage() {
           rowsPerPageOptions={[10]}
         />
 
+        <Toast ref={toast} />
+
         <MedinttFilePreview
           visible={previewVisible}
           onHide={handleHidePreview}
@@ -325,6 +391,19 @@ export default function EmpleadosPage() {
             />
           )}
         </Dialog>
+
+        {selectedEmpleadoSignature && (
+          <SignatureModal
+            visible={isSignatureModalOpen}
+            onHide={() => {
+              setIsSignatureModalOpen(false);
+              setSelectedEmpleadoSignature(null);
+            }}
+            pacienteId={selectedEmpleadoSignature.Id}
+            pacienteNombreCompleto={`${selectedEmpleadoSignature.Apellido}, ${selectedEmpleadoSignature.Nombre}`}
+            hasExistingSignature={!!selectedEmpleadoSignature.hasFirma}
+          />
+        )}
       </div>
     </MedinttGuard>
   );

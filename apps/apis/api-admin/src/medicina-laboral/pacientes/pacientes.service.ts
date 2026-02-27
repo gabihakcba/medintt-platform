@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { Prisma } from '@medintt/database-medintt4';
 import { PrismaMedinttService } from '../../prisma-medintt/prisma-medintt.service';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PacientesFilterDto } from './dto/pacientes-filter.dto';
+import { UpdatePacienteDto } from './dto/update-paciente.dto';
 
 @Injectable()
 export class PacientesService {
@@ -272,5 +273,68 @@ export class PacientesService {
     }
 
     return examsCountMap;
+  }
+
+  async update(id: number, updateDto: UpdatePacienteDto, user: JwtPayload) {
+    const medLabProject = process.env.MED_LAB_PROJECT;
+    const roleAdmin = process.env.ROLE_ADMIN;
+    const orgM = process.env.ORG_M;
+
+    const membership = user.permissions?.[medLabProject!];
+    const isAdmin =
+      user.isSuperAdmin ||
+      (membership?.role === roleAdmin && membership?.organizationCode === orgM);
+
+    const isInterlocutor = membership?.role === process.env.ROLE_INTERLOCUTOR;
+
+    if (!isAdmin && !isInterlocutor) {
+      throw new ForbiddenException('No tienes permisos para editar empleados.');
+    }
+
+    if (isInterlocutor && !isAdmin) {
+      const organizationCode = membership?.organizationCode;
+      if (!organizationCode) {
+        throw new ForbiddenException('Organización no válida.');
+      }
+
+      const prestataria = await this.prisma.prestatarias.findFirst({
+        where: { Codigo: organizationCode },
+        select: { Id: true },
+      });
+
+      if (!prestataria) {
+        throw new ForbiddenException(
+          'Prestataria no encontrada para su organización.',
+        );
+      }
+
+      const affiliation = await this.prisma.afiliacion_Pacientes.findFirst({
+        where: {
+          Id_Paciente: id,
+          Id_Prestataria: prestataria.Id,
+        },
+      });
+
+      if (!affiliation) {
+        throw new ForbiddenException(
+          'El paciente no pertenece a tu prestataria. No puedes editarlo.',
+        );
+      }
+    }
+
+    const { FechaNacimiento, ...rest } = updateDto;
+
+    return this.prisma.pacientes.update({
+      where: { Id: id },
+      data: {
+        ...rest,
+        ...(FechaNacimiento ? { FechaNacimiento } : {}),
+      },
+      select: {
+        Id: true,
+        Nombre: true,
+        Apellido: true,
+      },
+    });
   }
 }

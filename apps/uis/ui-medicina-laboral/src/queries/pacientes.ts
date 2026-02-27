@@ -54,6 +54,17 @@ export const fetchPacientes = async (
   return data;
 };
 
+export const updatePaciente = async (
+  id: number,
+  payload: Partial<Paciente>,
+): Promise<Paciente> => {
+  const { data } = await api.patch<Paciente>(
+    `/medicina-laboral/pacientes/${id}`,
+    payload,
+  );
+  return data;
+};
+
 export const exportPacientesExcel = async (filters: PacientesFilters) => {
   const params = new URLSearchParams();
   if (filters.search) params.append("search", filters.search);

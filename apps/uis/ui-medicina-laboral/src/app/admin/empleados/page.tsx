@@ -3,9 +3,12 @@
 import { useAuth } from "@/hooks/useAuth";
 import { checkPermissions } from "@/services/permissions";
 import { MedinttGuard, MedinttTable, MedinttFilePreview } from "@medintt/ui";
-import { usePacientes } from "@/hooks/usePacientes";
+import { usePacientes, useUpdatePaciente } from "@/hooks/usePacientes";
+import DatosPersonalesForm from "../../pre-laboral/declaracion-jurada/components/DatosPersonalesForm";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
@@ -22,6 +25,19 @@ export default function EmpleadosPage() {
     null,
   );
   const [exporting, setExporting] = useState(false);
+
+  // Edit Modal States
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedEmpleadoToEdit, setSelectedEmpleadoToEdit] =
+    useState<any>(null);
+
+  const { mutate: updateEmpleado, isPending: isUpdatingEmpleado } =
+    useUpdatePaciente();
+
+  const handleEditClick = (empleado: any) => {
+    setSelectedEmpleadoToEdit(empleado);
+    setIsEditModalOpen(true);
+  };
 
   // Preview States
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -126,6 +142,21 @@ export default function EmpleadosPage() {
           />
         );
       },
+    },
+    {
+      field: "acciones",
+      header: "Acciones",
+      body: (rowData: any) => (
+        <Button
+          icon="pi pi-pencil"
+          rounded
+          text
+          severity="warning"
+          tooltip="Editar"
+          tooltipOptions={{ position: "top" }}
+          onClick={() => handleEditClick(rowData)}
+        />
+      ),
     },
   ];
 
@@ -248,6 +279,52 @@ export default function EmpleadosPage() {
           title={previewTitle}
           extension={previewExtension}
         />
+
+        <Dialog
+          visible={isEditModalOpen}
+          onHide={() => {
+            setIsEditModalOpen(false);
+            setSelectedEmpleadoToEdit(null);
+          }}
+          header="Editar Empleado"
+          style={{ width: "90vw", maxWidth: "600px" }}
+        >
+          {selectedEmpleadoToEdit && (
+            <DatosPersonalesForm
+              isModal={true}
+              showLaboralData={true}
+              initialData={{
+                ...selectedEmpleadoToEdit,
+                FechaNacimiento: selectedEmpleadoToEdit.FechaNacimiento
+                  ? new Date(selectedEmpleadoToEdit.FechaNacimiento)
+                  : new Date(),
+              }}
+              onSubmit={(data) => {
+                const payload = {
+                  ...data,
+                  FechaNacimiento: data.FechaNacimiento
+                    ? new Date(data.FechaNacimiento)
+                    : undefined,
+                };
+
+                updateEmpleado(
+                  { id: selectedEmpleadoToEdit.Id, payload: payload as any },
+                  {
+                    onSuccess: () => {
+                      setIsEditModalOpen(false);
+                      setSelectedEmpleadoToEdit(null);
+                    },
+                  },
+                );
+              }}
+              onCancel={() => {
+                setIsEditModalOpen(false);
+                setSelectedEmpleadoToEdit(null);
+              }}
+              isLoading={isUpdatingEmpleado}
+            />
+          )}
+        </Dialog>
       </div>
     </MedinttGuard>
   );

@@ -131,6 +131,9 @@ export interface PacienteResponse {
   firmaUrl?: string;
   Nacionalidad?: string;
   CUIL?: string;
+  Cargo?: string;
+  Puesto?: string;
+  Funcion?: string;
 }
 
 export interface GetDeclaracionResponse {

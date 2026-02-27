@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  Patch,
+  Body,
   UseGuards,
   Query,
   Res,
@@ -26,6 +28,7 @@ import { MedicinaLaboralGuard } from '../guards/medicina-laboral.guard';
 import { GetCurrentUser } from '../../common/decorators/get-current-user.decorator';
 import type { JwtPayload } from '../../common/types/jwt-payload.type';
 import { PacientesFilterDto } from './dto/pacientes-filter.dto';
+import { UpdatePacienteDto } from './dto/update-paciente.dto';
 
 @ApiTags('Medicina Laboral - Pacientes')
 @Controller('medicina-laboral/pacientes')
@@ -167,5 +170,18 @@ export class PacientesController {
     } catch (error) {
       throw new NotFoundException((error as Error).message);
     }
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update patient information' })
+  @ApiResponse({ status: 200, description: 'Patient updated successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body()
+    updateDto: UpdatePacienteDto,
+    @GetCurrentUser() user: JwtPayload,
+  ) {
+    return this.pacientesService.update(id, updateDto, user);
   }
 }

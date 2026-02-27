@@ -116,15 +116,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Cerrar sesión' })
   @ApiResponse({ status: 200, description: 'Sesión cerrada exitosamente.' })
   @UseGuards(OptionalAtGuard)
-  @HttpCode(HttpStatus.OK)
   @Get('logout')
   async logout(
     @GetUser() user: JwtPayload | undefined,
     @Res() res: Response,
-    // @Query('redirect_uri') redirectUri?: string,
+    @Query('from') from?: string,
   ) {
     const userId = user?.sub;
-    // const isSuperAdmin = user?.isSuperAdmin;
 
     const isProd = this.configService.get<string>('NODE_ENV') === 'production';
     const cookieOptions = {
@@ -139,31 +137,14 @@ export class AuthController {
       await this.authService.logout(userId);
     }
 
-    // const loginUrl =
-    //   this.configService.get<string>('FRONTEND_URL_AUTH') + '/login';
-    // let target = redirectUri || loginUrl;
-
-    // if (userId && !redirectUri) {
-    //   const cloudProjectCode = this.configService.get<string>('CLOUD_PROJECT');
-    //   if (cloudProjectCode) {
-    //     const hasAccess = await this.authService.hasProjectAccess(
-    //       userId,
-    //       cloudProjectCode,
-    //     );
-    //     if (hasAccess || isSuperAdmin) {
-    //       const nextcloudUrl = this.configService.get<string>('NEXTCLOUD_URL');
-    //       if (nextcloudUrl) {
-    //         target = `${nextcloudUrl}/index.php/apps/sociallogin/logout/Medintt?redirect_uri=${encodeURIComponent(loginUrl)}`;
-    //       }
-    //     }
-    //   }
-    // }
-
     res.clearCookie('Authentication', cookieOptions);
     res.clearCookie('Refresh', cookieOptions);
 
-    // return res.redirect(target);
-    return { success: true };
+    const loginUrl =
+      this.configService.get<string>('FRONTEND_URL_AUTH') + '/login';
+    const target = from || loginUrl;
+
+    return res.redirect(target);
   }
 
   @ApiBearerAuth()

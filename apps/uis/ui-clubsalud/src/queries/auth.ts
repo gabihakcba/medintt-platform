@@ -6,13 +6,6 @@ export const refresh = async () => {
 };
 
 export const logout = async () => {
-  try {
-    // Quitamos el return para que no bloquee el flujo
-    await apiAuth.get("/auth/logout");
-  } catch (error) {
-    console.error("Error en logout", error);
-  } finally {
-    // replace es más limpio que href para sesiones
-    window.location.replace("/");
-  }
+  const origin = window.location.origin;
+  window.location.href = `${process.env.NEXT_PUBLIC_AUTH_API_URL}/auth/logout?from=${encodeURIComponent(origin)}`;
 };

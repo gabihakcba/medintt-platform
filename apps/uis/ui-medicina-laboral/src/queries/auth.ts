@@ -6,7 +6,13 @@ export const refresh = async () => {
 };
 
 export const logout = async () => {
-  const response = await apiAuth.get("/auth/logout");
-  window.location.href = "/";
-  return response;
+  try {
+    // Quitamos el return para que no bloquee el flujo
+    await apiAuth.get("/auth/logout");
+  } catch (error) {
+    console.error("Error en logout", error);
+  } finally {
+    // replace es más limpio que href para sesiones
+    window.location.replace("/");
+  }
 };

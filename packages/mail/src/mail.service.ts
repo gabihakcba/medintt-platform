@@ -120,6 +120,21 @@ export class MailService {
     });
   }
 
+  async sendSignatureLinkMail(to: string, name: string, link: string) {
+    await this.mailerService.sendMail({
+      to,
+      subject: "Solicitud de Firma Biométrica",
+      html: `
+        <h1>Estimado/a ${name},</h1>
+        <p>Medintt lo invita a registrar su firma biométrica para completar su legajo digital. Por favor acceda utilizando el siguiente enlace:</p>
+        <p>
+            <a href="${link}" style="padding: 10px 20px; background-color: #10b981; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0;">Registrar mi Firma</a>
+        </p>
+        <p>Si no funciona el botón, copia este enlace: ${link}</p>
+      `,
+    });
+  }
+
   async sendPendingDataMail(to: string, name: string, link: string) {
     await this.mailerService.sendMail({
       to,

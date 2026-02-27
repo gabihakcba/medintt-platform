@@ -186,14 +186,26 @@ export default function SignaturePage({ params }: PageProps) {
             />
           </div>
 
-          {returnUrl && (
+          <div className="flex flex-col gap-2 w-full mt-4">
             <Button
-              label="Volver a la Declaración"
-              icon="pi pi-arrow-left"
-              className="w-full mt-4"
-              onClick={handleReturn}
+              label="Editar Firma"
+              icon="pi pi-pencil"
+              className="w-full p-button-outlined p-button-secondary"
+              onClick={() => {
+                setTempSignature(null);
+                setStep("form");
+              }}
             />
-          )}
+
+            {returnUrl && (
+              <Button
+                label="Volver a la Declaración"
+                icon="pi pi-arrow-left"
+                className="w-full"
+                onClick={handleReturn}
+              />
+            )}
+          </div>
         </div>
       )}
     </div>

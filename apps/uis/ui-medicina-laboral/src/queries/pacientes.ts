@@ -65,6 +65,17 @@ export const updatePaciente = async (
   return data;
 };
 
+export const updatePacienteSignature = async (
+  id: number,
+  payload: { firma: string },
+): Promise<{ message: string; pacienteId: number }> => {
+  const { data } = await api.patch<{ message: string; pacienteId: number }>(
+    `/medicina-laboral/pacientes/${id}/firma`,
+    payload,
+  );
+  return data;
+};
+
 export const exportPacientesExcel = async (filters: PacientesFilters) => {
   const params = new URLSearchParams();
   if (filters.search) params.append("search", filters.search);
@@ -102,4 +113,14 @@ export const exportPacientesExcel = async (filters: PacientesFilters) => {
   a.click();
   a.remove();
   window.URL.revokeObjectURL(downloadUrl);
+};
+
+export const sendSignatureInvite = async (
+  pacienteId: number,
+): Promise<{ success: boolean; message?: string }> => {
+  const { data } = await api.post<{ success: boolean; message?: string }>(
+    `/medicina-laboral/firma-paciente/invite/send`,
+    { pacienteId },
+  );
+  return data;
 };
